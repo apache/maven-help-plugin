@@ -34,7 +34,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.WriterFactory;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
@@ -72,17 +71,11 @@ public abstract class AbstractEffectiveMojo
      * @throws IOException if any
      * @see AbstractHelpMojo#writeFile(File, String) if encoding is null.
      */
-    protected static void writeXmlFile( File output, String content, String encoding )
+    protected static void writeXmlFile( File output, String content )
         throws IOException
     {
         if ( output == null )
         {
-            return;
-        }
-
-        if ( StringUtils.isEmpty( encoding ) )
-        {
-            writeFile( output, content );
             return;
         }
 

@@ -91,9 +91,11 @@ public class EffectiveSettingsMojo
         }
 
         StringWriter w = new StringWriter();
+        String encoding = output != null ? copySettings.getModelEncoding()
+                                : System.getProperty( "file.encoding" );
         XMLWriter writer =
             new PrettyPrintXMLWriter( w, StringUtils.repeat( " ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE ),
-                                      copySettings.getModelEncoding(), null );
+                                      encoding, null );
 
         writeHeader( writer );
 
@@ -105,7 +107,7 @@ public class EffectiveSettingsMojo
         {
             try
             {
-                writeXmlFile( output, effectiveSettings, copySettings.getModelEncoding() );
+                writeXmlFile( output, effectiveSettings );
             }
             catch ( IOException e )
             {
@@ -172,7 +174,7 @@ public class EffectiveSettingsMojo
         {
             return null;
         }
-        
+
         // Not a deep copy in M2.2.1 !!!
         Settings clone = SettingsUtils.copySettings( settings );
 
@@ -189,11 +191,11 @@ public class EffectiveSettingsMojo
             clonedServer.setPrivateKey( server.getPrivateKey() );
             clonedServer.setSourceLevel( server.getSourceLevel() );
             clonedServer.setUsername( server.getUsername() );
-            
+
             clonedServers.add( clonedServer );
         }
         clone.setServers( clonedServers );
-        
+
         List<Proxy> clonedProxies = new ArrayList<Proxy>( settings.getProxies().size() );
         for ( Proxy proxy : settings.getProxies() )
         {
@@ -207,11 +209,11 @@ public class EffectiveSettingsMojo
             clonedProxy.setProtocol( proxy.getProtocol() );
             clonedProxy.setSourceLevel( proxy.getSourceLevel() );
             clonedProxy.setUsername( proxy.getUsername() );
-            
+
             clonedProxies.add( clonedProxy );
         }
         clone.setProxies( clonedProxies );
-        
+
         return clone;
     }
 

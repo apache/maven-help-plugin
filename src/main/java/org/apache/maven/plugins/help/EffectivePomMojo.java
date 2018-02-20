@@ -83,7 +83,7 @@ public class EffectivePomMojo
      * <br>
      * <b>Note</b>: Should respect the Maven format, i.e. <code>groupId:artifactId[:version]</code>. The
      * latest version of the artifact will be used when no version is specified.
-     * 
+     *
      * @since 3.0.0
      */
     @Parameter( property = "artifact" )
@@ -103,9 +103,11 @@ public class EffectivePomMojo
         }
 
         StringWriter w = new StringWriter();
+        String encoding = output != null ? project.getModel().getModelEncoding()
+                                : System.getProperty( "file.encoding" );
         XMLWriter writer =
             new PrettyPrintXMLWriter( w, StringUtils.repeat( " ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE ),
-                                      project.getModel().getModelEncoding(), null );
+                                      encoding, null );
 
         writeHeader( writer );
 
@@ -121,7 +123,7 @@ public class EffectivePomMojo
             writer.endElement();
 
             effectivePom = w.toString();
-            effectivePom = prettyFormat( effectivePom );
+            effectivePom = prettyFormat( effectivePom, encoding );
         }
         else
         {
@@ -134,7 +136,7 @@ public class EffectivePomMojo
         {
             try
             {
-                writeXmlFile( output, effectivePom, project.getModel().getModelEncoding() );
+                writeXmlFile( output, effectivePom );
             }
             catch ( IOException e )
             {
@@ -161,7 +163,7 @@ public class EffectivePomMojo
      * Determines if all effective POMs of all the projects in the reactor should be written. When this goal is started
      * on the command-line, it is always the case. However, when it is bound to a phase in the lifecycle, it is only the
      * case when the current project being built is the head project in the reactor.
-     * 
+     *
      * @return <code>true</code> if all effective POMs should be written, <code>false</code> otherwise.
      */
     private boolean shouldWriteAllEffectivePOMsInReactor()
@@ -223,9 +225,10 @@ public class EffectivePomMojo
 
     /**
      * @param effectivePom not null
+     * @param encoding not null
      * @return pretty format of the xml  or the original <code>effectivePom</code> if an error occurred.
      */
-    private static String prettyFormat( String effectivePom )
+    private static String prettyFormat( String effectivePom, String encoding )
     {
         SAXBuilder builder = new SAXBuilder();
 
@@ -235,6 +238,8 @@ public class EffectivePomMojo
 
             StringWriter w = new StringWriter();
             Format format = Format.getPrettyFormat();
+            format.setEncoding( encoding );
+            format.setLineSeparator( System.lineSeparator() );
             XMLOutputter out = new XMLOutputter( format );
             out.output( effectiveDocument, w );
 
