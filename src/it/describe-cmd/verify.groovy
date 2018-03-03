@@ -26,6 +26,6 @@ assert result.contains("'deploy' is a phase corresponding to this plugin:" + ls 
 
 result = new File(basedir, 'result-site.txt').text;
 
-assert result.contains("'site' is a lifecycle with the following phases:")
+assert result.contains("'site' is a phase within the 'site' lifecycle, which has the following phases:")
 
 return true;

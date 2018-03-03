@@ -803,7 +803,8 @@ public class DescribeMojo
             else
             {
                 descriptionBuffer.append( "'" ).append( cmd );
-                descriptionBuffer.append( "' is a lifecycle with the following phases: " );
+                descriptionBuffer.append( "' is a phase within the '" ).append( lifecycle.getId() );
+                descriptionBuffer.append( "' lifecycle, which has the following phases: " );
                 descriptionBuffer.append( LS );
 
                 for ( String key : phases )
