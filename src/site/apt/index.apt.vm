@@ -30,7 +30,7 @@
 ${project.name}
 
  The Maven Help Plugin is used to get relative information about a project or the system. It can be used to get a
- description of a particular plugin, including the plugin's mojos with their parameters and component requirements,
+ description of a particular plugin, including the plugin's goals with their parameters and component requirements,
  the effective POM and effective settings of the current build, and the profiles applied to the current project being
  built.
 
@@ -61,7 +61,7 @@ ${project.name}
 * Major Version Upgrade to version 3.0.0
 
   Please note that the goal <<<expressions>>> has been completely removed from the plugin. All the Maven expressions
-  that are supported as plugin parameters are available in the Javadoc of the 
+  that are supported as plugin parameters are available in the Javadoc of the
   {{{/ref/current/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html}
   <<<PluginParameterExpressionEvaluator>>>}} class.
 

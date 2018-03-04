@@ -91,37 +91,37 @@ public class DescribeMojo
      * For deprecated values
      */
     private static final String NO_REASON = "No reason given";
-    
+
     private static final Pattern EXPRESSION = Pattern.compile( "^\\$\\{([^}]+)\\}$" );
 
     // ----------------------------------------------------------------------
     // Mojo components
     // ----------------------------------------------------------------------
-    
+
     /**
      * Component used to get a plugin descriptor from a given plugin.
      */
     @Component
     private MavenPluginManagerHelper pluginManager;
-    
+
     /**
      * Component used to get a plugin by its prefix and get mojo descriptors.
      */
     @Component
     private MojoDescriptorCreator mojoDescriptorCreator;
-    
+
     /**
      * Component used to resolve the version for a plugin.
      */
     @Component
     private PluginVersionResolver pluginVersionResolver;
-    
+
     /**
      * The Maven default built-in lifecycles.
      */
     @Component
     private DefaultLifecycles defaultLifecycles;
-    
+
     /**
      * A map from each packaging to its lifecycle mapping.
      */
@@ -182,9 +182,9 @@ public class DescribeMojo
      * If this parameter is specified, only the corresponding goal (Mojo) will be described,
      * rather than the whole Plugin.
      *
-     * @since 2.1, was <code>mojo</code> in 2.0.x
+     * @since 2.1
      */
-    @org.apache.maven.plugins.annotations.Parameter( property = "goal", alias = "mojo" )
+    @org.apache.maven.plugins.annotations.Parameter( property = "goal" )
     private String goal;
 
     /**
@@ -250,7 +250,7 @@ public class DescribeMojo
                 MojoDescriptor mojo = descriptor.getMojo( goal );
                 if ( mojo == null )
                 {
-                    throw new MojoFailureException( "The mojo '" + goal + "' does not exist in the plugin '"
+                    throw new MojoFailureException( "The goal '" + goal + "' does not exist in the plugin '"
                         + pi.getPrefix() + "'" );
                 }
                 describeMojo( mojo, descriptionBuffer );
@@ -273,11 +273,7 @@ public class DescribeMojo
      */
     private void validateParameters()
     {
-        // support legacy parameters "mojo" and "full"
-        if ( goal == null && session.getUserProperties().get( "mojo" ) != null )
-        {
-            goal = session.getUserProperties().getProperty( "mojo" );
-        }
+        // support legacy parameter "full"
 
         if ( !detail && session.getUserProperties().get( "full" ) != null )
         {
@@ -308,7 +304,7 @@ public class DescribeMojo
             }
             catch ( IOException e )
             {
-                throw new MojoExecutionException( "Cannot write plugin/mojo description to output: " + output, e );
+                throw new MojoExecutionException( "Cannot write plugin/goal description to output: " + output, e );
             }
 
             getLog().info( "Wrote descriptions to: " + output );
@@ -604,11 +600,11 @@ public class DescribeMojo
 
         if ( StringUtils.isNotEmpty( eGoal ) || StringUtils.isNotEmpty( ePhase ) )
         {
-            append( buffer, "Before this mojo executes, it will call:", 1 );
+            append( buffer, "Before this goal executes, it will call:", 1 );
 
             if ( StringUtils.isNotEmpty( eGoal ) )
             {
-                append( buffer, "Single mojo", "'" + eGoal + "'", 2 );
+                append( buffer, "Single goal", "'" + eGoal + "'", 2 );
             }
 
             if ( StringUtils.isNotEmpty( ePhase ) )
@@ -1003,7 +999,7 @@ public class DescribeMojo
     /**
      * Determines if this Mojo should be used as a report or not. This resolves the plugin project along with all of its
      * transitive dependencies to determine if the Java class of this goal implements <code>MavenReport</code>.
-     * 
+     *
      * @param md Mojo descriptor
      * @return Whether or not this goal should be used as a report.
      */
@@ -1040,7 +1036,7 @@ public class DescribeMojo
     /**
      * Transforms the given plugin descriptor into an artifact coordinate. It is formed by its GAV information, along
      * with the given type.
-     * 
+     *
      * @param pd Plugin descriptor.
      * @param type Extension for the coordinate.
      * @return Coordinate of an artifact having the same GAV as the given plugin descriptor, with the given type.

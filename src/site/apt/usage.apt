@@ -63,9 +63,9 @@ Usage
 * The <<<help:describe>>> Goal
 
   The <<<{{{./describe-mojo.html}describe}}>>> goal is used to discover information about Maven plugins. Given either
-  a <<<plugin>>> or a <<<groupId>>>, an <<<artifactId>>> and optionally a <<<version>>>, the mojo will lookup that
-  plugin and output details about it. If the user also specifies which <<<mojo>>> to describe, the <<<describe>>>
-  mojo will limit output to the details of that mojo, including parameters.
+  a <<<plugin>>> or a <<<groupId>>>, an <<<artifactId>>> and optionally a <<<version>>>, the goal will lookup that
+  plugin and output details about it. If the user also specifies which <<<goal>>> to describe, the <<<describe>>>
+  goal will limit output to the details of that goal, including parameters.
 
   You can execute this goal using the following command:
 
@@ -143,6 +143,6 @@ null object or invalid expression
  The <<<artifact>>> parameter refers to ask expressions on the artifact POM. If omitted, the evaluate goal uses the current
  pom.
 
- You could ask for all Maven expressions listed in the Javadoc of the 
+ You could ask for all Maven expressions listed in the Javadoc of the
  {{{/ref/current/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html}
  <<<PluginParameterExpressionEvaluator>>>}} class.

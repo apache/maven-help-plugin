@@ -63,15 +63,15 @@ Configuring Describe Goal
 # mvn help:describe -Dplugin=help
 +---+
 
-* The <<<mojo>>> Parameter
+* The <<<goal>>> Parameter
 
- You can use the <<<mojo>>> parameter of the <<<describe>>> goal to show or display relative information about a
+ You can use the <<<goal>>> parameter of the <<<describe>>> goal to show or display relative information about a
  particular goal of the plugin you specified.
 
  For example, when you execute the following command:
 
 +-----+
-# mvn help:describe -Dmojo=describe -DgroupId=org.apache.maven.plugins -DartifactId=maven-help-plugin
+# mvn help:describe -Dgoal=describe -DgroupId=org.apache.maven.plugins -DartifactId=maven-help-plugin
 +-----+
 
  This would display brief information about the <<<describe>>> goal only.
@@ -173,7 +173,7 @@ For more information, run 'mvn help:describe [...] -Ddetail'
 ...
 +-----+
 
- The <<<medium>>> parameter is the default since 2.1 and adds a list with the mojos of the plugin and their
+ The <<<medium>>> parameter is the default since 2.1 and adds a list with the goals of the plugin and their
  descriptions:
 
 +-----+
@@ -242,7 +242,7 @@ For more information, run 'mvn help:describe [...] -Ddetail'
 ...
 +-----+
 
- The <<<full>>> parameter also displays information about the mojos's implementation, their parameters and component
+ The <<<full>>> parameter also displays information about the goal's implementation, their parameters and component
  requirements, among others.
 
 +-----+
