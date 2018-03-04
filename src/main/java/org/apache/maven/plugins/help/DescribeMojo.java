@@ -196,14 +196,6 @@ public class DescribeMojo
     private boolean detail;
 
     /**
-     * This flag specifies that a medium list of goal (Mojo) information should be given.
-     *
-     * @since 2.0.2
-     */
-    @org.apache.maven.plugins.annotations.Parameter( property = "medium", defaultValue = "true" )
-    private boolean medium;
-
-    /**
      * This flag specifies that a minimal list of goal (Mojo) information should be given.
      *
      * @since 2.1
@@ -472,7 +464,7 @@ public class DescribeMojo
             return;
         }
 
-        if ( ( detail || medium ) && !minimal )
+        if ( !minimal )
         {
             append( buffer, "This plugin has " + mojos.size() + " goal" + ( mojos.size() > 1 ? "s" : "" ) + ":", 0 );
             buffer.append( LS );
@@ -482,15 +474,7 @@ public class DescribeMojo
 
             for ( MojoDescriptor md : mojos )
             {
-                if ( detail )
-                {
-                    describeMojoGuts( md, buffer, true );
-                }
-                else
-                {
-                    describeMojoGuts( md, buffer, false );
-                }
-
+                describeMojoGuts( md, buffer, detail );
                 buffer.append( LS );
             }
         }
