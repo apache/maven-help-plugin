@@ -190,9 +190,9 @@ public class DescribeMojo
     /**
      * This flag specifies that a detailed (verbose) list of goal (Mojo) information should be given.
      *
-     * @since 2.1, was <code>full</code> in 2.0.x
+     * @since 2.1
      */
-    @org.apache.maven.plugins.annotations.Parameter( property = "detail", defaultValue = "false", alias = "full" )
+    @org.apache.maven.plugins.annotations.Parameter( property = "detail", defaultValue = "false" )
     private boolean detail;
 
     /**
@@ -231,8 +231,6 @@ public class DescribeMojo
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
-        validateParameters();
-
         StringBuilder descriptionBuffer = new StringBuilder();
 
         boolean describePlugin = true;
@@ -267,25 +265,6 @@ public class DescribeMojo
     // ----------------------------------------------------------------------
     // Private methods
     // ----------------------------------------------------------------------
-
-    /**
-     * Validate parameters
-     */
-    private void validateParameters()
-    {
-        // support legacy parameter "full"
-
-        if ( !detail && session.getUserProperties().get( "full" ) != null )
-        {
-            String full = session.getUserProperties().getProperty( "full" );
-            detail = Boolean.parseBoolean( full );
-        }
-
-        if ( detail || minimal )
-        {
-            medium = false;
-        }
-    }
 
     /**
      * Method to write the Mojo description into the output file

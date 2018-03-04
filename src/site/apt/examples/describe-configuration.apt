@@ -147,9 +147,9 @@ For more information, run 'mvn help:describe [...] -Ddetail'
 ...
 +-----+
 
-* The <<<minimal>>>, <<<medium>>> and <<<full>>> Parameters
+* The <<<minimal>>>, <<<medium>>> and <<<detail>>> Parameters
 
- If you want to display less or more detailed information, you can use the <<<minimal>>>, <<<medium>>> or <<<full>>>
+ If you want to display less or more detailed information, you can use the <<<minimal>>>, or <<<detail>>>
  parameters.
 
  The <<<minimal>>> parameter adds a minimal list of information:
@@ -242,11 +242,11 @@ For more information, run 'mvn help:describe [...] -Ddetail'
 ...
 +-----+
 
- The <<<full>>> parameter also displays information about the goal's implementation, their parameters and component
+ The <<<detail>>> parameter also displays information about the goal's implementation, their parameters and component
  requirements, among others.
 
 +-----+
-# mvn help:describe -Dplugin=help -Dfull=true
+# mvn help:describe -Dplugin=help -Ddetail=true
 +-----+
 
   <<Note>>: The <<<medium>>> parameter was added in version 2.0.2 and the <<<minimal>>> parameter was added in version
