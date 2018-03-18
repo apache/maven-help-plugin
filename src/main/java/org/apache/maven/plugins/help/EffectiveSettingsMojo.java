@@ -101,7 +101,7 @@ public class EffectiveSettingsMojo
 
         writeEffectiveSettings( copySettings, writer );
 
-        String effectiveSettings = prettyFormat( w.toString(), encoding );
+        String effectiveSettings = prettyFormat( w.toString(), encoding, false );
 
         if ( output != null )
         {
@@ -240,7 +240,8 @@ public class EffectiveSettingsMojo
             throw new MojoExecutionException( "Cannot serialize Settings to XML.", e );
         }
 
-        String effectiveSettings = sWriter.toString();
+        // This removes the XML declaration written by MavenXpp3Writer
+        String effectiveSettings = prettyFormat( sWriter.toString(), null, true );
 
         writeComment( writer, "Effective Settings for '" + getUserName() + "' on '" + getHostName() + "'" );
 

@@ -120,7 +120,7 @@ public class EffectivePomMojo
             writeEffectivePom( project, writer );
         }
 
-        String effectivePom = prettyFormat( w.toString(), encoding );
+        String effectivePom = prettyFormat( w.toString(), encoding, false );
 
         if ( output != null )
         {
@@ -192,7 +192,8 @@ public class EffectivePomMojo
             throw new MojoExecutionException( "Cannot serialize POM to XML.", e );
         }
 
-        String effectivePom = sWriter.toString();
+        // This removes the XML declaration written by MavenXpp3Writer
+        String effectivePom = prettyFormat( sWriter.toString(), null, true );
 
         writeComment( writer, "Effective POM for project \'" + project.getId() + "\'" );
 

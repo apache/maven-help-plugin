@@ -122,9 +122,10 @@ public abstract class AbstractEffectiveMojo
     /**
      * @param effectiveModel not null
      * @param encoding not null
+     * @param omitDeclaration whether the XML declaration should be omitted from the effective pom
      * @return pretty format of the xml or the original {@code effectiveModel} if an error occurred.
      */
-    protected static String prettyFormat( String effectiveModel, String encoding )
+    protected static String prettyFormat( String effectiveModel, String encoding, boolean omitDeclaration )
     {
         SAXBuilder builder = new SAXBuilder();
 
@@ -140,6 +141,7 @@ public abstract class AbstractEffectiveMojo
                 format.setEncoding( encoding );
             }
             format.setLineSeparator( System.lineSeparator() );
+            format.setOmitDeclaration( omitDeclaration );
             XMLOutputter out = new XMLOutputter( format );
             out.output( effectiveDocument, w );
 
