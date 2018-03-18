@@ -134,7 +134,11 @@ public abstract class AbstractEffectiveMojo
 
             StringWriter w = new StringWriter();
             Format format = Format.getPrettyFormat();
-            format.setEncoding( encoding );
+            if ( encoding != null )
+            {
+                // This is a design flaw in JDOM, no NPE on null arguments, but null is not prohibited
+                format.setEncoding( encoding );
+            }
             format.setLineSeparator( System.lineSeparator() );
             XMLOutputter out = new XMLOutputter( format );
             out.output( effectiveDocument, w );
