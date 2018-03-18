@@ -68,7 +68,8 @@ public class ActiveProfilesMojo
 
         if ( output != null )
         {
-            String formattedDateTime = DateFormatUtils.ISO_DATETIME_FORMAT.format( System.currentTimeMillis() );
+            String formattedDateTime = DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT
+                .format( System.currentTimeMillis() );
             StringBuilder sb = new StringBuilder();
             sb.append( "Created by: " ).append( getClass().getName() ).append( LS );
             sb.append( "Created on: " ).append( formattedDateTime ).append( LS ).append( LS );
@@ -104,7 +105,7 @@ public class ActiveProfilesMojo
     private void getActiveProfileStatement( MavenProject project, StringBuilder message )
     {
         Map<String, List<String>> activeProfileIds = project.getInjectedProfileIds();
-        
+
         message.append( LS );
         message.append( "Active Profiles for Project \'" ).append( project.getId() ).append( "\':" );
         message.append( LS ).append( LS );
