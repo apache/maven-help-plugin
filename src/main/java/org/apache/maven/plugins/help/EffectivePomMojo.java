@@ -181,8 +181,6 @@ public class EffectivePomMojo
         Model pom = project.getModel();
         cleanModel( pom );
 
-        String effectivePom;
-
         StringWriter sWriter = new StringWriter();
         MavenXpp3Writer pomWriter = new MavenXpp3Writer();
         try
@@ -194,7 +192,7 @@ public class EffectivePomMojo
             throw new MojoExecutionException( "Cannot serialize POM to XML.", e );
         }
 
-        effectivePom = addMavenNamespace( sWriter.toString(), true );
+        String effectivePom = sWriter.toString();
 
         writeComment( writer, "Effective POM for project \'" + project.getId() + "\'" );
 

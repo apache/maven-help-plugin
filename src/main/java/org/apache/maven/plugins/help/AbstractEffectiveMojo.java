@@ -26,7 +26,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
@@ -38,10 +37,7 @@ import org.codehaus.plexus.util.WriterFactory;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
 import org.jdom.Document;
-import org.jdom.Element;
 import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.jdom.filter.ElementFilter;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
@@ -56,12 +52,6 @@ import org.jdom.output.XMLOutputter;
 public abstract class AbstractEffectiveMojo
     extends AbstractHelpMojo
 {
-    /** The POM XSD URL */
-    private static final String POM_XSD_URL = "http://maven.apache.org/maven-v4_0_0.xsd";
-
-    /** The Settings XSD URL */
-    private static final String SETTINGS_XSD_URL = "http://maven.apache.org/xsd/settings-1.0.0.xsd";
-
     /**
      * Utility method to write an XML content in a given file.
      *
@@ -127,61 +117,6 @@ public abstract class AbstractEffectiveMojo
         XmlWriterUtil.writeComment( writer, comment );
         XmlWriterUtil.writeComment( writer, " " );
         XmlWriterUtil.writeCommentLineBreak( writer );
-    }
-
-    /**
-     * Add a Pom/Settings namespaces to the effective XML content.
-     *
-     * @param effectiveXml not null the effective POM or Settings
-     * @param isPom if <code>true</code> add the Pom xsd url, otherwise add the settings xsd url.
-     * @return the content of the root element, i.e. &lt;project/&gt; or &lt;settings/&gt; with the Maven namespace or
-     *         the original <code>effective</code> if an error occurred.
-     * @see #POM_XSD_URL
-     * @see #SETTINGS_XSD_URL
-     */
-    protected static String addMavenNamespace( String effectiveXml, boolean isPom )
-    {
-        SAXBuilder builder = new SAXBuilder();
-
-        try
-        {
-            Document document = builder.build( new StringReader( effectiveXml ) );
-            Element rootElement = document.getRootElement();
-
-            // added namespaces
-            Namespace pomNamespace = Namespace.getNamespace( "", "http://maven.apache.org/POM/4.0.0" );
-            rootElement.setNamespace( pomNamespace );
-
-            Namespace xsiNamespace = Namespace.getNamespace( "xsi", "http://www.w3.org/2001/XMLSchema-instance" );
-            rootElement.addNamespaceDeclaration( xsiNamespace );
-            if ( rootElement.getAttribute( "schemaLocation", xsiNamespace ) == null )
-            {
-                rootElement.setAttribute( "schemaLocation", "http://maven.apache.org/POM/4.0.0 "
-                    + ( isPom ? POM_XSD_URL : SETTINGS_XSD_URL ), xsiNamespace );
-            }
-
-            ElementFilter elementFilter = new ElementFilter( Namespace.getNamespace( "" ) );
-            for ( Iterator<?> i = rootElement.getDescendants( elementFilter ); i.hasNext(); )
-            {
-                Element e = (Element) i.next();
-                e.setNamespace( pomNamespace );
-            }
-
-            StringWriter w = new StringWriter();
-            Format format = Format.getPrettyFormat();
-            XMLOutputter out = new XMLOutputter( format );
-            out.output( document.getRootElement(), w );
-
-            return w.toString();
-        }
-        catch ( JDOMException e )
-        {
-            return effectiveXml;
-        }
-        catch ( IOException e )
-        {
-            return effectiveXml;
-        }
     }
 
     /**

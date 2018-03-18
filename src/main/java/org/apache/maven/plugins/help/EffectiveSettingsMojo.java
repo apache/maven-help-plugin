@@ -229,8 +229,6 @@ public class EffectiveSettingsMojo
     {
         cleanSettings( settings );
 
-        String effectiveSettings;
-
         StringWriter sWriter = new StringWriter();
         SettingsXpp3Writer settingsWriter = new SettingsXpp3Writer();
         try
@@ -242,7 +240,7 @@ public class EffectiveSettingsMojo
             throw new MojoExecutionException( "Cannot serialize Settings to XML.", e );
         }
 
-        effectiveSettings = addMavenNamespace( sWriter.toString(), false );
+        String effectiveSettings = sWriter.toString();
 
         writeComment( writer, "Effective Settings for '" + getUserName() + "' on '" + getHostName() + "'" );
 
