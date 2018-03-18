@@ -31,14 +31,8 @@ import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
-import org.jdom.Document;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Properties;
@@ -111,7 +105,6 @@ public class EffectivePomMojo
 
         writeHeader( writer );
 
-        String effectivePom;
         if ( shouldWriteAllEffectivePOMsInReactor() )
         {
             // outer root element
@@ -121,16 +114,13 @@ public class EffectivePomMojo
                 writeEffectivePom( subProject, writer );
             }
             writer.endElement();
-
-            effectivePom = w.toString();
-            effectivePom = prettyFormat( effectivePom, encoding );
         }
         else
         {
             writeEffectivePom( project, writer );
-
-            effectivePom = w.toString();
         }
+
+        String effectivePom = prettyFormat( w.toString(), encoding );
 
         if ( output != null )
         {
@@ -221,37 +211,5 @@ public class EffectivePomMojo
         Properties properties = new SortedProperties();
         properties.putAll( pom.getProperties() );
         pom.setProperties( properties );
-    }
-
-    /**
-     * @param effectivePom not null
-     * @param encoding not null
-     * @return pretty format of the xml  or the original <code>effectivePom</code> if an error occurred.
-     */
-    private static String prettyFormat( String effectivePom, String encoding )
-    {
-        SAXBuilder builder = new SAXBuilder();
-
-        try
-        {
-            Document effectiveDocument = builder.build( new StringReader( effectivePom ) );
-
-            StringWriter w = new StringWriter();
-            Format format = Format.getPrettyFormat();
-            format.setEncoding( encoding );
-            format.setLineSeparator( System.lineSeparator() );
-            XMLOutputter out = new XMLOutputter( format );
-            out.output( effectiveDocument, w );
-
-            return w.toString();
-        }
-        catch ( JDOMException e )
-        {
-            return effectivePom;
-        }
-        catch ( IOException e )
-        {
-            return effectivePom;
-        }
     }
 }

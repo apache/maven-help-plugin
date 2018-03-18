@@ -112,8 +112,6 @@ public abstract class AbstractEffectiveMojo
         XmlWriterUtil.writeComment( writer, "See: http://maven.apache.org/plugins/maven-help-plugin/" );
         XmlWriterUtil.writeComment( writer, " " );
         XmlWriterUtil.writeCommentLineBreak( writer );
-
-        XmlWriterUtil.writeLineBreak( writer );
     }
 
     /**
@@ -129,8 +127,6 @@ public abstract class AbstractEffectiveMojo
         XmlWriterUtil.writeComment( writer, comment );
         XmlWriterUtil.writeComment( writer, " " );
         XmlWriterUtil.writeCommentLineBreak( writer );
-
-        XmlWriterUtil.writeLineBreak( writer );
     }
 
     /**
@@ -185,6 +181,38 @@ public abstract class AbstractEffectiveMojo
         catch ( IOException e )
         {
             return effectiveXml;
+        }
+    }
+
+    /**
+     * @param effectiveModel not null
+     * @param encoding not null
+     * @return pretty format of the xml or the original {@code effectiveModel} if an error occurred.
+     */
+    protected static String prettyFormat( String effectiveModel, String encoding )
+    {
+        SAXBuilder builder = new SAXBuilder();
+
+        try
+        {
+            Document effectiveDocument = builder.build( new StringReader( effectiveModel ) );
+
+            StringWriter w = new StringWriter();
+            Format format = Format.getPrettyFormat();
+            format.setEncoding( encoding );
+            format.setLineSeparator( System.lineSeparator() );
+            XMLOutputter out = new XMLOutputter( format );
+            out.output( effectiveDocument, w );
+
+            return w.toString();
+        }
+        catch ( JDOMException e )
+        {
+            return effectiveModel;
+        }
+        catch ( IOException e )
+        {
+            return effectiveModel;
         }
     }
 

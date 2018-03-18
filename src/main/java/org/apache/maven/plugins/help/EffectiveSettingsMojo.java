@@ -101,7 +101,7 @@ public class EffectiveSettingsMojo
 
         writeEffectiveSettings( copySettings, writer );
 
-        String effectiveSettings = w.toString();
+        String effectiveSettings = prettyFormat( w.toString(), encoding );
 
         if ( output != null )
         {
