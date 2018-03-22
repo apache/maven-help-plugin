@@ -32,7 +32,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.WriterFactory;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
@@ -57,7 +56,6 @@ public abstract class AbstractEffectiveMojo
      *
      * @param output is the wanted output file.
      * @param content contains the XML content to be written to the file.
-     * @param encoding is the wanted encoding to use when writing file.
      * @throws IOException if any
      * @see AbstractHelpMojo#writeFile(File, String) if encoding is null.
      */
@@ -69,21 +67,11 @@ public abstract class AbstractEffectiveMojo
             return;
         }
 
-        Writer out = null;
-        try
+        output.getParentFile().mkdirs();
+
+        try ( Writer out = WriterFactory.newXmlWriter( output ) )
         {
-            output.getParentFile().mkdirs();
-
-            out = WriterFactory.newXmlWriter( output );
-
             out.write( content );
-
-            out.close();
-            out = null;
-        }
-        finally
-        {
-            IOUtil.close( out );
         }
     }
 
