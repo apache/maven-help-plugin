@@ -107,10 +107,27 @@ public class EvaluateMojo
     private File output;
 
     /**
-     * An artifact for evaluating Maven expressions.
-     * <br/>
-     * <b>Note</b>: Should respect the Maven format, i.e. <code>groupId:artifactId[:version]</code>. The
-     * latest version of the artifact will be used when no version is specified.
+     * This options gives the option to output information in cases where the output has been suppressed by using
+     * <code>-q</code> (quiet option) in Maven. This is useful if you like to use
+     * <code>maven-help-plugin:evaluate</code> in a script call (for example in bash) like this:
+     * 
+     * <pre>
+     * RESULT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+     * echo $RESULT
+     * </pre>
+     * 
+     * This will only printout the information which has been requested by <code>expression</code> to
+     * <code>stdout</code>.
+     * 
+     * @since 3.1.0
+     */
+    @Parameter( property = "forceStdout", defaultValue = "false" )
+    private boolean forceStdout;
+
+    /**
+     * An artifact for evaluating Maven expressions. <br/>
+     * <b>Note</b>: Should respect the Maven format, i.e. <code>groupId:artifactId[:version]</code>. The latest version
+     * of the artifact will be used when no version is specified.
      */
     @Parameter( property = "artifact" )
     private String artifact;
@@ -379,7 +396,17 @@ public class EvaluateMojo
         }
         else
         {
-            getLog().info( LS + response.toString() );
+            if ( getLog().isInfoEnabled() )
+            {
+                getLog().info( LS + response.toString() );
+            }
+            else
+            {
+                if ( forceStdout )
+                {
+                    System.out.print( response.toString() );
+                }
+            }
         }
     }
 

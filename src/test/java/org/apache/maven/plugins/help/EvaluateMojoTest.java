@@ -19,13 +19,15 @@ package org.apache.maven.plugins.help;
  * under the License.
  */
 
-import static org.mockito.Mockito.anyString;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -116,6 +118,47 @@ public class EvaluateMojoTest
         verify( inputHandler, times( 2 ) ).readLine();
     }
 
+    /**
+     * This test will check that only the <code>project.groupId</code> is printed to
+     * stdout nothing else.
+     * 
+     * @throws Exception in case of errors.
+     * @see <a href="https://issues.apache.org/jira/browse/MPH-144">MPH-144</a>
+     */
+    public void testEvaluateQuiteModeWithOutputOnStdout()
+        throws Exception
+    {
+        File testPom = new File( getBasedir(), "target/test-classes/unit/evaluate/plugin-config-quiet-stdout.xml" );
+
+        EvaluateMojo mojo = (EvaluateMojo) lookupMojo( "evaluate", testPom );
+
+        ExpressionEvaluator expressionEvaluator = mock( PluginParameterExpressionEvaluator.class );
+        when( expressionEvaluator.evaluate( anyString() ) ).thenReturn( "org.apache.maven.its.help" );
+
+        // Quiet mode given on command line.(simulation)
+        interceptingLogger.setInfoEnabled( false );
+
+        setUpMojo( mojo, null, expressionEvaluator );
+
+        PrintStream saveOut = System.out;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut( new PrintStream( baos ) );
+
+        try
+        {
+            mojo.execute();
+        }
+        finally
+        {
+            System.setOut( saveOut );
+            baos.close();
+        }
+
+        String stdResult = new String( baos.toByteArray() );
+        assertTrue( stdResult.equals( "org.apache.maven.its.help" ) );
+        assertTrue( interceptingLogger.warnLogs.isEmpty() );
+    }
+
     private void setUpMojo( EvaluateMojo mojo, InputHandler inputHandler, ExpressionEvaluator expressionEvaluator )
         throws IllegalAccessException
     {
@@ -129,21 +172,38 @@ public class EvaluateMojoTest
     private static final class InterceptingLog
         extends DefaultLog
     {
+        private boolean isInfoEnabled;
+
         List<String> infoLogs = new ArrayList<String>();
+
         List<String> warnLogs = new ArrayList<String>();
 
         public InterceptingLog( Logger logger )
         {
             super( logger );
+            this.isInfoEnabled = true;
+        }
+
+        public void setInfoEnabled( boolean isInfoEnabled )
+        {
+            this.isInfoEnabled = isInfoEnabled;
+        }
+
+        public boolean isInfoEnabled()
+        {
+            return isInfoEnabled;
         }
 
         @Override
         public void info( CharSequence content )
         {
-            super.info( content );
-            infoLogs.add( content.toString() );
+            if ( this.isInfoEnabled )
+            {
+                super.info( content );
+                infoLogs.add( content.toString() );
+            }
         }
-        
+
         @Override
         public void warn( CharSequence content )
         {
