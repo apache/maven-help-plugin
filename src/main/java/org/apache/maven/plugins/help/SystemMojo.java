@@ -32,7 +32,6 @@ import java.util.Properties;
  * Displays a list of the platform details like system properties and environment variables.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  * @since 2.1
  */
 @Mojo( name = "system", requiresProject = false )

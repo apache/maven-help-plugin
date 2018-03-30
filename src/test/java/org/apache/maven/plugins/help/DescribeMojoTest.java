@@ -45,7 +45,6 @@ import junit.framework.TestCase;
 import junitx.util.PrivateAccessor;
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  */
 public class DescribeMojoTest
     extends TestCase

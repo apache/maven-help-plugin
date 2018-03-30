@@ -45,7 +45,6 @@ import org.codehaus.plexus.util.xml.XmlWriterUtil;
  * Displays the calculated settings as XML for this project, given any profile enhancement and the inheritance
  * of the global settings into the user-level settings.
  *
- * @version $Id$
  * @since 2.0
  */
 @Mojo( name = "effective-settings", requiresProject = false )

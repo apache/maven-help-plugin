@@ -67,7 +67,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
  * Evaluates Maven expressions given by the user in an interactive mode.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  * @since 2.1
  */
 @Mojo( name = "evaluate", requiresProject = false )

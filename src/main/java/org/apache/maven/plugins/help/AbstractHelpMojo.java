@@ -47,7 +47,6 @@ import org.codehaus.plexus.util.WriterFactory;
  * Base class with some Help Mojo functionalities.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  * @since 2.1
  */
 public abstract class AbstractHelpMojo

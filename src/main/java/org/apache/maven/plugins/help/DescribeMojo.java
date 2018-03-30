@@ -64,7 +64,6 @@ import org.codehaus.plexus.util.StringUtils;
 /**
  * Displays a list of the attributes for a Maven Plugin and/or goals (aka Mojo - Maven plain Old Java Object).
  *
- * @version $Id$
  * @see <a href="http://maven.apache.org/general.html#What_is_a_Mojo">What is a Mojo?</a>
  * @since 2.0
  */

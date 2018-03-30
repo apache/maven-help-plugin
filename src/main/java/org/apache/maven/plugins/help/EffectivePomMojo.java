@@ -19,6 +19,11 @@ package org.apache.maven.plugins.help;
  * under the License.
  */
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.MojoExecution;
@@ -32,15 +37,9 @@ import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.List;
-import java.util.Properties;
-
 /**
  * Displays the effective POM as an XML for this build, with the active profiles factored in, or a specified artifact.
  *
- * @version $Id$
  * @since 2.0
  */
 @Mojo( name = "effective-pom", aggregator = true )

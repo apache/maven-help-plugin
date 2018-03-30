@@ -32,7 +32,6 @@ import org.apache.maven.project.MavenProject;
 /**
  * Displays a list of the profiles which are currently active for this build.
  *
- * @version $Id$
  * @since 2.0
  */
 @Mojo( name = "active-profiles", aggregator = true )

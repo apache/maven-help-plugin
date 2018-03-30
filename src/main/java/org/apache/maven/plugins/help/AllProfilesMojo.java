@@ -19,6 +19,11 @@ package org.apache.maven.plugins.help;
  * under the License.
  */
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.maven.model.Profile;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -26,11 +31,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.SettingsUtils;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Displays a list of available profiles under the current project.
@@ -40,7 +40,6 @@ import java.util.Map;
  * set profile activation switches/property.
  *
  * @author <a href="mailto:rahul.thakur.xdev@gmail.com">Rahul Thakur</a>
- * @version $Id$
  * @since 2.1
  */
 @Mojo( name = "all-profiles", requiresProject = false )

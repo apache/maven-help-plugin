@@ -46,7 +46,6 @@ import org.jdom.output.XMLOutputter;
  * Base class with common utilities to write effective Pom/settings.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  * @since 2.1
  */
 public abstract class AbstractEffectiveMojo
@@ -57,7 +56,6 @@ public abstract class AbstractEffectiveMojo
      *
      * @param output is the wanted output file.
      * @param content contains the XML content to be written to the file.
-     * @param encoding is the wanted encoding to use when writing file.
      * @throws IOException if any
      * @see AbstractHelpMojo#writeFile(File, String) if encoding is null.
      */
