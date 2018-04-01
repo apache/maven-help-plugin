@@ -17,14 +17,17 @@
 Contributing to Apache Maven Help Plugin
 ======================
 
+[![Apache License, Version 2.0, January 2004](https://img.shields.io/github/license/apache/maven.svg?label=License)][license]
+[![Maven Central](https://img.shields.io/maven-central/v/org.apache.maven.plugins/maven-help-plugin.svg?label=Maven%20Central)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.apache.maven.plugins%22%20AND%20a%3A%22maven-help-plugin%22)
+[![Jenkins Status](https://img.shields.io/jenkins/s/https/builds.apache.org/job/maven-box/job/maven-help-plugin/job/master.svg?style=flat-square)][build]
+[![Jenkins tests](https://img.shields.io/jenkins/t/https/builds.apache.org/job/maven-box/job/maven-help-plugin/job/master.svg?style=flat-square)][test-results]
+
+
 You have found a bug or you have an idea for a cool new feature? Contributing
 code is a great way to give something back to the open source community. Before
 you dig right into the code, there are a few guidelines that we need
 contributors to follow so that we can have a chance of keeping on top of
 things.
-
-Some of the ideas are documented in the [Maven Wiki][maven-wiki]
-which might be interesting to read and for further discussion.
 
 Getting Started
 ---------------
@@ -85,7 +88,10 @@ Additional Resources
 + [Apache Maven Twitter Account](https://twitter.com/ASFMavenProject)
 + #Maven IRC channel on freenode.org
 
+[license]: https://www.apache.org/licenses/LICENSE-2.0
 [dev-ml-list]: https://maven.apache.org/mail-lists.html
 [code-style]: https://maven.apache.org/developers/conventions/code.html
 [cla]: https://www.apache.org/licenses/#clas
 [maven-wiki]: https://cwiki.apache.org/confluence/display/MAVEN/Index
+[test-results]: https://builds.apache.org/job/maven-box/job/maven-help-plugin/job/master/lastCompletedBuild/testReport/
+[build]: https://builds.apache.org/job/maven-box/job/maven-help-plugin/job/master/
