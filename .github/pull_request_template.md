@@ -13,7 +13,7 @@ contribution quickly and easily:
  - [ ] Write a pull request description that is detailed enough to understand what the pull request does, how, and why.
  - [ ] Run `mvn clean verify` to make sure basic checks pass. A more thorough check will 
        be performed on your pull request automatically.
- - [ ] You have run the [Core IT][core-its] successfully.
+ - [ ] You have run the integration tests successfully (`mvn -Prun-its clean verify`).
 
 If your pull request is about ~20 lines of code you don't need to sign an
 [Individual Contributor License Agreement](https://www.apache.org/licenses/icla.pdf) if you are unsure
@@ -27,4 +27,3 @@ you have to acknowledge this by using the following check-box.
 
  - [ ] In any other case, please file an [Apache Individual Contributor License Agreement](https://www.apache.org/licenses/icla.pdf).
 
-[core-its]: https://maven.apache.org/core-its/core-it-suite/
