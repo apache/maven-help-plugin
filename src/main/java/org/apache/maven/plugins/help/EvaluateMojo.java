@@ -404,6 +404,7 @@ public class EvaluateMojo
                 if ( forceStdout )
                 {
                     System.out.print( response.toString() );
+                    System.out.flush();
                 }
             }
         }
