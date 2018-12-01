@@ -56,7 +56,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.reporting.exec.MavenPluginManagerHelper;
-import org.apache.maven.shared.artifact.ArtifactCoordinate;
+import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
 import org.apache.maven.tools.plugin.generator.GeneratorUtils;
 import org.apache.maven.tools.plugin.util.PluginUtils;
 import org.codehaus.plexus.util.StringUtils;
