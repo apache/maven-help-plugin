@@ -19,8 +19,8 @@ package org.apache.maven.plugins.help;
  * under the License.
  */
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -40,9 +40,9 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.exec.MavenPluginManagerHelper;
 import org.mockito.ArgumentCaptor;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 import junitx.util.PrivateAccessor;
+
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  */
@@ -66,7 +66,7 @@ public class DescribeMojoTest
         }
         catch ( Throwable e )
         {
-            Assert.fail( "The API changes" );
+            fail( "The API changes" );
         }
     }
     
