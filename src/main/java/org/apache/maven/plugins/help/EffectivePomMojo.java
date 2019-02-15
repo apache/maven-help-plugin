@@ -24,8 +24,11 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.InputSource;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
+import org.apache.maven.model.io.xpp3.MavenXpp3WriterExOldSupport;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecution.Source;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -82,6 +85,14 @@ public class EffectivePomMojo
     @Parameter( property = "artifact" )
     private String artifact;
 
+    /**
+     * Output POM input location as comments.
+     * 
+     * @since 3.2.0
+     */
+    @Parameter( property = "verbose", defaultValue = "false" )
+    private boolean verbose = false;
+
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
@@ -120,6 +131,11 @@ public class EffectivePomMojo
         }
 
         String effectivePom = prettyFormat( w.toString(), encoding, false );
+        if ( verbose )
+        {
+            // tweak location tracking comment, that are put on a separate line by pretty print
+            effectivePom = effectivePom.replaceAll( "(?m)>\\s+<!--}", ">  <!-- " );
+        }
 
         if ( output != null )
         {
@@ -174,17 +190,25 @@ public class EffectivePomMojo
      * @param writer the XML writer , not null, not null.
      * @throws MojoExecutionException if any
      */
-    private static void writeEffectivePom( MavenProject project, XMLWriter writer )
+    private void writeEffectivePom( MavenProject project, XMLWriter writer )
         throws MojoExecutionException
     {
         Model pom = project.getModel();
         cleanModel( pom );
 
         StringWriter sWriter = new StringWriter();
-        MavenXpp3Writer pomWriter = new MavenXpp3Writer();
         try
         {
-            pomWriter.write( sWriter, pom );
+            if ( verbose )
+            {
+                // use local xpp3 extended writer when not provided by Maven core
+                new EffectiveWriterExOldSupport().write( sWriter, pom );
+                // TODO detect Maven core-provided xpp3 extended writer and use it instead
+            }
+            else
+            {
+                new MavenXpp3Writer().write( sWriter, pom );
+            }
         }
         catch ( IOException e )
         {
@@ -209,5 +233,28 @@ public class EffectivePomMojo
         Properties properties = new SortedProperties();
         properties.putAll( pom.getProperties() );
         pom.setProperties( properties );
+    }
+
+    /**
+     * Xpp3 extended writer extension to improve default InputSource display
+     */
+    private static class EffectiveWriterExOldSupport
+        extends MavenXpp3WriterExOldSupport
+    {
+        @Override
+        protected String toString( InputLocation location )
+        {
+            InputSource source = location.getSource();
+
+            String s = source.getModelId(); // by default, display modelId
+
+            if ( StringUtils.isBlank( s ) || s.contains( "[unknown-version]" ) )
+            {
+                // unless it is blank or does not provide version information
+                s = source.toString();
+            }
+
+            return '}' + s + ( ( location.getLineNumber() >= 0 ) ? ", line " + location.getLineNumber() : "" ) + ' ';
+        }
     }
 }
