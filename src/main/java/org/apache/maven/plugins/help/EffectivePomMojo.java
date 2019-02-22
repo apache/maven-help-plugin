@@ -35,6 +35,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
@@ -152,6 +153,16 @@ public class EffectivePomMojo
         }
         else
         {
+            if ( MessageUtils.isColorEnabled() )
+            {
+                // add color to comments
+                String comment = MessageUtils.buffer().project( "<!--.-->" ).toString();
+                int dotIndex = comment.indexOf( "." );
+                String commentStart = comment.substring( 0, dotIndex );
+                String commentEnd = comment.substring( dotIndex + 1 );
+                effectivePom = effectivePom.replaceAll( "<!--", commentStart ).replaceAll( "-->", commentEnd );
+            }
+
             StringBuilder message = new StringBuilder();
 
             message.append( LS );
