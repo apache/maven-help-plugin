@@ -21,6 +21,9 @@ package org.apache.maven.plugins.help;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
 
@@ -40,6 +43,8 @@ import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.codehaus.plexus.util.xml.pull.XmlSerializer;
 
 /**
  * Displays the effective POM as an XML for this build, with the active profiles factored in, or a specified artifact.
@@ -212,9 +217,12 @@ public class EffectivePomMojo
         {
             if ( verbose )
             {
-                // use local xpp3 extended writer when not provided by Maven core
-                new EffectiveWriterExOldSupport().write( sWriter, pom );
-                // TODO detect Maven core-provided xpp3 extended writer and use it instead
+                // try to use Maven core-provided xpp3 extended writer (available since Maven 3.6.1)
+                if ( ! writeMavenXpp3WriterEx( sWriter, pom ) )
+                {
+                    // xpp3 extended writer not provided by Maven core, use local code
+                    new EffectiveWriterExOldSupport().write( sWriter, pom );
+                }
             }
             else
             {
@@ -246,26 +254,114 @@ public class EffectivePomMojo
         pom.setProperties( properties );
     }
 
+    private void warnWriteMavenXpp3WriterEx( Throwable t )
+    {
+        getLog().warn( "Unexpected exception while running Maven Model Extended Writer, "
+            + "falling back to old internal implementation.", t );
+    }
+
+    private boolean writeMavenXpp3WriterEx( Writer writer, Model model )
+        throws IOException
+    {
+        try
+        {
+            Class<?> mavenXpp3WriterExClass = Class.forName( "org.apache.maven.model.io.xpp3.MavenXpp3WriterEx" );
+            Object mavenXpp3WriterEx = mavenXpp3WriterExClass.newInstance();
+
+            Method setStringFormatter =
+                mavenXpp3WriterExClass.getMethod( "setStringFormatter", InputLocation.StringFormatter.class );
+            setStringFormatter.invoke( mavenXpp3WriterEx, new InputLocationStringFormatter() );
+
+            Method write = mavenXpp3WriterExClass.getMethod( "write", Writer.class, Model.class );
+            write.invoke( mavenXpp3WriterEx, writer, model );
+
+            return true;
+        }
+        catch ( ClassNotFoundException e )
+        {
+            // MavenXpp3WriterEx not available in running Maven version
+        }
+        catch ( NoSuchMethodException e )
+        {
+            warnWriteMavenXpp3WriterEx( e );
+        }
+        catch ( SecurityException e )
+        {
+            warnWriteMavenXpp3WriterEx( e );
+        }
+        catch ( InstantiationException e )
+        {
+            warnWriteMavenXpp3WriterEx( e );
+        }
+        catch ( IllegalAccessException e )
+        {
+            warnWriteMavenXpp3WriterEx( e );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            warnWriteMavenXpp3WriterEx( e );
+        }
+        catch ( InvocationTargetException e )
+        {
+            if ( e.getTargetException() instanceof IOException )
+            {
+                throw (IOException) e.getTargetException();
+            }
+            else if ( e.getTargetException() instanceof RuntimeException )
+            {
+                throw (RuntimeException) e.getTargetException();
+            }
+            warnWriteMavenXpp3WriterEx( e );
+        }
+        return false;
+    }
+
+    private static String toString( InputLocation location )
+    {
+        InputSource source = location.getSource();
+
+        String s = source.getModelId(); // by default, display modelId
+
+        if ( StringUtils.isBlank( s ) || s.contains( "[unknown-version]" ) )
+        {
+            // unless it is blank or does not provide version information
+            s = source.toString();
+        }
+
+        return '}' + s + ( ( location.getLineNumber() >= 0 ) ? ", line " + location.getLineNumber() : "" ) + ' ';
+    }
+
+    private static class InputLocationStringFormatter
+        extends InputLocation.StringFormatter
+    {
+
+        public String toString( InputLocation location )
+        {
+            return EffectivePomMojo.toString( location );
+        }
+
+    }
+
     /**
      * Xpp3 extended writer extension to improve default InputSource display
      */
     private static class EffectiveWriterExOldSupport
         extends MavenXpp3WriterExOldSupport
     {
+
         @Override
-        protected String toString( InputLocation location )
+        public String toString( InputLocation location )
         {
-            InputSource source = location.getSource();
+            return EffectivePomMojo.toString( location );
+        }
 
-            String s = source.getModelId(); // by default, display modelId
-
-            if ( StringUtils.isBlank( s ) || s.contains( "[unknown-version]" ) )
-            {
-                // unless it is blank or does not provide version information
-                s = source.toString();
-            }
-
-            return '}' + s + ( ( location.getLineNumber() >= 0 ) ? ", line " + location.getLineNumber() : "" ) + ' ';
+        @Override
+        protected void writeXpp3DomToSerializer( Xpp3Dom dom, XmlSerializer serializer )
+            throws java.io.IOException
+        {
+            // default method uses Xpp3Dom input location tracking, not available in older Maven versions
+            // use old Xpp3Dom serialization, without input location tracking
+            dom.writeToSerializer( null, serializer );
         }
     }
 }

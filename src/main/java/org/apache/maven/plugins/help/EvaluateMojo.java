@@ -535,7 +535,7 @@ public class EvaluateMojo
                     String name = jarEntry.getName().substring( 0, jarEntry.getName().indexOf( "." ) );
                     name = name.replaceAll( "/", "\\." );
 
-                    if ( name.contains( packageFilter ) )
+                    if ( name.contains( packageFilter ) && !name.contains( "$" ) )
                     {
                         try
                         {
