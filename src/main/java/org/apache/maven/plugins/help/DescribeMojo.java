@@ -57,6 +57,7 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.reporting.exec.MavenPluginManagerHelper;
 import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
+import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.apache.maven.tools.plugin.generator.GeneratorUtils;
 import org.apache.maven.tools.plugin.util.PluginUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -459,13 +460,14 @@ public class DescribeMojo
 
         if ( mojos == null )
         {
-            append( buffer, "This plugin has no goals.", 0 );
+            append( buffer, MessageUtils.buffer().info( "This plugin has no goals." ).toString(), 0 );
             return;
         }
 
         if ( !minimal )
         {
-            append( buffer, "This plugin has " + mojos.size() + " goal" + ( mojos.size() > 1 ? "s" : "" ) + ":", 0 );
+            String description = "This plugin has " + mojos.size() + " goal" + ( mojos.size() > 1 ? "s" : "" ) + ":";
+            append( buffer, MessageUtils.buffer().info( description ).toString(), 0 );
             buffer.append( LS );
 
             mojos = new ArrayList<MojoDescriptor>( mojos );
@@ -521,7 +523,7 @@ public class DescribeMojo
     private void describeMojoGuts( MojoDescriptor md, StringBuilder buffer, boolean fullDescription )
         throws MojoFailureException, MojoExecutionException
     {
-        append( buffer, md.getFullGoalName(), 0 );
+        append( buffer, MessageUtils.buffer().strong( md.getFullGoalName() ).toString(), 0 );
 
         // indent 1
         appendAsParagraph( buffer, "Description", toDescription( md.getDescription() ), 1 );
@@ -534,7 +536,7 @@ public class DescribeMojo
 
         if ( StringUtils.isNotEmpty( deprecation ) )
         {
-            append( buffer, "Deprecated. " + deprecation, 1 );
+            append( buffer, MessageUtils.buffer().warning( "Deprecated. " + deprecation ).toString(), 1 );
         }
 
         if ( isReportGoal( md ) )
@@ -632,13 +634,13 @@ public class DescribeMojo
 
             if ( StringUtils.isNotEmpty( defaultVal ) )
             {
-                defaultVal = " (Default: " + defaultVal + ")";
+                defaultVal = " (Default: " + MessageUtils.buffer().success( defaultVal ).toString() + ")";
             }
             else
             {
                 defaultVal = "";
             }
-            append( buffer, parameter.getName() + defaultVal, 2 );
+            append( buffer, MessageUtils.buffer().project( parameter.getName() ).toString() + defaultVal, 2 );
 
             String alias = parameter.getAlias();
             if ( !StringUtils.isEmpty( alias ) )
@@ -681,7 +683,7 @@ public class DescribeMojo
 
             if ( StringUtils.isNotEmpty( deprecation ) )
             {
-                append( buffer, "Deprecated. " + deprecation, 3 );
+                append( buffer, MessageUtils.buffer().warning( "Deprecated. " + deprecation ).toString(), 3 );
             }
         }
     }
