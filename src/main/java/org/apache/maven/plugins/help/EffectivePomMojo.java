@@ -48,6 +48,7 @@ import org.codehaus.plexus.util.xml.pull.XmlSerializer;
 
 /**
  * Displays the effective POM as an XML for this build, with the active profiles factored in, or a specified artifact.
+ * If <code>verbose</code>, a comment is added to each XML element describing the origin of the line.
  *
  * @since 2.0
  */

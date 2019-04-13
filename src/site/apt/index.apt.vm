@@ -46,7 +46,7 @@ ${project.name}
   Object).
 
   * {{{./effective-pom-mojo.html}help:effective-pom}} displays the effective POM as an XML for the current build, with
-  the active profiles factored in.
+  the active profiles factored in. If <<<verbose>>>, a comment is added to each XML element describing the origin of the line.
 
   * {{{./effective-settings-mojo.html}help:effective-settings}} displays the calculated settings as an XML for the
   project, given any profile enhancement and the inheritance of the global settings into the user-level settings.
