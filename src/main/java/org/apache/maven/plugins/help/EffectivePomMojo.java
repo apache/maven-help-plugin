@@ -24,6 +24,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -111,6 +112,7 @@ public class EffectivePomMojo
         if ( StringUtils.isNotEmpty( artifact ) )
         {
             project = getMavenProject( artifact );
+            projects = Collections.singletonList( project );
         }
 
         StringWriter w = new StringWriter();
