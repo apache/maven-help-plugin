@@ -32,7 +32,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.maven.artifact.Artifact;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.lifecycle.DefaultLifecycles;
 import org.apache.maven.lifecycle.Lifecycle;
 import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
@@ -56,11 +56,12 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.reporting.exec.MavenPluginManagerHelper;
-import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
 import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.apache.maven.tools.plugin.generator.GeneratorUtils;
 import org.apache.maven.tools.plugin.util.PluginUtils;
 import org.codehaus.plexus.util.StringUtils;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
 
 /**
  * Displays a list of the attributes for a Maven Plugin and/or goals (aka Mojo - Maven plain Old Java Object).
@@ -431,15 +432,17 @@ public class DescribeMojo
         if ( name == null )
         {
             // Can be null because of MPLUGIN-137 (and descriptors generated with maven-plugin-tools-api <= 2.4.3)
-            ArtifactCoordinate coordinate = toArtifactCoordinate( pd, "jar" );
+            org.eclipse.aether.artifact.Artifact aetherArtifact = new DefaultArtifact(
+                    pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion() );
             ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
             pbr.setRemoteRepositories( remoteRepositories );
+            pbr.setLocalRepository( localRepository );
             pbr.setProject( null );
             pbr.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
             try
             {
-                Artifact artifact = artifactResolver.resolveArtifact( pbr, coordinate ).getArtifact();
-                name = projectBuilder.build( artifact, pbr ).getProject().getName();
+                Artifact artifactCopy = resolveArtifact( aetherArtifact ).getArtifact();
+                name = projectBuilder.build( RepositoryUtils.toArtifact( artifactCopy ), pbr ).getProject().getName();
             }
             catch ( Exception e )
             {
@@ -692,11 +695,10 @@ public class DescribeMojo
      *
      * @param descriptionBuffer not null
      * @return <code>true</code> if it implies to describe a plugin, <code>false</code> otherwise.
-     * @throws MojoFailureException   if any reflection exceptions occur or missing components.
      * @throws MojoExecutionException if any
      */
     private boolean describeCommand( StringBuilder descriptionBuffer )
-        throws MojoFailureException, MojoExecutionException
+        throws MojoExecutionException
     {
         if ( cmd.indexOf( ':' ) == -1 )
         {
@@ -977,8 +979,10 @@ public class DescribeMojo
         pbr.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
         try
         {
-            Artifact jar = artifactResolver.resolveArtifact( pbr, toArtifactCoordinate( pd, "jar" ) ).getArtifact();
-            Artifact pom = artifactResolver.resolveArtifact( pbr, toArtifactCoordinate( pd, "pom" ) ).getArtifact();
+            org.eclipse.aether.artifact.Artifact jar = resolveArtifact(
+                    new DefaultArtifact( pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion() ) ).getArtifact();
+            org.eclipse.aether.artifact.Artifact pom = resolveArtifact(
+                    new DefaultArtifact( pd.getGroupId(), pd.getArtifactId(), "pom", pd.getVersion() ) ).getArtifact();
             MavenProject project = projectBuilder.build( pom.getFile(), pbr ).getProject();
             urls.add( jar.getFile().toURI().toURL() );
             for ( Object artifact : project.getCompileClasspathElements() )
@@ -994,19 +998,6 @@ public class DescribeMojo
             getLog().warn( "Couldn't identify if this goal is a report goal: " + e.getMessage() );
             return false;
         }
-    }
-
-    /**
-     * Transforms the given plugin descriptor into an artifact coordinate. It is formed by its GAV information, along
-     * with the given type.
-     *
-     * @param pd Plugin descriptor.
-     * @param type Extension for the coordinate.
-     * @return Coordinate of an artifact having the same GAV as the given plugin descriptor, with the given type.
-     */
-    private ArtifactCoordinate toArtifactCoordinate( PluginDescriptor pd, String type )
-    {
-        return getArtifactCoordinate( pd.getGroupId(), pd.getArtifactId(), pd.getVersion(), type );
     }
 
     /**

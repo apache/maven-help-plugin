@@ -19,19 +19,10 @@ package org.apache.maven.plugins.help;
  * under the License.
  */
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.collections.PropertiesConverter;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
 import org.apache.maven.model.Dependency;
@@ -45,23 +36,30 @@ import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
-import org.apache.maven.shared.transfer.artifact.ArtifactCoordinate;
-import org.apache.maven.shared.transfer.artifact.resolve.ArtifactResolverException;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
+import org.eclipse.aether.RepositoryException;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.MarshallingContext;
-import com.thoughtworks.xstream.converters.collections.PropertiesConverter;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 
 /**
  * Evaluates Maven expressions given by the user in an interactive mode.
@@ -498,11 +496,11 @@ public class EvaluateMojo
                 getLog().debug( "MojoExecutionException: " + e.getMessage(), e );
             }
         }
-        catch ( ArtifactResolverException e )
+        catch ( RepositoryException e )
         {
             if ( getLog().isDebugEnabled() )
             {
-                getLog().debug( "ArtifactResolverException: " + e.getMessage(), e );
+                getLog().debug( "RepositoryException: " + e.getMessage(), e );
             }
         }
         catch ( ProjectBuildingException e )
@@ -577,10 +575,10 @@ public class EvaluateMojo
      * @return the <code>org.apache.maven:maven-model</code> artifact jar file in the local repository.
      * @throws MojoExecutionException if any
      * @throws ProjectBuildingException if any
-     * @throws ArtifactResolverException if any
+     * @throws RepositoryException if any
      */
     private File getMavenModelJarFile()
-        throws MojoExecutionException, ProjectBuildingException, ArtifactResolverException
+        throws MojoExecutionException, ProjectBuildingException, RepositoryException
     {
         return getArtifactFile( true );
     }
@@ -589,10 +587,10 @@ public class EvaluateMojo
      * @return the <code>org.apache.maven:maven-settings</code> artifact jar file in the local repository.
      * @throws MojoExecutionException if any
      * @throws ProjectBuildingException if any
-     * @throws ArtifactResolverException if any
+     * @throws RepositoryException if any
      */
     private File getMavenSettingsJarFile()
-        throws MojoExecutionException, ProjectBuildingException, ArtifactResolverException
+        throws MojoExecutionException, ProjectBuildingException, RepositoryException
     {
         return getArtifactFile( false );
     }
@@ -603,41 +601,38 @@ public class EvaluateMojo
      * @return the <code>org.apache.maven:maven-model|maven-settings</code> artifact jar file for this current
      *         HelpPlugin pom.
      * @throws MojoExecutionException if any
-     * @throws ProjectBuildingException if any
-     * @throws ArtifactResolverException if any
      */
     private File getArtifactFile( boolean isPom )
-        throws MojoExecutionException, ProjectBuildingException, ArtifactResolverException
+        throws MojoExecutionException, RepositoryException
     {
         List<Dependency> dependencies = getHelpPluginPom().getDependencies();
-        for ( Dependency depependency : dependencies )
+        for ( Dependency dependency : dependencies )
         {
-            if ( !( depependency.getGroupId().equals( "org.apache.maven" ) ) )
+            if ( !( dependency.getGroupId().equals( "org.apache.maven" ) ) )
             {
                 continue;
             }
 
             if ( isPom )
             {
-                if ( !( depependency.getArtifactId().equals( "maven-model" ) ) )
+                if ( !( dependency.getArtifactId().equals( "maven-model" ) ) )
                 {
                     continue;
                 }
             }
             else
             {
-                if ( !( depependency.getArtifactId().equals( "maven-settings" ) ) )
+                if ( !( dependency.getArtifactId().equals( "maven-settings" ) ) )
                 {
                     continue;
                 }
             }
 
-            ArtifactCoordinate coordinate =
-                getArtifactCoordinate( depependency.getGroupId(), depependency.getArtifactId(),
-                                       depependency.getVersion(), "jar" );
-            ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
-            pbr.setRemoteRepositories( remoteRepositories );
-            return artifactResolver.resolveArtifact( pbr, coordinate ).getArtifact().getFile();
+            Artifact mavenArtifact = new DefaultArtifact(
+                    dependency.getGroupId(), dependency.getArtifactId(), "jar",
+                    dependency.getVersion() );
+
+            return resolveArtifact( mavenArtifact ).getArtifact().getFile();
         }
 
         throw new MojoExecutionException( "Unable to find the 'org.apache.maven:"
@@ -647,10 +642,9 @@ public class EvaluateMojo
     /**
      * @return the Maven POM for the current help plugin
      * @throws MojoExecutionException if any
-     * @throws ProjectBuildingException if any
      */
     private MavenProject getHelpPluginPom()
-        throws MojoExecutionException, ProjectBuildingException
+        throws MojoExecutionException
     {
         String resource = "META-INF/maven/org.apache.maven.plugins/maven-help-plugin/pom.properties";
 
