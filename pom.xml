@@ -70,6 +70,7 @@
   <properties>
     <javaVersion>7</javaVersion>
     <mavenVersion>3.0</mavenVersion>
+    <surefire.version>2.22.2</surefire.version>
     <project.build.outputTimestamp>2020-04-07T21:04:00Z</project.build.outputTimestamp>
   </properties>
 
