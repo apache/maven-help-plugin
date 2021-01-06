@@ -81,7 +81,13 @@ public abstract class AbstractHelpMojo
      */
     @Parameter( defaultValue = "${project.remoteArtifactRepositories}", required = true, readonly = true )
     protected List<ArtifactRepository> remoteRepositories;
-    
+
+    /**
+     * Plugin repositories used for the project.
+     */
+    @Parameter( defaultValue = "${project.pluginArtifactRepositories}", required = true, readonly = true )
+    protected List<ArtifactRepository> pluginArtifactRepositories;
+
     /**
      * Local Repository.
      */
@@ -208,6 +214,7 @@ public abstract class AbstractHelpMojo
             ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
             pbr.setRemoteRepositories( remoteRepositories );
             pbr.setLocalRepository( localRepository );
+            pbr.setPluginArtifactRepositories( pluginArtifactRepositories );
             pbr.setProject( null );
             pbr.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
             pbr.setResolveDependencies( true );
