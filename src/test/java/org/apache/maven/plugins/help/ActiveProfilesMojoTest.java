@@ -43,13 +43,6 @@ public class ActiveProfilesMojoTest
     extends AbstractMojoTestCase
 {
 
-    @Override
-    protected void setUp()
-        throws Exception
-    {
-        super.setUp();
-    }
-
     /**
      * Tests that profiles activated in the settings are resolved.
      * 

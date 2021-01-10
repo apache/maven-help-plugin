@@ -19,13 +19,6 @@ package org.apache.maven.plugins.help;
  * under the License.
  */
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
 import org.apache.maven.model.Plugin;
@@ -38,30 +31,35 @@ import org.apache.maven.plugin.version.PluginVersionResult;
 import org.apache.maven.plugins.help.DescribeMojo.PluginInfo;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.exec.MavenPluginManagerHelper;
+import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import junit.framework.TestCase;
-import junitx.util.PrivateAccessor;
+import java.lang.reflect.InvocationTargetException;
+
+import static org.apache.commons.lang3.reflect.FieldUtils.writeDeclaredField;
+import static org.apache.commons.lang3.reflect.FieldUtils.writeField;
+import static org.apache.commons.lang3.reflect.MethodUtils.invokeMethod;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  */
 public class DescribeMojoTest
-    extends TestCase
 {
     /**
      * Test method for {@link org.apache.maven.plugins.help.DescribeMojo#toLines(java.lang.String, int, int, int)}.
      *
-     * @throws Exception if any
      */
+    @Test
     public void testGetExpressionsRoot()
-        throws Exception
     {
         try
         {
-            PrivateAccessor.invoke( DescribeMojo.class, "toLines", new Class[] { String.class, Integer.TYPE,
-                Integer.TYPE, Integer.TYPE }, new Object[] { "", 2, 2,
-                    80} );
+            DescribeMojo describeMojo = new DescribeMojo();
+            invokeMethod( describeMojo, true, "toLines", "", 2, 2, 80 );
             assertTrue( true );
         }
         catch ( Throwable e )
@@ -70,6 +68,7 @@ public class DescribeMojoTest
         }
     }
     
+    @Test
     public void testValidExpression()
         throws Exception
     {
@@ -84,14 +83,11 @@ public class DescribeMojoTest
         
         try
         {
-            PrivateAccessor.invoke( new DescribeMojo(), "describeMojoParameters", new Class[] { MojoDescriptor.class,
-                StringBuilder.class }, new Object[] { md, sb } );
-            
-            assertEquals( "  Available parameters:" + ls
-            		      + ls +
-            		      "    name" + ls +
-            		      "      User property: valid.expression" + ls +
-            		      "      (no description available)" + ls, sb.toString() );
+            invokeMethod( new DescribeMojo(), true, "describeMojoParameters", md, sb );
+
+            assertEquals(
+                    "  Available parameters:" + ls + ls + "    name" + ls + "      User property: valid.expression" + ls + "      (no description available)" + ls,
+                    sb.toString() );
         }
         catch ( Throwable e )
         {
@@ -99,6 +95,7 @@ public class DescribeMojoTest
         }
     }
     
+    @Test
     public void testInvalidExpression()
         throws Exception
     {
@@ -113,9 +110,8 @@ public class DescribeMojoTest
         
         try
         {
-            PrivateAccessor.invoke( new DescribeMojo(), "describeMojoParameters", new Class[] { MojoDescriptor.class,
-                StringBuilder.class }, new Object[] { md, sb } );
-            
+            invokeMethod( new DescribeMojo(), true, "describeMojoParameters", md, sb );
+
             assertEquals( "  Available parameters:" + ls +
                           ls +
                           "    name" + ls +
@@ -129,68 +125,83 @@ public class DescribeMojoTest
         
     }
     
+    @Test
     public void testParsePluginInfoGAV()
         throws Throwable
     {
         DescribeMojo mojo = new DescribeMojo();
-        PrivateAccessor.setField( mojo, "groupId", "org.test" );
-        PrivateAccessor.setField( mojo, "artifactId", "test" );
-        PrivateAccessor.setField( mojo, "version", "1.0" );
-        PluginInfo pi = (PluginInfo) PrivateAccessor.invoke( mojo, "parsePluginLookupInfo", null, null );
+        writeDeclaredField( mojo, "groupId", "org.test", true );
+        writeDeclaredField( mojo, "artifactId", "test", true );
+        writeDeclaredField( mojo, "version", "1.0", true );
+
+        PluginInfo pi = (PluginInfo) invokeMethod( mojo, true, "parsePluginLookupInfo" );
+
         assertEquals( pi.getGroupId(), "org.test" );
         assertEquals( pi.getArtifactId(), "test" );
         assertEquals( pi.getVersion(), "1.0" );
         assertNull( pi.getPrefix() );
     }
     
+    @Test
     public void testParsePluginInfoPluginPrefix()
         throws Throwable
     {
         DescribeMojo mojo = new DescribeMojo();
-        PrivateAccessor.setField( mojo, "plugin", "help" );
-        PluginInfo pi = (PluginInfo) PrivateAccessor.invoke( mojo, "parsePluginLookupInfo", null, null );
+        writeDeclaredField( mojo, "plugin", "help", true );
+
+        PluginInfo pi = (PluginInfo) invokeMethod( mojo, true, "parsePluginLookupInfo" );
+
         assertNull( pi.getGroupId() );
         assertNull( pi.getArtifactId() );
         assertNull( pi.getVersion() );
         assertEquals( "help", pi.getPrefix() );
-        
-        PrivateAccessor.setField( mojo, "plugin", "help2:::" );
-        pi = (PluginInfo) PrivateAccessor.invoke( mojo, "parsePluginLookupInfo", null, null );
+
+        writeDeclaredField( mojo, "plugin", "help2:::", true );
+
+        pi = (PluginInfo) invokeMethod( mojo, true, "parsePluginLookupInfo" );
+
         assertEquals( "help2", pi.getPrefix() );
     }
     
+    @Test
     public void testParsePluginInfoPluginGA()
         throws Throwable
     {
         DescribeMojo mojo = new DescribeMojo();
-        PrivateAccessor.setField( mojo, "plugin", "org.test:test" );
-        PluginInfo pi = (PluginInfo) PrivateAccessor.invoke( mojo, "parsePluginLookupInfo", null, null );
+        writeDeclaredField( mojo, "plugin", "org.test:test", true );
+
+        PluginInfo pi = (PluginInfo) invokeMethod( mojo, true, "parsePluginLookupInfo" );
+
         assertEquals( "org.test", pi.getGroupId() );
         assertEquals( "test", pi.getArtifactId() );
         assertNull( pi.getVersion() );
         assertNull( pi.getPrefix() );
     }
     
+    @Test
     public void testParsePluginInfoPluginGAV()
         throws Throwable
     {
         DescribeMojo mojo = new DescribeMojo();
-        PrivateAccessor.setField( mojo, "plugin", "org.test:test:1.0" );
-        PluginInfo pi = (PluginInfo) PrivateAccessor.invoke( mojo, "parsePluginLookupInfo", null, null );
+        writeDeclaredField( mojo, "plugin", "org.test:test:1.0", true );
+
+        PluginInfo pi = (PluginInfo) invokeMethod( mojo, true, "parsePluginLookupInfo" );
+
         assertEquals( "org.test", pi.getGroupId() );
         assertEquals( "test", pi.getArtifactId() );
         assertEquals( "1.0", pi.getVersion() );
         assertNull( pi.getPrefix() );
     }
     
+    @Test
     public void testParsePluginInfoPluginIncorrect()
         throws Throwable
     {
         DescribeMojo mojo = new DescribeMojo();
-        PrivateAccessor.setField( mojo, "plugin", "org.test:test:1.0:invalid" );
+        writeDeclaredField( mojo, "plugin", "org.test:test:1.0:invalid", true );
         try
         {
-            PrivateAccessor.invoke( mojo, "parsePluginLookupInfo", null, null );
+            invokeMethod( mojo, "parsePluginLookupInfo" );
             fail();
         }
         catch ( Exception e )
@@ -199,6 +210,7 @@ public class DescribeMojoTest
         }
     }
     
+    @Test
     public void testLookupPluginDescriptorPrefixWithVersion()
         throws Throwable
     {
@@ -218,16 +230,15 @@ public class DescribeMojoTest
         PluginVersionResolver pluginVersionResolver = mock( PluginVersionResolver.class );
         MavenPluginManagerHelper pluginManager = mock( MavenPluginManagerHelper.class );
         MavenSession session = mock( MavenSession.class );
-        PrivateAccessor.setField( mojo, "mojoDescriptorCreator", mojoDescriptorCreator );
-        PrivateAccessor.setField( mojo, "pluginVersionResolver", pluginVersionResolver );
-        PrivateAccessor.setField( mojo, "pluginManager", pluginManager );
-        PrivateAccessor.setField( mojo, "session", session );
+        writeDeclaredField( mojo, "mojoDescriptorCreator", mojoDescriptorCreator, true );
+        writeDeclaredField( mojo, "pluginVersionResolver", pluginVersionResolver, true );
+        writeDeclaredField( mojo, "pluginManager", pluginManager, true );
+        writeField( mojo, "session", session, true );
         when( mojoDescriptorCreator.findPluginForPrefix( "help", session ) ).thenReturn( plugin );
         when( pluginManager.getPluginDescriptor( any( Plugin.class ), eq( session ) ) ).thenReturn( pd );
 
-        PluginDescriptor returned =
-            (PluginDescriptor) PrivateAccessor.invoke( mojo, "lookupPluginDescriptor", new Class[] { PluginInfo.class },
-                                                       new Object[] { pi } );
+        PluginDescriptor returned = (PluginDescriptor) invokeMethod( mojo, true, "lookupPluginDescriptor", pi );
+
         assertEquals( pd, returned );
 
         verify( mojoDescriptorCreator ).findPluginForPrefix( "help", session );
@@ -240,6 +251,7 @@ public class DescribeMojoTest
         assertEquals( "1.0", capturedPlugin.getVersion() );
     }
     
+    @Test
     public void testLookupPluginDescriptorPrefixWithoutVersion()
         throws Throwable
     {
@@ -259,20 +271,19 @@ public class DescribeMojoTest
         MavenPluginManagerHelper pluginManager = mock( MavenPluginManagerHelper.class );
         PluginVersionResult versionResult = mock( PluginVersionResult.class );
         MavenSession session = mock( MavenSession.class );
-        PrivateAccessor.setField( mojo, "mojoDescriptorCreator", mojoDescriptorCreator );
-        PrivateAccessor.setField( mojo, "pluginVersionResolver", pluginVersionResolver );
-        PrivateAccessor.setField( mojo, "pluginManager", pluginManager );
-        PrivateAccessor.setField( mojo, "session", session );
-        PrivateAccessor.setField( mojo, "project", new MavenProject() );
+        writeDeclaredField( mojo, "mojoDescriptorCreator", mojoDescriptorCreator, true );
+        writeDeclaredField( mojo, "pluginVersionResolver", pluginVersionResolver, true );
+        writeDeclaredField( mojo, "pluginManager", pluginManager, true );
+        writeField( mojo, "session", session, true );
+        writeDeclaredField( mojo, "project", new MavenProject(), true );
         when( mojoDescriptorCreator.findPluginForPrefix( "help", session ) ).thenReturn( plugin );
         when( pluginVersionResolver.resolve( any( PluginVersionRequest.class ) ) ).thenReturn( versionResult );
         when( versionResult.getVersion() ).thenReturn( "1.0" );
         when( pluginManager.getPluginDescriptor( any( Plugin.class ), eq( session ) ) ).thenReturn( pd );
 
-        PluginDescriptor returned =
-            (PluginDescriptor) PrivateAccessor.invoke( mojo, "lookupPluginDescriptor", new Class[] { PluginInfo.class },
-                                                       new Object[] { pi } );
+        PluginDescriptor returned = (PluginDescriptor) invokeMethod( mojo, true, "lookupPluginDescriptor", pi );
         assertEquals( pd, returned );
+
 
         verify( mojoDescriptorCreator ).findPluginForPrefix( "help", session );
         ArgumentCaptor<PluginVersionRequest> versionArgument = ArgumentCaptor.forClass( PluginVersionRequest.class );
@@ -287,6 +298,7 @@ public class DescribeMojoTest
         assertEquals( "1.0", capturedPlugin.getVersion() );
     }
     
+    @Test
     public void testLookupPluginDescriptorGAV()
         throws Throwable
     {
@@ -303,15 +315,14 @@ public class DescribeMojoTest
         PluginVersionResolver pluginVersionResolver = mock( PluginVersionResolver.class );
         MavenPluginManagerHelper pluginManager = mock( MavenPluginManagerHelper.class );
         MavenSession session = mock( MavenSession.class );
-        PrivateAccessor.setField( mojo, "mojoDescriptorCreator", mojoDescriptorCreator );
-        PrivateAccessor.setField( mojo, "pluginVersionResolver", pluginVersionResolver );
-        PrivateAccessor.setField( mojo, "pluginManager", pluginManager );
-        PrivateAccessor.setField( mojo, "session", session );
+        writeDeclaredField( mojo, "mojoDescriptorCreator", mojoDescriptorCreator, true );
+        writeDeclaredField( mojo, "pluginVersionResolver", pluginVersionResolver, true );
+        writeDeclaredField( mojo, "pluginManager", pluginManager, true );
+        writeField( mojo, "session", session, true );
         when( pluginManager.getPluginDescriptor( any( Plugin.class ), eq( session ) ) ).thenReturn( pd );
 
-        PluginDescriptor returned =
-            (PluginDescriptor) PrivateAccessor.invoke( mojo, "lookupPluginDescriptor", new Class[] { PluginInfo.class },
-                                                       new Object[] { pi } );
+        PluginDescriptor returned = (PluginDescriptor) invokeMethod( mojo, true, "lookupPluginDescriptor", pi );
+
         assertEquals( pd, returned );
 
         verify( mojoDescriptorCreator, never() ).findPluginForPrefix( any( String.class ), any( MavenSession.class ) );
@@ -324,39 +335,47 @@ public class DescribeMojoTest
         assertEquals( "1.0", capturedPlugin.getVersion() );
     }
 
+    @Test
     public void testLookupPluginDescriptorGMissingA()
-        throws Throwable
     {
         DescribeMojo mojo = new DescribeMojo();
         PluginInfo pi = new PluginInfo();
         pi.setGroupId( "org.test" );
         try
         {
-            PrivateAccessor.invoke( mojo, "lookupPluginDescriptor", new Class[] { PluginInfo.class },
-                                    new Object[] { pi } );
+            invokeMethod( mojo, true, "lookupPluginDescriptor", pi );
             fail();
         }
-        catch ( Exception e )
+        catch ( InvocationTargetException e )
         {
-            assertTrue( e.getMessage().startsWith( "You must specify either" ) );
+            assertTrue( e.getTargetException()
+                    .getMessage().startsWith( "You must specify either" ) );
+        }
+        catch ( NoSuchMethodException | IllegalAccessException e )
+        {
+            fail();
         }
     }
     
+    @Test
     public void testLookupPluginDescriptorAMissingG()
-        throws Throwable
     {
         DescribeMojo mojo = new DescribeMojo();
         PluginInfo pi = new PluginInfo();
         pi.setArtifactId( "test" );
         try
         {
-            PrivateAccessor.invoke( mojo, "lookupPluginDescriptor", new Class[] { PluginInfo.class },
-                                    new Object[] { pi } );
+            invokeMethod( mojo, true, "lookupPluginDescriptor", pi );
             fail();
         }
-        catch ( Exception e )
+        catch ( InvocationTargetException e )
         {
-            assertTrue( e.getMessage().startsWith( "You must specify either" ) );
+            assertTrue( e.getTargetException()
+                    .getMessage().startsWith( "You must specify either" ) );
+        }
+        catch ( Exception e)
+        {
+            fail( e.getMessage() );
         }
     }
 
