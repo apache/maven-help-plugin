@@ -106,7 +106,7 @@ public class ActiveProfilesMojo
         Map<String, List<String>> activeProfileIds = project.getInjectedProfileIds();
 
         message.append( LS );
-        message.append( "Active Profiles for Project \'" ).append( project.getId() ).append( "\':" );
+        message.append( "Active Profiles for Project '" ).append( project.getId() ).append( "':" );
         message.append( LS ).append( LS );
 
         if ( activeProfileIds.isEmpty() )

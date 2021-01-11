@@ -37,7 +37,6 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
@@ -231,11 +230,10 @@ public class EvaluateMojo
 
     /**
      * @return a lazy loading evaluator object.
-     * @throws MojoExecutionException if any
      * @throws MojoFailureException if any reflection exceptions occur or missing components.
      */
     private PluginParameterExpressionEvaluator getEvaluator()
-        throws MojoExecutionException, MojoFailureException
+        throws MojoFailureException
     {
         if ( evaluator == null )
         {
@@ -421,7 +419,7 @@ public class EvaluateMojo
         if ( obj instanceof List )
         {
             List<?> list = (List<?>) obj;
-            if ( list.size() > 0 )
+            if ( !list.isEmpty() )
             {
                 Object elt = list.iterator().next();
 
@@ -456,16 +454,18 @@ public class EvaluateMojo
             xstream.registerConverter( new PropertiesConverter()
             {
                 /** {@inheritDoc} */
-                public boolean canConvert( @SuppressWarnings( "rawtypes" ) Class type )
+                @Override
+                public boolean canConvert( Class type )
                 {
                     return Properties.class == type;
                 }
 
                 /** {@inheritDoc} */
+                @Override
                 public void marshal( Object source, HierarchicalStreamWriter writer, MarshallingContext context )
                 {
                     Properties properties = (Properties) source;
-                    Map<?, ?> map = new TreeMap<Object, Object>( properties ); // sort
+                    Map<?, ?> map = new TreeMap<>( properties ); // sort
                     for ( Map.Entry<?, ?> entry : map.entrySet() )
                     {
                         writer.startNode( entry.getKey().toString() );
@@ -486,28 +486,14 @@ public class EvaluateMojo
     {
         try
         {
-            addAlias( xstreamObject, getMavenModelJarFile(), "org.apache.maven.model" );
-            addAlias( xstreamObject, getMavenSettingsJarFile(), "org.apache.maven.settings" );
+            addAlias( xstreamObject, getArtifactFile( "maven-model" ), "org.apache.maven.model" );
+            addAlias( xstreamObject, getArtifactFile( "maven-settings" ), "org.apache.maven.settings" );
         }
-        catch ( MojoExecutionException e )
+        catch ( MojoExecutionException | RepositoryException e )
         {
             if ( getLog().isDebugEnabled() )
             {
-                getLog().debug( "MojoExecutionException: " + e.getMessage(), e );
-            }
-        }
-        catch ( RepositoryException e )
-        {
-            if ( getLog().isDebugEnabled() )
-            {
-                getLog().debug( "RepositoryException: " + e.getMessage(), e );
-            }
-        }
-        catch ( ProjectBuildingException e )
-        {
-            if ( getLog().isDebugEnabled() )
-            {
-                getLog().debug( "ProjectBuildingException: " + e.getMessage(), e );
+                getLog().debug( e.getMessage(), e );
             }
         }
 
@@ -521,17 +507,16 @@ public class EvaluateMojo
      */
     private void addAlias( XStream xstreamObject, File jarFile, String packageFilter )
     {
-        JarInputStream jarStream = null;
-        try
+        try ( FileInputStream fis = new FileInputStream( jarFile );
+              JarInputStream jarStream = new JarInputStream( fis ) )
         {
-            jarStream = new JarInputStream( new FileInputStream( jarFile ) );
             for ( JarEntry jarEntry = jarStream.getNextJarEntry(); jarEntry != null;
                   jarEntry = jarStream.getNextJarEntry() )
             {
                 if ( jarEntry.getName().toLowerCase( Locale.ENGLISH ).endsWith( ".class" ) )
                 {
                     String name = jarEntry.getName().substring( 0, jarEntry.getName().indexOf( "." ) );
-                    name = name.replaceAll( "/", "\\." );
+                    name = name.replace( "/", "\\." );
 
                     if ( name.contains( packageFilter ) && !name.contains( "$" ) )
                     {
@@ -554,9 +539,6 @@ public class EvaluateMojo
 
                 jarStream.closeEntry();
             }
-
-            jarStream.close();
-            jarStream = null;
         }
         catch ( IOException e )
         {
@@ -565,78 +547,32 @@ public class EvaluateMojo
                 getLog().debug( "IOException: " + e.getMessage(), e );
             }
         }
-        finally
-        {
-            IOUtil.close( jarStream );
-        }
     }
 
     /**
-     * @return the <code>org.apache.maven:maven-model</code> artifact jar file in the local repository.
-     * @throws MojoExecutionException if any
-     * @throws ProjectBuildingException if any
-     * @throws RepositoryException if any
-     */
-    private File getMavenModelJarFile()
-        throws MojoExecutionException, ProjectBuildingException, RepositoryException
-    {
-        return getArtifactFile( true );
-    }
-
-    /**
-     * @return the <code>org.apache.maven:maven-settings</code> artifact jar file in the local repository.
-     * @throws MojoExecutionException if any
-     * @throws ProjectBuildingException if any
-     * @throws RepositoryException if any
-     */
-    private File getMavenSettingsJarFile()
-        throws MojoExecutionException, ProjectBuildingException, RepositoryException
-    {
-        return getArtifactFile( false );
-    }
-
-    /**
-     * @param isPom <code>true</code> to lookup the <code>maven-model</code> artifact jar, <code>false</code> to lookup
-     *            the <code>maven-settings</code> artifact jar.
-     * @return the <code>org.apache.maven:maven-model|maven-settings</code> artifact jar file for this current
-     *         HelpPlugin pom.
+     * @return the <code>org.apache.maven: artifactId </code> artifact jar file for this current HelpPlugin pom.
      * @throws MojoExecutionException if any
      */
-    private File getArtifactFile( boolean isPom )
+    private File getArtifactFile( String artifactId )
         throws MojoExecutionException, RepositoryException
     {
         List<Dependency> dependencies = getHelpPluginPom().getDependencies();
         for ( Dependency dependency : dependencies )
         {
-            if ( !( dependency.getGroupId().equals( "org.apache.maven" ) ) )
+            if ( ( "org.apache.maven".equals( dependency.getGroupId() ) ) )
             {
-                continue;
-            }
-
-            if ( isPom )
-            {
-                if ( !( dependency.getArtifactId().equals( "maven-model" ) ) )
+                if ( ( artifactId.equals( dependency.getArtifactId() ) ) )
                 {
-                    continue;
-                }
-            }
-            else
-            {
-                if ( !( dependency.getArtifactId().equals( "maven-settings" ) ) )
-                {
-                    continue;
-                }
-            }
+                    Artifact mavenArtifact = new DefaultArtifact( dependency.getGroupId(), dependency.getArtifactId(),
+                            "jar", dependency.getVersion() );
 
-            Artifact mavenArtifact = new DefaultArtifact(
-                    dependency.getGroupId(), dependency.getArtifactId(), "jar",
-                    dependency.getVersion() );
+                    return resolveArtifact( mavenArtifact ).getArtifact().getFile();
+                }
 
-            return resolveArtifact( mavenArtifact ).getArtifact().getFile();
+            }
         }
 
-        throw new MojoExecutionException( "Unable to find the 'org.apache.maven:"
-            + ( isPom ? "maven-model" : "maven-settings" ) + "' artifact" );
+        throw new MojoExecutionException( "Unable to find the 'org.apache.maven:" + artifactId + "' artifact" );
     }
 
     /**

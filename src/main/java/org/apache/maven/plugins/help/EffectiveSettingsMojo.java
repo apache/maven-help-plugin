@@ -86,11 +86,14 @@ public class EffectiveSettingsMojo
         else
         {
             copySettings = copySettings( settings );
-            hidePasswords( copySettings );
+            if ( copySettings != null )
+            {
+                hidePasswords( copySettings );
+            }
         }
 
         StringWriter w = new StringWriter();
-        String encoding = output != null ? copySettings.getModelEncoding()
+        String encoding = output != null && copySettings != null ? copySettings.getModelEncoding()
                                 : System.getProperty( "file.encoding" );
         XMLWriter writer =
             new PrettyPrintXMLWriter( w, StringUtils.repeat( " ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE ),
@@ -117,13 +120,7 @@ public class EffectiveSettingsMojo
         }
         else
         {
-            StringBuilder message = new StringBuilder();
-
-            message.append( LS ).append( "Effective user-specific configuration settings:" ).append( LS ).append( LS );
-            message.append( effectiveSettings );
-            message.append( LS );
-
-            getLog().info( message.toString() );
+            getLog().info( LS + "Effective user-specific configuration settings:" + LS + LS + effectiveSettings + LS );
         }
     }
 
@@ -177,7 +174,7 @@ public class EffectiveSettingsMojo
         // Not a deep copy in M2.2.1 !!!
         Settings clone = SettingsUtils.copySettings( settings );
 
-        List<Server> clonedServers = new ArrayList<Server>( settings.getServers().size() );
+        List<Server> clonedServers = new ArrayList<>( settings.getServers().size() );
         for ( Server server : settings.getServers() )
         {
             Server clonedServer = new Server();
@@ -195,7 +192,7 @@ public class EffectiveSettingsMojo
         }
         clone.setServers( clonedServers );
 
-        List<Proxy> clonedProxies = new ArrayList<Proxy>( settings.getProxies().size() );
+        List<Proxy> clonedProxies = new ArrayList<>( settings.getProxies().size() );
         for ( Proxy proxy : settings.getProxies() )
         {
             Proxy clonedProxy = new Proxy();

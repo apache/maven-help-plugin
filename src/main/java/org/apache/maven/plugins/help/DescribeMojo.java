@@ -472,7 +472,7 @@ public class DescribeMojo
             append( buffer, "This plugin has " + mojos.size() + " goal" + ( mojos.size() > 1 ? "s" : "" ) + ":", 0 );
             buffer.append( LS );
 
-            mojos = new ArrayList<MojoDescriptor>( mojos );
+            mojos = new ArrayList<>( mojos );
             PluginUtils.sortMojos( mojos );
 
             for ( MojoDescriptor md : mojos )
@@ -610,7 +610,7 @@ public class DescribeMojo
             return;
         }
 
-        params = new ArrayList<Parameter>( params );
+        params = new ArrayList<>( params );
         PluginUtils.sortMojoParameters( params );
 
         append( buffer, "Available parameters:", 1 );
@@ -820,9 +820,8 @@ public class DescribeMojo
     {
         try
         {
-            Method m = HelpMojo.class.getDeclaredMethod( "toLines",
-                                                         new Class[]{ String.class, Integer.TYPE, Integer.TYPE,
-                                                             Integer.TYPE } );
+            Method m = HelpMojo.class.getDeclaredMethod( "toLines", String.class, Integer.TYPE, Integer.TYPE,
+                    Integer.TYPE );
             m.setAccessible( true );
             @SuppressWarnings( "unchecked" )
             List<String> output = (List<String>) m.invoke( HelpMojo.class, text, indent, indentSize, lineLength );
@@ -971,7 +970,7 @@ public class DescribeMojo
     private boolean isReportGoal( MojoDescriptor md )
     {
         PluginDescriptor pd = md.getPluginDescriptor();
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
         pbr.setRemoteRepositories( remoteRepositories );
         pbr.setResolveDependencies( true );
@@ -983,15 +982,18 @@ public class DescribeMojo
                     new DefaultArtifact( pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion() ) ).getArtifact();
             org.eclipse.aether.artifact.Artifact pom = resolveArtifact(
                     new DefaultArtifact( pd.getGroupId(), pd.getArtifactId(), "pom", pd.getVersion() ) ).getArtifact();
-            MavenProject project = projectBuilder.build( pom.getFile(), pbr ).getProject();
+            MavenProject mavenProject = projectBuilder.build( pom.getFile(), pbr ).getProject();
             urls.add( jar.getFile().toURI().toURL() );
-            for ( Object artifact : project.getCompileClasspathElements() )
+            for ( String artifact : mavenProject.getCompileClasspathElements() )
             {
-                urls.add( new File( (String) artifact ).toURI().toURL() );
+                urls.add( new File( artifact ).toURI().toURL() );
             }
-            ClassLoader classLoader =
-                new URLClassLoader( urls.toArray( new URL[urls.size()] ), getClass().getClassLoader() );
-            return MavenReport.class.isAssignableFrom( Class.forName( md.getImplementation(), false, classLoader ) );
+            try ( URLClassLoader classLoader = new URLClassLoader( urls.toArray( new URL[0] ),
+                    getClass().getClassLoader() ) )
+            {
+                return MavenReport.class.isAssignableFrom(
+                        Class.forName( md.getImplementation(), false, classLoader ) );
+            }
         }
         catch ( Exception e )
         {

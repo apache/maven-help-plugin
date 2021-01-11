@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.WriterFactory;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
@@ -66,21 +65,10 @@ public abstract class AbstractEffectiveMojo
             return;
         }
 
-        Writer out = null;
-        try
+        output.getParentFile().mkdirs();
+        try ( Writer out = WriterFactory.newXmlWriter( output ) )
         {
-            output.getParentFile().mkdirs();
-
-            out = WriterFactory.newXmlWriter( output );
-
             out.write( content );
-
-            out.close();
-            out = null;
-        }
-        finally
-        {
-            IOUtil.close( out );
         }
     }
 
@@ -142,11 +130,7 @@ public abstract class AbstractEffectiveMojo
 
             return w.toString();
         }
-        catch ( JDOMException e )
-        {
-            return effectiveModel;
-        }
-        catch ( IOException e )
+        catch ( JDOMException | IOException e )
         {
             return effectiveModel;
         }
@@ -163,13 +147,14 @@ public abstract class AbstractEffectiveMojo
 
         /** {@inheritDoc} */
         @SuppressWarnings( { "rawtypes", "unchecked" } )
+        @Override
         public Set<Object> keySet()
         {
             Set<Object> keynames = super.keySet();
             List list = new ArrayList( keynames );
             Collections.sort( list );
 
-            return new LinkedHashSet<Object>( list );
+            return new LinkedHashSet<>( list );
         }
     }
 }

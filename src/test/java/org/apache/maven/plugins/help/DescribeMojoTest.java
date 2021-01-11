@@ -40,8 +40,6 @@ import static org.apache.commons.lang3.reflect.FieldUtils.writeDeclaredField;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeField;
 import static org.apache.commons.lang3.reflect.MethodUtils.invokeMethod;
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -60,7 +58,6 @@ public class DescribeMojoTest
         {
             DescribeMojo describeMojo = new DescribeMojo();
             invokeMethod( describeMojo, true, "toLines", "", 2, 2, 80 );
-            assertTrue( true );
         }
         catch ( Throwable e )
         {
@@ -136,9 +133,9 @@ public class DescribeMojoTest
 
         PluginInfo pi = (PluginInfo) invokeMethod( mojo, true, "parsePluginLookupInfo" );
 
-        assertEquals( pi.getGroupId(), "org.test" );
-        assertEquals( pi.getArtifactId(), "test" );
-        assertEquals( pi.getVersion(), "1.0" );
+        assertEquals( "org.test", pi.getGroupId() );
+        assertEquals( "test", pi.getArtifactId() );
+        assertEquals( "1.0", pi.getVersion() );
         assertNull( pi.getPrefix() );
     }
     

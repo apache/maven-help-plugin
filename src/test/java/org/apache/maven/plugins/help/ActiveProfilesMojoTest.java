@@ -24,7 +24,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -93,7 +92,7 @@ public class ActiveProfilesMojoTest
 
     private Map<String, List<String>> getProfiles( List<String> externals, List<String> pom )
     {
-        Map<String, List<String>> profiles = new HashMap<String, List<String>>();
+        Map<String, List<String>> profiles = new HashMap<>();
         profiles.put( "external", externals ); // from settings
         profiles.put( "org.apache.maven.test:test:1.0", pom ); // from POM
         profiles.put( "", Collections.<String>emptyList() ); // from super POM
@@ -109,17 +108,12 @@ public class ActiveProfilesMojoTest
     }
 
     private String readFile( String path )
-        throws FileNotFoundException, IOException
+        throws IOException
     {
-        FileInputStream fis = null;
-        try
+        try ( FileInputStream fis = new FileInputStream(
+                new File( getBasedir(), "target/test-classes/unit/active-profiles/" + path ) ) )
         {
-            fis = new FileInputStream( new File( getBasedir(), "target/test-classes/unit/active-profiles/" + path ) );
             return IOUtil.toString( fis );
-        }
-        finally
-        {
-            IOUtil.close( fis );
         }
     }
 

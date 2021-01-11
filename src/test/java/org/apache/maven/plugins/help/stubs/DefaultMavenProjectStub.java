@@ -19,7 +19,6 @@ package org.apache.maven.plugins.help.stubs;
  * under the License.
  */
 
-import java.io.File;
 import java.io.FileReader;
 
 import org.apache.maven.model.Model;
@@ -42,13 +41,10 @@ public class DefaultMavenProjectStub
 
         try
         {
-            final FileReader reader = new FileReader(new File(getBasedir()
-                    + "/src/test/resources/unit/default-configuration/default-configuration-plugin-config.xml"));
-            try {
-                model =
-                        pomReader.read(reader);
-            } finally {
-                reader.close();
+            try ( FileReader reader = new FileReader(
+                    getBasedir() + "/src/test/resources/unit/default-configuration/default-configuration-plugin-config.xml" ) )
+            {
+                model = pomReader.read( reader );
             }
             setModel(model);
         }

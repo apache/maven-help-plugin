@@ -32,7 +32,6 @@ import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.WriterFactory;
 import org.eclipse.aether.RepositoryException;
@@ -138,21 +137,10 @@ public abstract class AbstractHelpMojo
             return;
         }
 
-        Writer out = null;
-        try
+        output.getParentFile().mkdirs();
+        try ( Writer out = WriterFactory.newPlatformWriter( output ) )
         {
-            output.getParentFile().mkdirs();
-
-            out = WriterFactory.newPlatformWriter( output );
-
             out.write( content );
-
-            out.close();
-            out = null;
-        }
-        finally
-        {
-            IOUtil.close( out );
         }
     }
     

@@ -76,8 +76,8 @@ public class AllProfilesMojo
         {
             descriptionBuffer.append( "Listing Profiles for Project: " ).append( project.getId() ).append( LS );
             
-            Map<String, Profile> allProfilesByIds = new HashMap<String, Profile>();
-            Map<String, Profile> activeProfilesByIds = new HashMap<String, Profile>();
+            Map<String, Profile> allProfilesByIds = new HashMap<>();
+            Map<String, Profile> activeProfilesByIds = new HashMap<>();
             addSettingsProfiles( allProfilesByIds );
             addProjectPomProfiles( project, allProfilesByIds, activeProfilesByIds );
 
@@ -124,7 +124,7 @@ public class AllProfilesMojo
         for ( Profile p : profilesByIds.values() )
         {
             sb.append( "  Profile Id: " ).append( p.getId() );
-            sb.append( " (Active: " + active + " , Source: " ).append( p.getSource() ).append( ")" );
+            sb.append( " (Active: " ).append( active ).append( " , Source: " ).append( p.getSource() ).append( ")" );
             sb.append( LS );
         }
     }

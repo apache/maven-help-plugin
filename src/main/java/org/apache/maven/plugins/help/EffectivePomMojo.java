@@ -168,18 +168,11 @@ public class EffectivePomMojo
                 int dotIndex = comment.indexOf( "." );
                 String commentStart = comment.substring( 0, dotIndex );
                 String commentEnd = comment.substring( dotIndex + 1 );
-                effectivePom = effectivePom.replaceAll( "<!--", commentStart ).replaceAll( "-->", commentEnd );
+                effectivePom = effectivePom.replace( "<!--", commentStart ).replace( "-->", commentEnd );
             }
 
-            StringBuilder message = new StringBuilder();
-
-            message.append( LS );
-            message.append( "Effective POMs, after inheritance, interpolation, and profiles are applied:" );
-            message.append( LS ).append( LS );
-            message.append( effectivePom );
-            message.append( LS );
-
-            getLog().info( message.toString() );
+            getLog().info( LS + "Effective POMs, after inheritance, interpolation, and profiles are applied:"
+                    + LS + LS + effectivePom + LS );
         }
     }
 
@@ -194,8 +187,7 @@ public class EffectivePomMojo
     {
         Source source = mojoExecution.getSource();
         // [MNG-5550] For Maven < 3.2.1, the source is null, instead of LIFECYCLE: only rely on comparisons with CLI
-        return projects.size() > 1
-            && ( source == Source.CLI || source != Source.CLI && projects.get( 0 ).equals( project ) );
+        return projects.size() > 1 && ( source == Source.CLI || projects.get( 0 ).equals( project ) );
     }
 
     // ----------------------------------------------------------------------
@@ -240,7 +232,7 @@ public class EffectivePomMojo
         // This removes the XML declaration written by MavenXpp3Writer
         String effectivePom = prettyFormat( sWriter.toString(), null, true );
 
-        writeComment( writer, "Effective POM for project \'" + project.getId() + "\'" );
+        writeComment( writer, "Effective POM for project '" + project.getId() + "'" );
 
         writer.writeMarkup( effectivePom );
     }
@@ -269,7 +261,7 @@ public class EffectivePomMojo
         try
         {
             Class<?> mavenXpp3WriterExClass = Class.forName( "org.apache.maven.model.io.xpp3.MavenXpp3WriterEx" );
-            Object mavenXpp3WriterEx = mavenXpp3WriterExClass.newInstance();
+            Object mavenXpp3WriterEx = mavenXpp3WriterExClass.getDeclaredConstructor().newInstance();
 
             Method setStringFormatter =
                 mavenXpp3WriterExClass.getMethod( "setStringFormatter", InputLocation.StringFormatter.class );
@@ -284,23 +276,8 @@ public class EffectivePomMojo
         {
             // MavenXpp3WriterEx not available in running Maven version
         }
-        catch ( NoSuchMethodException e )
-        {
-            warnWriteMavenXpp3WriterEx( e );
-        }
-        catch ( SecurityException e )
-        {
-            warnWriteMavenXpp3WriterEx( e );
-        }
-        catch ( InstantiationException e )
-        {
-            warnWriteMavenXpp3WriterEx( e );
-        }
-        catch ( IllegalAccessException e )
-        {
-            warnWriteMavenXpp3WriterEx( e );
-        }
-        catch ( IllegalArgumentException e )
+        catch ( NoSuchMethodException | SecurityException | IllegalArgumentException | IllegalAccessException
+                | InstantiationException e )
         {
             warnWriteMavenXpp3WriterEx( e );
         }

@@ -19,7 +19,7 @@ package org.apache.maven.plugins.help;
  * under the License.
  */
 
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -154,8 +154,8 @@ public class EvaluateMojoTest
             baos.close();
         }
 
-        String stdResult = new String( baos.toByteArray() );
-        assertTrue( stdResult.equals( "org.apache.maven.its.help" ) );
+        String stdResult = baos.toString();
+        assertEquals( "org.apache.maven.its.help", stdResult );
         assertTrue( interceptingLogger.warnLogs.isEmpty() );
     }
 
@@ -174,9 +174,9 @@ public class EvaluateMojoTest
     {
         private boolean isInfoEnabled;
 
-        List<String> infoLogs = new ArrayList<String>();
+        final List<String> infoLogs = new ArrayList<>();
 
-        List<String> warnLogs = new ArrayList<String>();
+        final List<String> warnLogs = new ArrayList<>();
 
         public InterceptingLog( Logger logger )
         {

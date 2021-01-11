@@ -21,7 +21,6 @@ package org.apache.maven.plugins.help;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -146,10 +145,10 @@ public class AllProfilesMojoTest
         MavenProject project = new MavenProjectStub();
         project.setActiveProfiles( Arrays.asList( newPomProfile( "settings-1", "settings.xml" ) ) );
         
-        List<org.apache.maven.settings.Profile> settingsProfiles = new ArrayList<org.apache.maven.settings.Profile>();
+        List<org.apache.maven.settings.Profile> settingsProfiles = new ArrayList<>();
         settingsProfiles.add( newSettingsProfile( "settings-1" ) );
         settingsProfiles.add( newSettingsProfile( "settings-2" ) );
-        setUpMojo( mojo, Arrays.<MavenProject>asList( project ), settingsProfiles, "profiles-from-settings.txt" );
+        setUpMojo( mojo, Arrays.asList( project ), settingsProfiles, "profiles-from-settings.txt" );
 
         mojo.execute();
 
@@ -185,24 +184,19 @@ public class AllProfilesMojoTest
     }
 
     private String readFile( String path )
-        throws FileNotFoundException, IOException
+        throws IOException
     {
-        FileInputStream fis = null;
-        try
+        try ( FileInputStream fis = new FileInputStream(
+                new File( getBasedir(), "target/test-classes/unit/active-profiles/" + path ) ) )
         {
-            fis = new FileInputStream( new File( getBasedir(), "target/test-classes/unit/active-profiles/" + path ) );
             return IOUtil.toString( fis );
-        }
-        finally
-        {
-            IOUtil.close( fis );
         }
     }
     
     private static final class InterceptingLog
         extends DefaultLog
     {
-        List<String> warnLogs = new ArrayList<String>();
+        final List<String> warnLogs = new ArrayList<>();
 
         public InterceptingLog( Logger logger )
         {
