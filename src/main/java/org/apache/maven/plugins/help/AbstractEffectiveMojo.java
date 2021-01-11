@@ -40,6 +40,8 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import javax.xml.XMLConstants;
+
 /**
  * Base class with common utilities to write effective Pom/settings.
  *
@@ -111,7 +113,8 @@ public abstract class AbstractEffectiveMojo
     protected static String prettyFormat( String effectiveModel, String encoding, boolean omitDeclaration )
     {
         SAXBuilder builder = new SAXBuilder();
-
+        builder.setProperty( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
+        builder.setProperty( XMLConstants.ACCESS_EXTERNAL_SCHEMA, "" );
         try
         {
             Document effectiveDocument = builder.build( new StringReader( effectiveModel ) );
