@@ -30,6 +30,14 @@ under the License.
   <description>Tests that describe outputs whether the configured goal is a report goal or not</description>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
     </plugins>
   </build>
