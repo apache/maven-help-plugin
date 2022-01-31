@@ -65,7 +65,7 @@
 
   <properties>
     <javaVersion>8</javaVersion>
-    <mavenVersion>3.2.5</mavenVersion>
+    <mavenVersion>3.6.3</mavenVersion>
     <project.build.outputTimestamp>2022-08-14T12:24:27Z</project.build.outputTimestamp>
   </properties>
 
@@ -86,7 +86,7 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
-      <version>3.8.5</version>
+      <version>${mavenVersion}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -98,6 +98,12 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-settings</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings-builder</artifactId>
       <version>${mavenVersion}</version>
       <scope>provided</scope>
     </dependency>
@@ -230,53 +236,6 @@
         </plugin>
       </plugins>
     </pluginManagement>
-    <plugins>
-      <!-- unpack old Maven core sources for maven.mdo model to be able to generate xpp3-extended-writer when not yet provided by Maven core -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <phase>generate-sources</phase>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.apache.maven</groupId>
-                  <artifactId>apache-maven</artifactId>
-                  <version>${mavenVersion}</version>
-                  <type>tar.gz</type>
-                  <classifier>src</classifier>
-                  <outputDirectory>${project.build.directory}</outputDirectory>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.modello</groupId>
-        <artifactId>modello-maven-plugin</artifactId>
-        <configuration>
-          <version>4.0.0</version>
-          <models>
-            <model>target/apache-maven-${mavenVersion}/maven-model/src/main/mdo/maven.mdo</model>
-          </models>
-          <!-- to avoid conflict with class provided by Maven core -->
-          <extendedClassnameSuffix>ExOldSupport</extendedClassnameSuffix>
-        </configuration>
-        <executions>
-          <execution>
-            <id>modello</id>
-            <goals>
-              <goal>xpp3-extended-writer</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
   </build>
 
   <profiles>
