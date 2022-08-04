@@ -46,6 +46,11 @@ import org.eclipse.aether.resolution.ArtifactRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -61,8 +66,11 @@ public abstract class AbstractHelpMojo
     protected static final int LINE_LENGTH = 79;
     
     /** The line separator for the current OS. */
-    protected static final String LS = System.getProperty( "line.separator" );
-    
+    protected static final String LS = System.lineSeparator();
+
+    protected static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern( "YYYY-MM-dd'T'HH:mm:ssxxxxx" );
+
     /**
      * Maven Project Builder component.
      */
@@ -107,6 +115,13 @@ public abstract class AbstractHelpMojo
      */
     @Parameter( property = "output" )
     protected File output;
+
+    protected static String formatCurrentMillis( )
+    {
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant( Instant.ofEpochMilli( System.currentTimeMillis() ),
+                ZoneId.from( ZoneOffset.UTC ) );
+        return DATE_TIME_FORMATTER.format( zonedDateTime );
+    }
 
     /**
      * Utility method to write a content in a given file.

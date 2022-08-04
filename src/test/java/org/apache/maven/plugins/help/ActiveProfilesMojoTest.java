@@ -95,7 +95,7 @@ public class ActiveProfilesMojoTest
         Map<String, List<String>> profiles = new HashMap<>();
         profiles.put( "external", externals ); // from settings
         profiles.put( "org.apache.maven.test:test:1.0", pom ); // from POM
-        profiles.put( "", Collections.<String>emptyList() ); // from super POM
+        profiles.put( "", Collections.emptyList() ); // from super POM
         return profiles;
     }
 

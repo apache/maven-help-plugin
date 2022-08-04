@@ -19,14 +19,13 @@ package org.apache.maven.plugins.help;
  * under the License.
  */
 
-import org.apache.commons.lang3.time.DateFormatUtils;
+import java.io.IOException;
+import java.util.Properties;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
-
-import java.io.IOException;
-import java.util.Properties;
 
 /**
  * Displays a list of the platform details like system properties and environment variables.
@@ -92,11 +91,9 @@ public class SystemMojo
 
         if ( output != null )
         {
-            String formattedDateTime = DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT
-                .format( System.currentTimeMillis() );
             StringBuilder sb = new StringBuilder();
             sb.append( "Created by: " ).append( getClass().getName() ).append( LS );
-            sb.append( "Created on: " ).append( formattedDateTime ).append( LS ).append( LS );
+            sb.append( "Created on: " ).append( formatCurrentMillis() ).append( LS ).append( LS );
             sb.append( message.toString() );
 
             try
