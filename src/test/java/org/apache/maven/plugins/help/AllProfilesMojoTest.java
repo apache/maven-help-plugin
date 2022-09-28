@@ -99,9 +99,9 @@ public class AllProfilesMojoTest
         mojo.execute();
 
         String file = readFile( "profiles-from-pom.txt" );
-        assertTrue( file.contains( "Profile Id: pro-1 (Active: true , Source: pom)" ) );
-        assertTrue( file.contains( "Profile Id: pro-2 (Active: false , Source: pom)" ) );
-        assertTrue( file.contains( "Profile Id: pro-3 (Active: false , Source: pom)" ) );
+        assertTrue( file.contains( "Profile Id: pro-1 (Active: true, Source: pom)" ) );
+        assertTrue( file.contains( "Profile Id: pro-2 (Active: false, Source: pom)" ) );
+        assertTrue( file.contains( "Profile Id: pro-3 (Active: false, Source: pom)" ) );
     }
 
     /**
@@ -127,7 +127,7 @@ public class AllProfilesMojoTest
         mojo.execute();
 
         String file = readFile( "profiles-from-parent-pom.txt" );
-        assertTrue( file.contains( "Profile Id: pro-1 (Active: true , Source: pom)" ) );
+        assertTrue( file.contains( "Profile Id: pro-1 (Active: true, Source: pom)" ) );
     }
     
     /**
@@ -153,8 +153,8 @@ public class AllProfilesMojoTest
         mojo.execute();
 
         String file = readFile( "profiles-from-settings.txt" );
-        assertTrue( file.contains( "Profile Id: settings-1 (Active: true , Source: settings.xml)" ) );
-        assertTrue( file.contains( "Profile Id: settings-2 (Active: false , Source: settings.xml)" ) );
+        assertTrue( file.contains( "Profile Id: settings-1 (Active: true, Source: settings.xml)" ) );
+        assertTrue( file.contains( "Profile Id: settings-2 (Active: false, Source: settings.xml)" ) );
     }
 
     private Profile newPomProfile( String id, String source )
