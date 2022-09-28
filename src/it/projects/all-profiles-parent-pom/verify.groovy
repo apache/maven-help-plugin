@@ -21,8 +21,8 @@ def buildLog = new File( basedir, 'build.log' );
 assert buildLog.exists()
 
 // 2 = parent + child
-assert 2 == buildLog.text.count( '  Profile Id: it-repo (Active: true , Source: settings.xml)' )
-assert 2 == buildLog.text.count( '  Profile Id: profile-active-from-parent-pom (Active: true , Source: pom)' ) 
-assert 2 == buildLog.text.count( '  Profile Id: profile-inactive-from-parent-pom (Active: false , Source: pom)' )
-assert 1 == buildLog.text.count( '  Profile Id: profile-active-from-child-pom (Active: true , Source: pom)' ) 
-assert 1 == buildLog.text.count( '  Profile Id: profile-inactive-from-child-pom (Active: false , Source: pom)' )
+assert 2 == buildLog.text.count( '  Profile Id: it-repo (Active: true, Source: settings.xml)' )
+assert 2 == buildLog.text.count( '  Profile Id: profile-active-from-parent-pom (Active: true, Source: pom)' ) 
+assert 2 == buildLog.text.count( '  Profile Id: profile-inactive-from-parent-pom (Active: false, Source: pom)' )
+assert 1 == buildLog.text.count( '  Profile Id: profile-active-from-child-pom (Active: true, Source: pom)' ) 
+assert 1 == buildLog.text.count( '  Profile Id: profile-inactive-from-child-pom (Active: false, Source: pom)' )

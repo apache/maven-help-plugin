@@ -124,7 +124,7 @@ public class AllProfilesMojo
         for ( Profile p : profilesByIds.values() )
         {
             sb.append( "  Profile Id: " ).append( p.getId() );
-            sb.append( " (Active: " ).append( active ).append( " , Source: " ).append( p.getSource() ).append( ")" );
+            sb.append( " (Active: " ).append( active ).append( ", Source: " ).append( p.getSource() ).append( ")" );
             sb.append( LS );
         }
     }
