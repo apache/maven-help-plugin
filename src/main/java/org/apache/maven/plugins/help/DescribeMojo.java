@@ -432,7 +432,7 @@ public class DescribeMojo
         if ( name == null )
         {
             // Can be null because of MPLUGIN-137 (and descriptors generated with maven-plugin-tools-api <= 2.4.3)
-            org.eclipse.aether.artifact.Artifact aetherArtifact = new DefaultArtifact(
+            Artifact aetherArtifact = new DefaultArtifact(
                     pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion() );
             ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
             pbr.setRemoteRepositories( remoteRepositories );
@@ -978,9 +978,9 @@ public class DescribeMojo
         pbr.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
         try
         {
-            org.eclipse.aether.artifact.Artifact jar = resolveArtifact(
+            Artifact jar = resolveArtifact(
                     new DefaultArtifact( pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion() ) ).getArtifact();
-            org.eclipse.aether.artifact.Artifact pom = resolveArtifact(
+            Artifact pom = resolveArtifact(
                     new DefaultArtifact( pd.getGroupId(), pd.getArtifactId(), "pom", pd.getVersion() ) ).getArtifact();
             MavenProject mavenProject = projectBuilder.build( pom.getFile(), pbr ).getProject();
             urls.add( jar.getFile().toURI().toURL() );

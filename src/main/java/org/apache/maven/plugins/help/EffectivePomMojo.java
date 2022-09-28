@@ -337,7 +337,7 @@ public class EffectivePomMojo
 
         @Override
         protected void writeXpp3DomToSerializer( Xpp3Dom dom, XmlSerializer serializer )
-            throws java.io.IOException
+            throws IOException
         {
             // default method uses Xpp3Dom input location tracking, not available in older Maven versions
             // use old Xpp3Dom serialization, without input location tracking
