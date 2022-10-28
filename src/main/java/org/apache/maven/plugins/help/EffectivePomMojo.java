@@ -101,6 +101,15 @@ public class EffectivePomMojo
     @Parameter( property = "verbose", defaultValue = "false" )
     private boolean verbose = false;
 
+    /**
+     * Generate an effective pom for each module individually and
+     * save it in ${project.build.outputDirectory}/effective.pom.xml.
+     *
+     * @since 3.3.0
+     */
+    @Parameter( property = "individual", defaultValue = "false" )
+    private boolean individual = false;
+
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
