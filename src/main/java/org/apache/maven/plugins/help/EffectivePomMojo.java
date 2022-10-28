@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.maven.model.InputLocation;
-import org.apache.maven.model.Model;
 import org.apache.maven.model.InputSource;
+import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.model.io.xpp3.MavenXpp3WriterExOldSupport;
 import org.apache.maven.plugin.MojoExecution;
@@ -55,7 +55,7 @@ import org.codehaus.plexus.util.xml.pull.XmlSerializer;
  */
 @Mojo( name = "effective-pom", aggregator = true )
 public class EffectivePomMojo
-    extends AbstractEffectiveMojo
+        extends AbstractEffectiveMojo
 {
     // ----------------------------------------------------------------------
     // Mojo parameters
@@ -95,7 +95,7 @@ public class EffectivePomMojo
 
     /**
      * Output POM input location as comments.
-     * 
+     *
      * @since 3.2.0
      */
     @Parameter( property = "verbose", defaultValue = "false" )
@@ -114,9 +114,11 @@ public class EffectivePomMojo
     // Public methods
     // ----------------------------------------------------------------------
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void execute()
-        throws MojoExecutionException
+            throws MojoExecutionException
     {
         if ( StringUtils.isNotEmpty( artifact ) )
         {
@@ -126,10 +128,10 @@ public class EffectivePomMojo
 
         StringWriter w = new StringWriter();
         String encoding = output != null ? project.getModel().getModelEncoding()
-                                : System.getProperty( "file.encoding" );
+                : System.getProperty( "file.encoding" );
         XMLWriter writer =
-            new PrettyPrintXMLWriter( w, StringUtils.repeat( " ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE ),
-                                      encoding, null );
+                new PrettyPrintXMLWriter( w, StringUtils.repeat( " ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE ),
+                        encoding, null );
 
         writeHeader( writer );
 
@@ -207,11 +209,11 @@ public class EffectivePomMojo
      * Method for writing the effective pom informations of the current build.
      *
      * @param project the project of the current build, not null.
-     * @param writer the XML writer , not null, not null.
+     * @param writer  the XML writer , not null, not null.
      * @throws MojoExecutionException if any
      */
     private void writeEffectivePom( MavenProject project, XMLWriter writer )
-        throws MojoExecutionException
+            throws MojoExecutionException
     {
         Model pom = project.getModel();
         cleanModel( pom );
@@ -222,7 +224,7 @@ public class EffectivePomMojo
             if ( verbose )
             {
                 // try to use Maven core-provided xpp3 extended writer (available since Maven 3.6.1)
-                if ( ! writeMavenXpp3WriterEx( sWriter, pom ) )
+                if ( !writeMavenXpp3WriterEx( sWriter, pom ) )
                 {
                     // xpp3 extended writer not provided by Maven core, use local code
                     new EffectiveWriterExOldSupport().write( sWriter, pom );
@@ -261,11 +263,11 @@ public class EffectivePomMojo
     private void warnWriteMavenXpp3WriterEx( Throwable t )
     {
         getLog().warn( "Unexpected exception while running Maven Model Extended Writer, "
-            + "falling back to old internal implementation.", t );
+                + "falling back to old internal implementation.", t );
     }
 
     private boolean writeMavenXpp3WriterEx( Writer writer, Model model )
-        throws IOException
+            throws IOException
     {
         try
         {
@@ -273,7 +275,7 @@ public class EffectivePomMojo
             Object mavenXpp3WriterEx = mavenXpp3WriterExClass.getDeclaredConstructor().newInstance();
 
             Method setStringFormatter =
-                mavenXpp3WriterExClass.getMethod( "setStringFormatter", InputLocation.StringFormatter.class );
+                    mavenXpp3WriterExClass.getMethod( "setStringFormatter", InputLocation.StringFormatter.class );
             setStringFormatter.invoke( mavenXpp3WriterEx, new InputLocationStringFormatter() );
 
             Method write = mavenXpp3WriterExClass.getMethod( "write", Writer.class, Model.class );
@@ -321,7 +323,7 @@ public class EffectivePomMojo
     }
 
     private static class InputLocationStringFormatter
-        extends InputLocation.StringFormatter
+            extends InputLocation.StringFormatter
     {
 
         public String toString( InputLocation location )
@@ -335,7 +337,7 @@ public class EffectivePomMojo
      * Xpp3 extended writer extension to improve default InputSource display
      */
     private static class EffectiveWriterExOldSupport
-        extends MavenXpp3WriterExOldSupport
+            extends MavenXpp3WriterExOldSupport
     {
 
         @Override
@@ -346,7 +348,7 @@ public class EffectivePomMojo
 
         @Override
         protected void writeXpp3DomToSerializer( Xpp3Dom dom, XmlSerializer serializer )
-            throws IOException
+                throws IOException
         {
             // default method uses Xpp3Dom input location tracking, not available in older Maven versions
             // use old Xpp3Dom serialization, without input location tracking
