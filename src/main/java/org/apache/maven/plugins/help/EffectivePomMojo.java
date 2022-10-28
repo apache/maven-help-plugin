@@ -128,63 +128,73 @@ public class EffectivePomMojo
         }
         if ( individual )
         {
-            String encoding = project.getModel().getModelEncoding();
-            if ( shouldWriteAllEffectivePOMsInReactor() )
+            generateIndividualEffectivePom();
+        }
+        else
+        {
+            generateSingleEffectivePom();
+        }
+    }
+
+    private void generateSingleEffectivePom() throws MojoExecutionException
+    {
+        StringWriter w = new StringWriter();
+        String encoding = output != null ? project.getModel().getModelEncoding()
+                : System.getProperty( "file.encoding" );
+        XMLWriter writer =
+                getPrettyPrintXMLWriterForEffectivePom( w, encoding );
+
+        writeHeader( writer );
+        if ( shouldWriteAllEffectivePOMsInReactor() )
+        {
+            // outer root element
+            writer.startElement( "projects" );
+            for ( MavenProject subProject : projects )
             {
-                // outer root element
-                for ( MavenProject subProject : projects )
-                {
-                    StringWriter w = new StringWriter();
-                    XMLWriter writer =
-                            getPrettyPrintXMLWriterForEffectivePom( w, encoding );
-                    writeHeader( writer );
-                    writeEffectivePom( subProject, writer );
-                    String effectivePom = prettyFormat( w.toString(), encoding, false );
-                    effectivePom = prettyFormatVerbose( effectivePom );
-                    File effectiveOutput = new File( subProject.getBuild().getDirectory() + "/effective.pom.xml" );
-                    reportEffectivePom( effectivePom, effectiveOutput );
-                }
+                writeEffectivePom( subProject, writer );
             }
-            else
+            writer.endElement();
+        }
+        else
+        {
+            writeEffectivePom( project, writer );
+        }
+
+        String effectivePom = prettyFormat( w.toString(), encoding, false );
+        effectivePom = prettyFormatVerbose( effectivePom );
+        reportEffectivePom( effectivePom, output );
+    }
+
+    private void generateIndividualEffectivePom() throws MojoExecutionException
+    {
+        String encoding = project.getModel().getModelEncoding();
+        if ( shouldWriteAllEffectivePOMsInReactor() )
+        {
+            // outer root element
+            for ( MavenProject subProject : projects )
             {
                 StringWriter w = new StringWriter();
                 XMLWriter writer =
                         getPrettyPrintXMLWriterForEffectivePom( w, encoding );
                 writeHeader( writer );
-                writeEffectivePom( project, writer );
+                writeEffectivePom( subProject, writer );
                 String effectivePom = prettyFormat( w.toString(), encoding, false );
                 effectivePom = prettyFormatVerbose( effectivePom );
-                File effectiveOutput = new File( project.getBuild().getDirectory() + "/effective.pom.xml" );
+                File effectiveOutput = new File( subProject.getBuild().getDirectory() + "/effective.pom.xml" );
                 reportEffectivePom( effectivePom, effectiveOutput );
             }
         }
         else
         {
             StringWriter w = new StringWriter();
-            String encoding = output != null ? project.getModel().getModelEncoding()
-                    : System.getProperty( "file.encoding" );
             XMLWriter writer =
                     getPrettyPrintXMLWriterForEffectivePom( w, encoding );
-
             writeHeader( writer );
-            if ( shouldWriteAllEffectivePOMsInReactor() )
-            {
-                // outer root element
-                writer.startElement( "projects" );
-                for ( MavenProject subProject : projects )
-                {
-                    writeEffectivePom( subProject, writer );
-                }
-                writer.endElement();
-            }
-            else
-            {
-                writeEffectivePom( project, writer );
-            }
-
+            writeEffectivePom( project, writer );
             String effectivePom = prettyFormat( w.toString(), encoding, false );
             effectivePom = prettyFormatVerbose( effectivePom );
-            reportEffectivePom( effectivePom, output );
+            File effectiveOutput = new File( project.getBuild().getDirectory() + "/effective.pom.xml" );
+            reportEffectivePom( effectivePom, effectiveOutput );
         }
     }
 
