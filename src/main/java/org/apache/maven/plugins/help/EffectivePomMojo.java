@@ -180,7 +180,8 @@ public class EffectivePomMojo
                 writeEffectivePom( subProject, writer );
                 String effectivePom = prettyFormat( w.toString(), encoding, false );
                 effectivePom = prettyFormatVerbose( effectivePom );
-                File effectiveOutput = new File( subProject.getBuild().getDirectory() + "/effective.pom.xml" );
+                File effectiveOutput = output == null ? null
+                        : getRelativeOutput( subProject );
                 reportEffectivePom( effectivePom, effectiveOutput );
             }
         }
@@ -193,9 +194,20 @@ public class EffectivePomMojo
             writeEffectivePom( project, writer );
             String effectivePom = prettyFormat( w.toString(), encoding, false );
             effectivePom = prettyFormatVerbose( effectivePom );
-            File effectiveOutput = new File( project.getBuild().getDirectory() + "/effective.pom.xml" );
+            File effectiveOutput = output == null ? null
+                    : getRelativeOutput( project );
             reportEffectivePom( effectivePom, effectiveOutput );
         }
+    }
+
+    private File getRelativeOutput( MavenProject relativeProject )
+    {
+        String rawOutputPath = output.getPath();
+        String rawBasedirPath = project.getBasedir().getPath();
+        String result = rawOutputPath.contains( rawBasedirPath )
+                ? rawOutputPath.replace( rawBasedirPath, "" )
+                : output.getName();
+        return new File( relativeProject.getBuild().getDirectory() + "/" + result );
     }
 
     private String prettyFormatVerbose( String effectivePom )
@@ -224,10 +236,10 @@ public class EffectivePomMojo
             }
             catch ( IOException e )
             {
-                throw new MojoExecutionException( "Cannot write effective-POM to output: " + effectiveOutput, e );
+                throw new MojoExecutionException( "Cannot write effective POM to output: " + effectiveOutput, e );
             }
 
-            getLog().info( "Effective-POM written to: " + effectiveOutput );
+            getLog().info( "Effective POM written to: " + effectiveOutput );
         }
         else
         {
