@@ -28,7 +28,7 @@
   </parent>
 
   <artifactId>maven-help-plugin</artifactId>
-  <version>3.4.1-SNAPSHOT</version>
+  <version>3.5.0-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
   <name>Apache Maven Help Plugin</name>
@@ -162,7 +162,7 @@
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>
       <artifactId>maven-reporting-api</artifactId>
-      <version>3.1.1</version>
+      <version>4.0.0-M9</version>
       <exclusions>
         <!-- we only need one interface MavenReport -->
         <exclusion>
@@ -203,7 +203,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <!-- commons-lang3 > 3.12.0 requires at least Java 8 -->
       <version>3.12.0</version>
     </dependency>
 
