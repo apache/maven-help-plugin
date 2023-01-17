@@ -70,7 +70,7 @@
   <properties>
     <javaVersion>8</javaVersion>
     <mavenVersion>3.2.5</mavenVersion>
-    <mavenPluginToolsVersion>3.6.4</mavenPluginToolsVersion>
+    <mavenPluginToolsVersion>3.7.1</mavenPluginToolsVersion>
     <project.build.outputTimestamp>2022-08-14T12:24:27Z</project.build.outputTimestamp>
   </properties>
 
