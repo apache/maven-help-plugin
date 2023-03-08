@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-plugins</artifactId>
-    <version>37</version>
+    <version>39</version>
     <relativePath />
   </parent>
 
@@ -70,7 +70,6 @@
   <properties>
     <javaVersion>8</javaVersion>
     <mavenVersion>3.2.5</mavenVersion>
-    <mavenPluginToolsVersion>3.6.4</mavenPluginToolsVersion>
     <project.build.outputTimestamp>2022-08-14T12:24:27Z</project.build.outputTimestamp>
   </properties>
 
@@ -111,7 +110,7 @@
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-tools-generators</artifactId>
-      <version>${mavenPluginToolsVersion}</version>
+      <version>${maven.plugin.tools.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
@@ -126,7 +125,6 @@
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
-      <version>${mavenPluginToolsVersion}</version>
       <scope>provided</scope>
     </dependency>
 
