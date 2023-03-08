@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.help;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,7 @@ package org.apache.maven.plugins.help;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.help;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -42,10 +41,8 @@ import org.apache.maven.settings.SettingsUtils;
  * @author <a href="mailto:rahul.thakur.xdev@gmail.com">Rahul Thakur</a>
  * @since 2.1
  */
-@Mojo( name = "all-profiles", requiresProject = false )
-public class AllProfilesMojo
-    extends AbstractHelpMojo
-{
+@Mojo(name = "all-profiles", requiresProject = false)
+public class AllProfilesMojo extends AbstractHelpMojo {
     // ----------------------------------------------------------------------
     // Mojo parameters
     // ----------------------------------------------------------------------
@@ -53,13 +50,13 @@ public class AllProfilesMojo
     /**
      * This is the list of projects currently slated to be built by Maven.
      */
-    @Parameter( defaultValue = "${reactorProjects}", required = true, readonly = true )
+    @Parameter(defaultValue = "${reactorProjects}", required = true, readonly = true)
     private List<MavenProject> projects;
 
     /**
      * The list of profiles defined in the current Maven settings.
      */
-    @Parameter( defaultValue = "${settings.profiles}", readonly = true, required = true )
+    @Parameter(defaultValue = "${settings.profiles}", readonly = true, required = true)
     private List<org.apache.maven.settings.Profile> settingsProfiles;
 
     // ----------------------------------------------------------------------
@@ -67,51 +64,42 @@ public class AllProfilesMojo
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
-    public void execute()
-        throws MojoExecutionException, MojoFailureException
-    {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         StringBuilder descriptionBuffer = new StringBuilder();
 
-        for ( MavenProject project : projects )
-        {
-            descriptionBuffer.append( "Listing Profiles for Project: " ).append( project.getId() ).append( LS );
-            
+        for (MavenProject project : projects) {
+            descriptionBuffer
+                    .append("Listing Profiles for Project: ")
+                    .append(project.getId())
+                    .append(LS);
+
             Map<String, Profile> allProfilesByIds = new HashMap<>();
             Map<String, Profile> activeProfilesByIds = new HashMap<>();
-            addSettingsProfiles( allProfilesByIds );
-            addProjectPomProfiles( project, allProfilesByIds, activeProfilesByIds );
+            addSettingsProfiles(allProfilesByIds);
+            addProjectPomProfiles(project, allProfilesByIds, activeProfilesByIds);
 
             // now display
-            if ( allProfilesByIds.isEmpty() )
-            {
-                getLog().warn( "No profiles detected!" );
-            }
-            else
-            {
+            if (allProfilesByIds.isEmpty()) {
+                getLog().warn("No profiles detected!");
+            } else {
                 // active Profiles will be a subset of *all* profiles
-                allProfilesByIds.keySet().removeAll( activeProfilesByIds.keySet() );
+                allProfilesByIds.keySet().removeAll(activeProfilesByIds.keySet());
 
-                writeProfilesDescription( descriptionBuffer, activeProfilesByIds, true );
-                writeProfilesDescription( descriptionBuffer, allProfilesByIds, false );
+                writeProfilesDescription(descriptionBuffer, activeProfilesByIds, true);
+                writeProfilesDescription(descriptionBuffer, allProfilesByIds, false);
             }
         }
 
-        if ( output != null )
-        {
-            try
-            {
-                writeFile( output, descriptionBuffer );
-            }
-            catch ( IOException e )
-            {
-                throw new MojoExecutionException( "Cannot write profiles description to output: " + output, e );
+        if (output != null) {
+            try {
+                writeFile(output, descriptionBuffer);
+            } catch (IOException e) {
+                throw new MojoExecutionException("Cannot write profiles description to output: " + output, e);
             }
 
-            getLog().info( "Wrote descriptions to: " + output );
-        }
-        else
-        {
-            getLog().info( descriptionBuffer.toString() );
+            getLog().info("Wrote descriptions to: " + output);
+        } else {
+            getLog().info(descriptionBuffer.toString());
         }
     }
 
@@ -119,13 +107,15 @@ public class AllProfilesMojo
     // Private methods
     // ----------------------------------------------------------------------
 
-    private void writeProfilesDescription( StringBuilder sb, Map<String, Profile> profilesByIds, boolean active )
-    {
-        for ( Profile p : profilesByIds.values() )
-        {
-            sb.append( "  Profile Id: " ).append( p.getId() );
-            sb.append( " (Active: " ).append( active ).append( ", Source: " ).append( p.getSource() ).append( ")" );
-            sb.append( LS );
+    private void writeProfilesDescription(StringBuilder sb, Map<String, Profile> profilesByIds, boolean active) {
+        for (Profile p : profilesByIds.values()) {
+            sb.append("  Profile Id: ").append(p.getId());
+            sb.append(" (Active: ")
+                    .append(active)
+                    .append(", Source: ")
+                    .append(p.getSource())
+                    .append(")");
+            sb.append(LS);
         }
     }
 
@@ -136,29 +126,23 @@ public class AllProfilesMojo
      * @param allProfiles Map to add the profiles to.
      * @param activeProfiles Map to add the active profiles to.
      */
-    private void addProjectPomProfiles( MavenProject project, Map<String, Profile> allProfiles,
-                                        Map<String, Profile> activeProfiles )
-    {
-        if ( project == null )
-        {
+    private void addProjectPomProfiles(
+            MavenProject project, Map<String, Profile> allProfiles, Map<String, Profile> activeProfiles) {
+        if (project == null) {
             // shouldn't happen as this mojo requires a project
-            getLog().debug( "No pom.xml found to read Profiles from." );
+            getLog().debug("No pom.xml found to read Profiles from.");
             return;
         }
 
-        getLog().debug( "Attempting to read profiles from pom.xml..." );
+        getLog().debug("Attempting to read profiles from pom.xml...");
 
-        while ( project != null )
-        {
-            for ( Profile profile : project.getModel().getProfiles() )
-            {
-                allProfiles.put( profile.getId(), profile );
+        while (project != null) {
+            for (Profile profile : project.getModel().getProfiles()) {
+                allProfiles.put(profile.getId(), profile);
             }
-            if ( project.getActiveProfiles() != null )
-            {
-                for ( Profile profile : project.getActiveProfiles() )
-                {
-                    activeProfiles.put( profile.getId(), profile );
+            if (project.getActiveProfiles() != null) {
+                for (Profile profile : project.getActiveProfiles()) {
+                    activeProfiles.put(profile.getId(), profile);
                 }
             }
             project = project.getParent();
@@ -170,13 +154,11 @@ public class AllProfilesMojo
      *
      * @param allProfiles Map to add the profiles to.
      */
-    private void addSettingsProfiles( Map<String, Profile> allProfiles )
-    {
-        getLog().debug( "Attempting to read profiles from settings.xml..." );
-        for ( org.apache.maven.settings.Profile settingsProfile : settingsProfiles )
-        {
-            Profile profile = SettingsUtils.convertFromSettingsProfile( settingsProfile );
-            allProfiles.put( profile.getId(), profile );
+    private void addSettingsProfiles(Map<String, Profile> allProfiles) {
+        getLog().debug("Attempting to read profiles from settings.xml...");
+        for (org.apache.maven.settings.Profile settingsProfile : settingsProfiles) {
+            Profile profile = SettingsUtils.convertFromSettingsProfile(settingsProfile);
+            allProfiles.put(profile.getId(), profile);
         }
     }
 }

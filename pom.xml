@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements. See the NOTICE file
@@ -18,7 +17,6 @@
   specific language governing permissions and limitations
   under the License.
 -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -34,12 +32,10 @@
   <packaging>maven-plugin</packaging>
 
   <name>Apache Maven Help Plugin</name>
-  <description>
-    The Maven Help plugin provides goals aimed at helping to make sense out of
+  <description>The Maven Help plugin provides goals aimed at helping to make sense out of
     the build environment. It includes the ability to view the effective
     POM and settings files, after inheritance and active profiles
-    have been applied, as well as a describe a particular plugin goal to give usage information.
-  </description>
+    have been applied, as well as a describe a particular plugin goal to give usage information.</description>
   <inceptionYear>2001</inceptionYear>
 
   <prerequisites>
@@ -49,8 +45,8 @@
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-help-plugin.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-help-plugin.git</developerConnection>
-    <url>https://github.com/apache/maven-help-plugin/tree/${project.scm.tag}</url>
     <tag>HEAD</tag>
+    <url>https://github.com/apache/maven-help-plugin/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
     <system>JIRA</system>
@@ -186,7 +182,8 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.8.1</version> <!-- commons-lang3 > 3.8.1 requires at least Java 8 -->
+      <!-- commons-lang3 > 3.8.1 requires at least Java 8 -->
+      <version>3.8.1</version>
     </dependency>
 
     <!-- test -->
@@ -240,10 +237,10 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
-            <phase>generate-sources</phase>
             <goals>
               <goal>unpack</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <artifactItems>
                 <artifactItem>
@@ -267,7 +264,8 @@
           <models>
             <model>target/apache-maven-${mavenVersion}/maven-model/src/main/mdo/maven.mdo</model>
           </models>
-          <extendedClassnameSuffix>ExOldSupport</extendedClassnameSuffix><!-- to avoid conflict with class provided by Maven core -->
+          <!-- to avoid conflict with class provided by Maven core -->
+          <extendedClassnameSuffix>ExOldSupport</extendedClassnameSuffix>
         </configuration>
         <executions>
           <execution>

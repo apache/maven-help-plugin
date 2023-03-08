@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.help;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,12 @@ package org.apache.maven.plugins.help;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.help;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
@@ -43,26 +47,19 @@ import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.eclipse.aether.resolution.ArtifactRequest;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.List;
-
 /**
  * Base class with some Help Mojo functionalities.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @since 2.1
  */
-public abstract class AbstractHelpMojo
-    extends AbstractMojo
-{
+public abstract class AbstractHelpMojo extends AbstractMojo {
     /** The maximum length of a display line. */
     protected static final int LINE_LENGTH = 79;
-    
+
     /** The line separator for the current OS. */
-    protected static final String LS = System.getProperty( "line.separator" );
-    
+    protected static final String LS = System.getProperty("line.separator");
+
     /**
      * Maven Project Builder component.
      */
@@ -78,26 +75,26 @@ public abstract class AbstractHelpMojo
     /**
      * Remote repositories used for the project.
      */
-    @Parameter( defaultValue = "${project.remoteArtifactRepositories}", required = true, readonly = true )
+    @Parameter(defaultValue = "${project.remoteArtifactRepositories}", required = true, readonly = true)
     protected List<ArtifactRepository> remoteRepositories;
 
     /**
      * Plugin repositories used for the project.
      */
-    @Parameter( defaultValue = "${project.pluginArtifactRepositories}", required = true, readonly = true )
+    @Parameter(defaultValue = "${project.pluginArtifactRepositories}", required = true, readonly = true)
     protected List<ArtifactRepository> pluginArtifactRepositories;
 
     /**
      * Local Repository.
      */
-    @Parameter( defaultValue = "${localRepository}", required = true, readonly = true )
+    @Parameter(defaultValue = "${localRepository}", required = true, readonly = true)
     protected ArtifactRepository localRepository;
-    
+
     /**
      * The current build session instance. This is used for
      * plugin manager API calls.
      */
-    @Parameter( defaultValue = "${session}", readonly = true, required = true )
+    @Parameter(defaultValue = "${session}", readonly = true, required = true)
     protected MavenSession session;
 
     /**
@@ -105,7 +102,7 @@ public abstract class AbstractHelpMojo
      * <br>
      * <b>Note</b>: Could be a relative path.
      */
-    @Parameter( property = "output" )
+    @Parameter(property = "output")
     protected File output;
 
     /**
@@ -116,10 +113,8 @@ public abstract class AbstractHelpMojo
      * @throws IOException if any
      * @see #writeFile(File, String)
      */
-    protected static void writeFile( File output, StringBuilder content )
-        throws IOException
-    {
-        writeFile( output, content.toString() );
+    protected static void writeFile(File output, StringBuilder content) throws IOException {
+        writeFile(output, content.toString());
     }
 
     /**
@@ -129,44 +124,37 @@ public abstract class AbstractHelpMojo
      * @param content contains the content to be written to the file.
      * @throws IOException if any
      */
-    protected static void writeFile( File output, String content )
-        throws IOException
-    {
-        if ( output == null )
-        {
+    protected static void writeFile(File output, String content) throws IOException {
+        if (output == null) {
             return;
         }
 
         output.getParentFile().mkdirs();
-        try ( Writer out = WriterFactory.newPlatformWriter( output ) )
-        {
-            out.write( content );
+        try (Writer out = WriterFactory.newPlatformWriter(output)) {
+            out.write(content);
         }
     }
-    
+
     /**
      * Parses the given String into GAV artifact coordinate information, adding the given type.
-     * 
+     *
      * @param artifactString should respect the format <code>groupId:artifactId[:version]</code>
      * @param type The extension for the artifact, must not be <code>null</code>.
      * @return the <code>Artifact</code> object for the <code>artifactString</code> parameter.
      * @throws MojoExecutionException if the <code>artifactString</code> doesn't respect the format.
      */
-    protected org.eclipse.aether.artifact.Artifact getAetherArtifact( String artifactString, String type )
-        throws MojoExecutionException
-    {
-        if ( StringUtils.isEmpty( artifactString ) )
-        {
-            throw new IllegalArgumentException( "artifact parameter could not be empty" );
+    protected org.eclipse.aether.artifact.Artifact getAetherArtifact(String artifactString, String type)
+            throws MojoExecutionException {
+        if (StringUtils.isEmpty(artifactString)) {
+            throw new IllegalArgumentException("artifact parameter could not be empty");
         }
 
         String groupId; // required
         String artifactId; // required
         String version; // optional
 
-        String[] artifactParts = artifactString.split( ":" );
-        switch ( artifactParts.length )
-        {
+        String[] artifactParts = artifactString.split(":");
+        switch (artifactParts.length) {
             case 2:
                 groupId = artifactParts[0];
                 artifactId = artifactParts[1];
@@ -178,59 +166,54 @@ public abstract class AbstractHelpMojo
                 version = artifactParts[2];
                 break;
             default:
-                throw new MojoExecutionException( "The artifact parameter '" + artifactString
-                    + "' should be conform to: " + "'groupId:artifactId[:version]'." );
+                throw new MojoExecutionException("The artifact parameter '" + artifactString
+                        + "' should be conform to: " + "'groupId:artifactId[:version]'.");
         }
 
-        return new DefaultArtifact( groupId, artifactId, type, version );
+        return new DefaultArtifact(groupId, artifactId, type, version);
     }
 
     /**
      * Retrieves the Maven Project associated with the given artifact String, in the form of
      * <code>groupId:artifactId[:version]</code>. This resolves the POM artifact at those coordinates and then builds
      * the Maven project from it.
-     * 
+     *
      * @param artifactString Coordinates of the Maven project to get.
      * @return New Maven project.
      * @throws MojoExecutionException If there was an error while getting the Maven project.
      */
-    protected MavenProject getMavenProject( String artifactString )
-        throws MojoExecutionException
-    {
-        try
-        {
-            ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
-            pbr.setRemoteRepositories( remoteRepositories );
-            pbr.setLocalRepository( localRepository );
-            pbr.setPluginArtifactRepositories( pluginArtifactRepositories );
-            pbr.setProject( null );
-            pbr.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
-            pbr.setResolveDependencies( true );
+    protected MavenProject getMavenProject(String artifactString) throws MojoExecutionException {
+        try {
+            ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+            pbr.setRemoteRepositories(remoteRepositories);
+            pbr.setLocalRepository(localRepository);
+            pbr.setPluginArtifactRepositories(pluginArtifactRepositories);
+            pbr.setProject(null);
+            pbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+            pbr.setResolveDependencies(true);
 
-            org.eclipse.aether.artifact.Artifact artifact = resolveArtifact(
-                    getAetherArtifact( artifactString, "pom" ) ).getArtifact();
+            org.eclipse.aether.artifact.Artifact artifact =
+                    resolveArtifact(getAetherArtifact(artifactString, "pom")).getArtifact();
 
-            return projectBuilder.build( artifact.getFile(), pbr ).getProject();
-        }
-        catch ( Exception e )
-        {
-            throw new MojoExecutionException( "Unable to get the POM for the artifact '" + artifactString
-                + "'. Verify the artifact parameter.", e );
+            return projectBuilder.build(artifact.getFile(), pbr).getProject();
+        } catch (Exception e) {
+            throw new MojoExecutionException(
+                    "Unable to get the POM for the artifact '" + artifactString + "'. Verify the artifact parameter.",
+                    e);
         }
     }
 
     protected org.eclipse.aether.resolution.ArtifactResult resolveArtifact(
-            org.eclipse.aether.artifact.Artifact artifact ) throws RepositoryException
-    {
-        List<RemoteRepository> repositories = RepositoryUtils.toRepos( remoteRepositories );
-        RepositorySystemSession repositorySession = session.getProjectBuildingRequest().getRepositorySession();
+            org.eclipse.aether.artifact.Artifact artifact) throws RepositoryException {
+        List<RemoteRepository> repositories = RepositoryUtils.toRepos(remoteRepositories);
+        RepositorySystemSession repositorySession =
+                session.getProjectBuildingRequest().getRepositorySession();
 
         // use descriptor to respect relocation
         ArtifactDescriptorResult artifactDescriptor = repositorySystem.readArtifactDescriptor(
-                repositorySession, new ArtifactDescriptorRequest( artifact, repositories, null ) );
+                repositorySession, new ArtifactDescriptorRequest(artifact, repositories, null));
 
-        return repositorySystem.resolveArtifact( repositorySession,
-                new ArtifactRequest( artifactDescriptor.getArtifact(), repositories, null ) );
+        return repositorySystem.resolveArtifact(
+                repositorySession, new ArtifactRequest(artifactDescriptor.getArtifact(), repositories, null));
     }
-
 }

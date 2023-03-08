@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.help.stubs;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,7 @@ package org.apache.maven.plugins.help.stubs;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.help.stubs;
 
 import java.io.FileReader;
 
@@ -28,36 +27,29 @@ import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  */
-public class DefaultMavenProjectStub
-    extends MavenProjectStub
-{
+public class DefaultMavenProjectStub extends MavenProjectStub {
     /**
      * Default constructor.
      */
-    public DefaultMavenProjectStub()
-    {
+    public DefaultMavenProjectStub() {
         MavenXpp3Reader pomReader = new MavenXpp3Reader();
         Model model;
 
-        try
-        {
-            try ( FileReader reader = new FileReader(
-                    getBasedir() + "/src/test/resources/unit/default-configuration/default-configuration-plugin-config.xml" ) )
-            {
-                model = pomReader.read( reader );
+        try {
+            try (FileReader reader = new FileReader(getBasedir()
+                    + "/src/test/resources/unit/default-configuration/default-configuration-plugin-config.xml")) {
+                model = pomReader.read(reader);
             }
             setModel(model);
-        }
-        catch ( Exception e )
-        {
-            throw new RuntimeException( e );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
-        setGroupId( model.getGroupId() );
-        setArtifactId( model.getArtifactId() );
-        setVersion( model.getVersion() );
-        setName( model.getName() );
-        setUrl( model.getUrl() );
-        setPackaging( model.getPackaging() );
+        setGroupId(model.getGroupId());
+        setArtifactId(model.getArtifactId());
+        setVersion(model.getVersion());
+        setName(model.getName());
+        setUrl(model.getUrl());
+        setPackaging(model.getPackaging());
     }
 }
