@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.help;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,12 +16,7 @@ package org.apache.maven.plugins.help;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+package org.apache.maven.plugins.help;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -42,174 +35,157 @@ import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.LoggerManager;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 /**
  * Test class for the evaluate mojo of the Help Plugin.
  */
-public class EvaluateMojoTest
-    extends AbstractMojoTestCase
-{
+public class EvaluateMojoTest extends AbstractMojoTestCase {
 
     private InterceptingLog interceptingLogger;
 
     @Override
-    protected void setUp()
-        throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         interceptingLogger =
-            new InterceptingLog( getContainer().lookup( LoggerManager.class ).getLoggerForComponent( Mojo.ROLE ) );
+                new InterceptingLog(getContainer().lookup(LoggerManager.class).getLoggerForComponent(Mojo.ROLE));
     }
 
     /**
      * Tests evaluation of an expression in interactive mode with a mock input handler.
      * @throws Exception in case of errors.
      */
-    public void testEvaluateWithoutExpression()
-        throws Exception
-    {
-        File testPom = new File( getBasedir(), "target/test-classes/unit/evaluate/plugin-config.xml" );
+    public void testEvaluateWithoutExpression() throws Exception {
+        File testPom = new File(getBasedir(), "target/test-classes/unit/evaluate/plugin-config.xml");
 
-        EvaluateMojo mojo = (EvaluateMojo) lookupMojo( "evaluate", testPom );
+        EvaluateMojo mojo = (EvaluateMojo) lookupMojo("evaluate", testPom);
 
-        InputHandler inputHandler = mock( InputHandler.class );
-        when( inputHandler.readLine() ).thenReturn( "${project.groupId}", "0" );
+        InputHandler inputHandler = mock(InputHandler.class);
+        when(inputHandler.readLine()).thenReturn("${project.groupId}", "0");
 
-        ExpressionEvaluator expressionEvaluator = mock( PluginParameterExpressionEvaluator.class );
-        when( expressionEvaluator.evaluate( anyString() ) ).thenReturn( "My result" );
+        ExpressionEvaluator expressionEvaluator = mock(PluginParameterExpressionEvaluator.class);
+        when(expressionEvaluator.evaluate(anyString())).thenReturn("My result");
 
-        setUpMojo( mojo, inputHandler, expressionEvaluator );
+        setUpMojo(mojo, inputHandler, expressionEvaluator);
 
         mojo.execute();
-        
-        String ls = System.getProperty( "line.separator" );
 
-        assertTrue( interceptingLogger.infoLogs.contains( ls + "My result" ) );
-        assertTrue( interceptingLogger.warnLogs.isEmpty() );
-        verify( expressionEvaluator ).evaluate( "${project.groupId}" );
-        verify( inputHandler, times( 2 ) ).readLine();
+        String ls = System.getProperty("line.separator");
+
+        assertTrue(interceptingLogger.infoLogs.contains(ls + "My result"));
+        assertTrue(interceptingLogger.warnLogs.isEmpty());
+        verify(expressionEvaluator).evaluate("${project.groupId}");
+        verify(inputHandler, times(2)).readLine();
     }
 
     /**
      * Tests evaluation of an expression in interactive mode with a mock input handler, when "output" is set.
      * @throws Exception in case of errors.
      */
-    public void testEvaluateWithoutExpressionWithOutput()
-        throws Exception
-    {
-        File testPom = new File( getBasedir(), "target/test-classes/unit/evaluate/plugin-config-output.xml" );
+    public void testEvaluateWithoutExpressionWithOutput() throws Exception {
+        File testPom = new File(getBasedir(), "target/test-classes/unit/evaluate/plugin-config-output.xml");
 
-        EvaluateMojo mojo = (EvaluateMojo) lookupMojo( "evaluate", testPom );
+        EvaluateMojo mojo = (EvaluateMojo) lookupMojo("evaluate", testPom);
 
-        InputHandler inputHandler = mock( InputHandler.class );
-        when( inputHandler.readLine() ).thenReturn( "${project.artifactId}", "0" );
+        InputHandler inputHandler = mock(InputHandler.class);
+        when(inputHandler.readLine()).thenReturn("${project.artifactId}", "0");
 
-        ExpressionEvaluator expressionEvaluator = mock( PluginParameterExpressionEvaluator.class );
-        when( expressionEvaluator.evaluate( anyString() ) ).thenReturn( "My result" );
+        ExpressionEvaluator expressionEvaluator = mock(PluginParameterExpressionEvaluator.class);
+        when(expressionEvaluator.evaluate(anyString())).thenReturn("My result");
 
-        setUpMojo( mojo, inputHandler, expressionEvaluator );
+        setUpMojo(mojo, inputHandler, expressionEvaluator);
 
         mojo.execute();
-        
-        String ls = System.getProperty( "line.separator" );
 
-        assertTrue( interceptingLogger.infoLogs.contains( ls + "My result" ) );
-        assertFalse( interceptingLogger.warnLogs.isEmpty() );
-        verify( expressionEvaluator ).evaluate( "${project.artifactId}" );
-        verify( inputHandler, times( 2 ) ).readLine();
+        String ls = System.getProperty("line.separator");
+
+        assertTrue(interceptingLogger.infoLogs.contains(ls + "My result"));
+        assertFalse(interceptingLogger.warnLogs.isEmpty());
+        verify(expressionEvaluator).evaluate("${project.artifactId}");
+        verify(inputHandler, times(2)).readLine();
     }
 
     /**
      * This test will check that only the <code>project.groupId</code> is printed to
      * stdout nothing else.
-     * 
+     *
      * @throws Exception in case of errors.
      * @see <a href="https://issues.apache.org/jira/browse/MPH-144">MPH-144</a>
      */
-    public void testEvaluateQuiteModeWithOutputOnStdout()
-        throws Exception
-    {
-        File testPom = new File( getBasedir(), "target/test-classes/unit/evaluate/plugin-config-quiet-stdout.xml" );
+    public void testEvaluateQuiteModeWithOutputOnStdout() throws Exception {
+        File testPom = new File(getBasedir(), "target/test-classes/unit/evaluate/plugin-config-quiet-stdout.xml");
 
-        EvaluateMojo mojo = (EvaluateMojo) lookupMojo( "evaluate", testPom );
+        EvaluateMojo mojo = (EvaluateMojo) lookupMojo("evaluate", testPom);
 
-        ExpressionEvaluator expressionEvaluator = mock( PluginParameterExpressionEvaluator.class );
-        when( expressionEvaluator.evaluate( anyString() ) ).thenReturn( "org.apache.maven.its.help" );
+        ExpressionEvaluator expressionEvaluator = mock(PluginParameterExpressionEvaluator.class);
+        when(expressionEvaluator.evaluate(anyString())).thenReturn("org.apache.maven.its.help");
 
         // Quiet mode given on command line.(simulation)
-        interceptingLogger.setInfoEnabled( false );
+        interceptingLogger.setInfoEnabled(false);
 
-        setUpMojo( mojo, null, expressionEvaluator );
+        setUpMojo(mojo, null, expressionEvaluator);
 
         PrintStream saveOut = System.out;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        System.setOut( new PrintStream( baos ) );
+        System.setOut(new PrintStream(baos));
 
-        try
-        {
+        try {
             mojo.execute();
-        }
-        finally
-        {
-            System.setOut( saveOut );
+        } finally {
+            System.setOut(saveOut);
             baos.close();
         }
 
         String stdResult = baos.toString();
-        assertEquals( "org.apache.maven.its.help", stdResult );
-        assertTrue( interceptingLogger.warnLogs.isEmpty() );
+        assertEquals("org.apache.maven.its.help", stdResult);
+        assertTrue(interceptingLogger.warnLogs.isEmpty());
     }
 
-    private void setUpMojo( EvaluateMojo mojo, InputHandler inputHandler, ExpressionEvaluator expressionEvaluator )
-        throws IllegalAccessException
-    {
-        setVariableValueToObject( mojo, "inputHandler", inputHandler );
-        setVariableValueToObject( mojo, "log", interceptingLogger );
-        setVariableValueToObject( mojo, "settings", new Settings() );
-        setVariableValueToObject( mojo, "project", new MavenProjectStub() );
-        setVariableValueToObject( mojo, "evaluator", expressionEvaluator );
+    private void setUpMojo(EvaluateMojo mojo, InputHandler inputHandler, ExpressionEvaluator expressionEvaluator)
+            throws IllegalAccessException {
+        setVariableValueToObject(mojo, "inputHandler", inputHandler);
+        setVariableValueToObject(mojo, "log", interceptingLogger);
+        setVariableValueToObject(mojo, "settings", new Settings());
+        setVariableValueToObject(mojo, "project", new MavenProjectStub());
+        setVariableValueToObject(mojo, "evaluator", expressionEvaluator);
     }
 
-    private static final class InterceptingLog
-        extends DefaultLog
-    {
+    private static final class InterceptingLog extends DefaultLog {
         private boolean isInfoEnabled;
 
         final List<String> infoLogs = new ArrayList<>();
 
         final List<String> warnLogs = new ArrayList<>();
 
-        public InterceptingLog( Logger logger )
-        {
-            super( logger );
+        public InterceptingLog(Logger logger) {
+            super(logger);
             this.isInfoEnabled = true;
         }
 
-        public void setInfoEnabled( boolean isInfoEnabled )
-        {
+        public void setInfoEnabled(boolean isInfoEnabled) {
             this.isInfoEnabled = isInfoEnabled;
         }
 
-        public boolean isInfoEnabled()
-        {
+        public boolean isInfoEnabled() {
             return isInfoEnabled;
         }
 
         @Override
-        public void info( CharSequence content )
-        {
-            if ( this.isInfoEnabled )
-            {
-                super.info( content );
-                infoLogs.add( content.toString() );
+        public void info(CharSequence content) {
+            if (this.isInfoEnabled) {
+                super.info(content);
+                infoLogs.add(content.toString());
             }
         }
 
         @Override
-        public void warn( CharSequence content )
-        {
-            super.warn( content );
-            warnLogs.add( content.toString() );
+        public void warn(CharSequence content) {
+            super.warn(content);
+            warnLogs.add(content.toString());
         }
     }
-
 }

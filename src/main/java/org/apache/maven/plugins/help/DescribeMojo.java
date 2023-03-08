@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.help;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,7 @@ package org.apache.maven.plugins.help;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.help;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,10 +68,8 @@ import org.eclipse.aether.artifact.DefaultArtifact;
  * @see <a href="http://maven.apache.org/general.html#What_is_a_Mojo">What is a Mojo?</a>
  * @since 2.0
  */
-@Mojo( name = "describe", requiresProject = false, aggregator = true )
-public class DescribeMojo
-    extends AbstractHelpMojo
-{
+@Mojo(name = "describe", requiresProject = false, aggregator = true)
+public class DescribeMojo extends AbstractHelpMojo {
     /**
      * The default indent size when writing description's Mojo.
      */
@@ -93,7 +90,7 @@ public class DescribeMojo
      */
     private static final String NO_REASON = "No reason given";
 
-    private static final Pattern EXPRESSION = Pattern.compile( "^\\$\\{([^}]+)\\}$" );
+    private static final Pattern EXPRESSION = Pattern.compile("^\\$\\{([^}]+)\\}$");
 
     // ----------------------------------------------------------------------
     // Mojo components
@@ -139,7 +136,7 @@ public class DescribeMojo
      * parameter is empty at execution time, this Mojo will instead use the
      * super-project.
      */
-    @org.apache.maven.plugins.annotations.Parameter( defaultValue = "${project}", readonly = true, required = true )
+    @org.apache.maven.plugins.annotations.Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
     /**
@@ -151,7 +148,7 @@ public class DescribeMojo
      * <li>groupId:artifactId:version, i.e. 'org.apache.maven.plugins:maven-help-plugin:2.0'</li>
      * </ol>
      */
-    @org.apache.maven.plugins.annotations.Parameter( property = "plugin", alias = "prefix" )
+    @org.apache.maven.plugins.annotations.Parameter(property = "plugin", alias = "prefix")
     private String plugin;
 
     /**
@@ -159,7 +156,7 @@ public class DescribeMojo
      * <br/>
      * <b>Note</b>: Should be used with <code>artifactId</code> parameter.
      */
-    @org.apache.maven.plugins.annotations.Parameter( property = "groupId" )
+    @org.apache.maven.plugins.annotations.Parameter(property = "groupId")
     private String groupId;
 
     /**
@@ -167,7 +164,7 @@ public class DescribeMojo
      * <br/>
      * <b>Note</b>: Should be used with <code>groupId</code> parameter.
      */
-    @org.apache.maven.plugins.annotations.Parameter( property = "artifactId" )
+    @org.apache.maven.plugins.annotations.Parameter(property = "artifactId")
     private String artifactId;
 
     /**
@@ -175,7 +172,7 @@ public class DescribeMojo
      * <br/>
      * <b>Note</b>: Should be used with <code>groupId/artifactId</code> parameters.
      */
-    @org.apache.maven.plugins.annotations.Parameter( property = "version" )
+    @org.apache.maven.plugins.annotations.Parameter(property = "version")
     private String version;
 
     /**
@@ -185,7 +182,7 @@ public class DescribeMojo
      *
      * @since 2.1
      */
-    @org.apache.maven.plugins.annotations.Parameter( property = "goal" )
+    @org.apache.maven.plugins.annotations.Parameter(property = "goal")
     private String goal;
 
     /**
@@ -193,7 +190,7 @@ public class DescribeMojo
      *
      * @since 2.1
      */
-    @org.apache.maven.plugins.annotations.Parameter( property = "detail", defaultValue = "false" )
+    @org.apache.maven.plugins.annotations.Parameter(property = "detail", defaultValue = "false")
     private boolean detail;
 
     /**
@@ -201,7 +198,7 @@ public class DescribeMojo
      *
      * @since 2.1
      */
-    @org.apache.maven.plugins.annotations.Parameter( property = "minimal", defaultValue = "false" )
+    @org.apache.maven.plugins.annotations.Parameter(property = "minimal", defaultValue = "false")
     private boolean minimal;
 
     /**
@@ -211,7 +208,7 @@ public class DescribeMojo
      *
      * @since 2.1
      */
-    @org.apache.maven.plugins.annotations.Parameter( property = "cmd" )
+    @org.apache.maven.plugins.annotations.Parameter(property = "cmd")
     private String cmd;
 
     // ----------------------------------------------------------------------
@@ -221,38 +218,30 @@ public class DescribeMojo
     /**
      * {@inheritDoc}
      */
-    public void execute()
-        throws MojoExecutionException, MojoFailureException
-    {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         StringBuilder descriptionBuffer = new StringBuilder();
 
         boolean describePlugin = true;
-        if ( StringUtils.isNotEmpty( cmd ) )
-        {
-            describePlugin = describeCommand( descriptionBuffer );
+        if (StringUtils.isNotEmpty(cmd)) {
+            describePlugin = describeCommand(descriptionBuffer);
         }
 
-        if ( describePlugin )
-        {
+        if (describePlugin) {
             PluginInfo pi = parsePluginLookupInfo();
-            PluginDescriptor descriptor = lookupPluginDescriptor( pi );
-            if ( StringUtils.isNotEmpty( goal ) )
-            {
-                MojoDescriptor mojo = descriptor.getMojo( goal );
-                if ( mojo == null )
-                {
-                    throw new MojoFailureException( "The goal '" + goal + "' does not exist in the plugin '"
-                        + pi.getPrefix() + "'" );
+            PluginDescriptor descriptor = lookupPluginDescriptor(pi);
+            if (StringUtils.isNotEmpty(goal)) {
+                MojoDescriptor mojo = descriptor.getMojo(goal);
+                if (mojo == null) {
+                    throw new MojoFailureException(
+                            "The goal '" + goal + "' does not exist in the plugin '" + pi.getPrefix() + "'");
                 }
-                describeMojo( mojo, descriptionBuffer );
-            }
-            else
-            {
-                describePlugin( descriptor, descriptionBuffer );
+                describeMojo(mojo, descriptionBuffer);
+            } else {
+                describePlugin(descriptor, descriptionBuffer);
             }
         }
 
-        writeDescription( descriptionBuffer );
+        writeDescription(descriptionBuffer);
     }
 
     // ----------------------------------------------------------------------
@@ -265,25 +254,17 @@ public class DescribeMojo
      * @param descriptionBuffer contains the description to be written to the file
      * @throws MojoExecutionException if any
      */
-    private void writeDescription( StringBuilder descriptionBuffer )
-        throws MojoExecutionException
-    {
-        if ( output != null )
-        {
-            try
-            {
-                writeFile( output, descriptionBuffer );
-            }
-            catch ( IOException e )
-            {
-                throw new MojoExecutionException( "Cannot write plugin/goal description to output: " + output, e );
+    private void writeDescription(StringBuilder descriptionBuffer) throws MojoExecutionException {
+        if (output != null) {
+            try {
+                writeFile(output, descriptionBuffer);
+            } catch (IOException e) {
+                throw new MojoExecutionException("Cannot write plugin/goal description to output: " + output, e);
             }
 
-            getLog().info( "Wrote descriptions to: " + output );
-        }
-        else
-        {
-            getLog().info( descriptionBuffer.toString() );
+            getLog().info("Wrote descriptions to: " + output);
+        } else {
+            getLog().info(descriptionBuffer.toString());
         }
     }
 
@@ -295,72 +276,57 @@ public class DescribeMojo
      * @throws MojoExecutionException if the plugin could not be verify
      * @throws MojoFailureException   if groupId or artifactId is empty
      */
-    private PluginDescriptor lookupPluginDescriptor( PluginInfo pi )
-        throws MojoExecutionException, MojoFailureException
-    {
+    private PluginDescriptor lookupPluginDescriptor(PluginInfo pi) throws MojoExecutionException, MojoFailureException {
         Plugin forLookup = null;
-        if ( StringUtils.isNotEmpty( pi.getPrefix() ) )
-        {
-            try
-            {
-                forLookup = mojoDescriptorCreator.findPluginForPrefix( pi.getPrefix(), session );
+        if (StringUtils.isNotEmpty(pi.getPrefix())) {
+            try {
+                forLookup = mojoDescriptorCreator.findPluginForPrefix(pi.getPrefix(), session);
+            } catch (NoPluginFoundForPrefixException e) {
+                throw new MojoExecutionException("Unable to find the plugin with prefix: " + pi.getPrefix(), e);
             }
-            catch ( NoPluginFoundForPrefixException e )
-            {
-                throw new MojoExecutionException( "Unable to find the plugin with prefix: " + pi.getPrefix(), e );
-            }
-        }
-        else if ( StringUtils.isNotEmpty( pi.getGroupId() ) && StringUtils.isNotEmpty( pi.getArtifactId() ) )
-        {
+        } else if (StringUtils.isNotEmpty(pi.getGroupId()) && StringUtils.isNotEmpty(pi.getArtifactId())) {
             forLookup = new Plugin();
-            forLookup.setGroupId( pi.getGroupId() );
-            forLookup.setArtifactId( pi.getArtifactId() );
+            forLookup.setGroupId(pi.getGroupId());
+            forLookup.setArtifactId(pi.getArtifactId());
         }
-        if ( forLookup == null )
-        {
-            String msg =
-                "You must specify either: both 'groupId' and 'artifactId' parameters OR a 'plugin' parameter"
-                  + " OR a 'cmd' parameter. For instance:" + LS
-                  + "  # mvn help:describe -Dcmd=install" + LS
-                  + "or" + LS
-                  + "  # mvn help:describe -Dcmd=help:describe" + LS
-                  + "or" + LS
-                  + "  # mvn help:describe -Dplugin=org.apache.maven.plugins:maven-help-plugin" + LS
-                  + "or" + LS
-                  + "  # mvn help:describe -DgroupId=org.apache.maven.plugins -DartifactId=maven-help-plugin" + LS + LS
-                  + "Try 'mvn help:help -Ddetail=true' for more information.";
-            throw new MojoFailureException( msg );
+        if (forLookup == null) {
+            String msg = "You must specify either: both 'groupId' and 'artifactId' parameters OR a 'plugin' parameter"
+                    + " OR a 'cmd' parameter. For instance:" + LS
+                    + "  # mvn help:describe -Dcmd=install" + LS
+                    + "or" + LS
+                    + "  # mvn help:describe -Dcmd=help:describe" + LS
+                    + "or" + LS
+                    + "  # mvn help:describe -Dplugin=org.apache.maven.plugins:maven-help-plugin" + LS
+                    + "or" + LS
+                    + "  # mvn help:describe -DgroupId=org.apache.maven.plugins -DartifactId=maven-help-plugin" + LS
+                    + LS
+                    + "Try 'mvn help:help -Ddetail=true' for more information.";
+            throw new MojoFailureException(msg);
         }
 
-        if ( StringUtils.isNotEmpty( pi.getVersion() ) )
-        {
-            forLookup.setVersion( pi.getVersion() );
-        }
-        else
-        {
-            try
-            {
-                DefaultPluginVersionRequest versionRequest = new DefaultPluginVersionRequest( forLookup, session );
-                versionRequest.setPom( project.getModel() );
-                PluginVersionResult versionResult = pluginVersionResolver.resolve( versionRequest );
-                forLookup.setVersion( versionResult.getVersion() );
-            }
-            catch ( PluginVersionResolutionException e )
-            {
-                throw new MojoExecutionException( "Unable to resolve the version of the plugin with prefix: "
-                    + pi.getPrefix(), e );
+        if (StringUtils.isNotEmpty(pi.getVersion())) {
+            forLookup.setVersion(pi.getVersion());
+        } else {
+            try {
+                DefaultPluginVersionRequest versionRequest = new DefaultPluginVersionRequest(forLookup, session);
+                versionRequest.setPom(project.getModel());
+                PluginVersionResult versionResult = pluginVersionResolver.resolve(versionRequest);
+                forLookup.setVersion(versionResult.getVersion());
+            } catch (PluginVersionResolutionException e) {
+                throw new MojoExecutionException(
+                        "Unable to resolve the version of the plugin with prefix: " + pi.getPrefix(), e);
             }
         }
 
-        try
-        {
-            return pluginManager.getPluginDescriptor( forLookup, session );
-        }
-        catch ( Exception e )
-        {
-            throw new MojoExecutionException( "Error retrieving plugin descriptor for:" + LS + LS + "groupId: '"
-                + groupId + "'" + LS + "artifactId: '" + artifactId + "'" + LS + "version: '" + version + "'" + LS
-                + LS, e );
+        try {
+            return pluginManager.getPluginDescriptor(forLookup, session);
+        } catch (Exception e) {
+            throw new MojoExecutionException(
+                    "Error retrieving plugin descriptor for:" + LS + LS + "groupId: '"
+                            + groupId + "'" + LS + "artifactId: '" + artifactId + "'" + LS + "version: '" + version
+                            + "'" + LS
+                            + LS,
+                    e);
         }
     }
 
@@ -371,45 +337,36 @@ public class DescribeMojo
      * @throws MojoFailureException if <code>plugin<*code> parameter is not conform to
      *                              <code>groupId:artifactId[:version]</code>
      */
-    private PluginInfo parsePluginLookupInfo()
-        throws MojoFailureException
-    {
+    private PluginInfo parsePluginLookupInfo() throws MojoFailureException {
         PluginInfo pi = new PluginInfo();
-        if ( StringUtils.isNotEmpty( plugin ) )
-        {
-            if ( plugin.indexOf( ':' ) > -1 )
-            {
-                String[] pluginParts = plugin.split( ":" );
+        if (StringUtils.isNotEmpty(plugin)) {
+            if (plugin.indexOf(':') > -1) {
+                String[] pluginParts = plugin.split(":");
 
-                switch ( pluginParts.length )
-                {
+                switch (pluginParts.length) {
                     case 1:
-                        pi.setPrefix( pluginParts[0] );
+                        pi.setPrefix(pluginParts[0]);
                         break;
                     case 2:
-                        pi.setGroupId( pluginParts[0] );
-                        pi.setArtifactId( pluginParts[1] );
+                        pi.setGroupId(pluginParts[0]);
+                        pi.setArtifactId(pluginParts[1]);
                         break;
                     case 3:
-                        pi.setGroupId( pluginParts[0] );
-                        pi.setArtifactId( pluginParts[1] );
-                        pi.setVersion( pluginParts[2] );
+                        pi.setGroupId(pluginParts[0]);
+                        pi.setArtifactId(pluginParts[1]);
+                        pi.setVersion(pluginParts[2]);
                         break;
                     default:
-                        throw new MojoFailureException( "plugin parameter must be a plugin prefix,"
-                                                            + " or conform to: 'groupId:artifactId[:version]'." );
+                        throw new MojoFailureException("plugin parameter must be a plugin prefix,"
+                                + " or conform to: 'groupId:artifactId[:version]'.");
                 }
+            } else {
+                pi.setPrefix(plugin);
             }
-            else
-            {
-                pi.setPrefix( plugin );
-            }
-        }
-        else
-        {
-            pi.setGroupId( groupId );
-            pi.setArtifactId( artifactId );
-            pi.setVersion( version );
+        } else {
+            pi.setGroupId(groupId);
+            pi.setArtifactId(artifactId);
+            pi.setVersion(version);
         }
         return pi;
     }
@@ -422,70 +379,67 @@ public class DescribeMojo
      * @throws MojoFailureException   if any reflection exceptions occur.
      * @throws MojoExecutionException if any
      */
-    private void describePlugin( PluginDescriptor pd, StringBuilder buffer )
-        throws MojoFailureException, MojoExecutionException
-    {
-        append( buffer, pd.getId(), 0 );
-        buffer.append( LS );
+    private void describePlugin(PluginDescriptor pd, StringBuilder buffer)
+            throws MojoFailureException, MojoExecutionException {
+        append(buffer, pd.getId(), 0);
+        buffer.append(LS);
 
         String name = pd.getName();
-        if ( name == null )
-        {
+        if (name == null) {
             // Can be null because of MPLUGIN-137 (and descriptors generated with maven-plugin-tools-api <= 2.4.3)
-            Artifact aetherArtifact = new DefaultArtifact(
-                    pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion() );
-            ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
-            pbr.setRemoteRepositories( remoteRepositories );
-            pbr.setLocalRepository( localRepository );
-            pbr.setProject( null );
-            pbr.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
-            try
-            {
-                Artifact artifactCopy = resolveArtifact( aetherArtifact ).getArtifact();
-                name = projectBuilder.build( RepositoryUtils.toArtifact( artifactCopy ), pbr ).getProject().getName();
-            }
-            catch ( Exception e )
-            {
+            Artifact aetherArtifact = new DefaultArtifact(pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion());
+            ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+            pbr.setRemoteRepositories(remoteRepositories);
+            pbr.setLocalRepository(localRepository);
+            pbr.setProject(null);
+            pbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+            try {
+                Artifact artifactCopy = resolveArtifact(aetherArtifact).getArtifact();
+                name = projectBuilder
+                        .build(RepositoryUtils.toArtifact(artifactCopy), pbr)
+                        .getProject()
+                        .getName();
+            } catch (Exception e) {
                 // oh well, we tried our best.
-                getLog().warn( "Unable to get the name of the plugin " + pd.getId() + ": " + e.getMessage() );
+                getLog().warn("Unable to get the name of the plugin " + pd.getId() + ": " + e.getMessage());
                 name = pd.getId();
             }
         }
-        append( buffer, "Name", MessageUtils.buffer().strong( name ).toString(), 0 );
-        appendAsParagraph( buffer, "Description", toDescription( pd.getDescription() ), 0 );
-        append( buffer, "Group Id", pd.getGroupId(), 0 );
-        append( buffer, "Artifact Id", pd.getArtifactId(), 0 );
-        append( buffer, "Version", pd.getVersion(), 0 );
-        append( buffer, "Goal Prefix", MessageUtils.buffer().strong( pd.getGoalPrefix() ).toString(), 0 );
-        buffer.append( LS );
+        append(buffer, "Name", MessageUtils.buffer().strong(name).toString(), 0);
+        appendAsParagraph(buffer, "Description", toDescription(pd.getDescription()), 0);
+        append(buffer, "Group Id", pd.getGroupId(), 0);
+        append(buffer, "Artifact Id", pd.getArtifactId(), 0);
+        append(buffer, "Version", pd.getVersion(), 0);
+        append(
+                buffer,
+                "Goal Prefix",
+                MessageUtils.buffer().strong(pd.getGoalPrefix()).toString(),
+                0);
+        buffer.append(LS);
 
         List<MojoDescriptor> mojos = pd.getMojos();
 
-        if ( mojos == null )
-        {
-            append( buffer, "This plugin has no goals.", 0 );
+        if (mojos == null) {
+            append(buffer, "This plugin has no goals.", 0);
             return;
         }
 
-        if ( !minimal )
-        {
-            append( buffer, "This plugin has " + mojos.size() + " goal" + ( mojos.size() > 1 ? "s" : "" ) + ":", 0 );
-            buffer.append( LS );
+        if (!minimal) {
+            append(buffer, "This plugin has " + mojos.size() + " goal" + (mojos.size() > 1 ? "s" : "") + ":", 0);
+            buffer.append(LS);
 
-            mojos = new ArrayList<>( mojos );
-            PluginUtils.sortMojos( mojos );
+            mojos = new ArrayList<>(mojos);
+            PluginUtils.sortMojos(mojos);
 
-            for ( MojoDescriptor md : mojos )
-            {
-                describeMojoGuts( md, buffer, detail );
-                buffer.append( LS );
+            for (MojoDescriptor md : mojos) {
+                describeMojoGuts(md, buffer, detail);
+                buffer.append(LS);
             }
         }
 
-        if ( !detail )
-        {
-            buffer.append( "For more information, run 'mvn help:describe [...] -Ddetail'" );
-            buffer.append( LS );
+        if (!detail) {
+            buffer.append("For more information, run 'mvn help:describe [...] -Ddetail'");
+            buffer.append(LS);
         }
     }
 
@@ -497,19 +451,17 @@ public class DescribeMojo
      * @throws MojoFailureException   if any reflection exceptions occur.
      * @throws MojoExecutionException if any
      */
-    private void describeMojo( MojoDescriptor md, StringBuilder buffer )
-        throws MojoFailureException, MojoExecutionException
-    {
-        buffer.append( "Mojo: '" ).append( md.getFullGoalName() ).append( "'" );
-        buffer.append( LS );
+    private void describeMojo(MojoDescriptor md, StringBuilder buffer)
+            throws MojoFailureException, MojoExecutionException {
+        buffer.append("Mojo: '").append(md.getFullGoalName()).append("'");
+        buffer.append(LS);
 
-        describeMojoGuts( md, buffer, detail );
-        buffer.append( LS );
+        describeMojoGuts(md, buffer, detail);
+        buffer.append(LS);
 
-        if ( !detail )
-        {
-            buffer.append( "For more information, run 'mvn help:describe [...] -Ddetail'" );
-            buffer.append( LS );
+        if (!detail) {
+            buffer.append("For more information, run 'mvn help:describe [...] -Ddetail'");
+            buffer.append(LS);
         }
     }
 
@@ -522,73 +474,66 @@ public class DescribeMojo
      * @throws MojoFailureException   if any reflection exceptions occur.
      * @throws MojoExecutionException if any
      */
-    private void describeMojoGuts( MojoDescriptor md, StringBuilder buffer, boolean fullDescription )
-        throws MojoFailureException, MojoExecutionException
-    {
-        append( buffer, MessageUtils.buffer().strong( md.getFullGoalName() ).toString(), 0 );
+    private void describeMojoGuts(MojoDescriptor md, StringBuilder buffer, boolean fullDescription)
+            throws MojoFailureException, MojoExecutionException {
+        append(buffer, MessageUtils.buffer().strong(md.getFullGoalName()).toString(), 0);
 
         // indent 1
-        appendAsParagraph( buffer, "Description", toDescription( md.getDescription() ), 1 );
+        appendAsParagraph(buffer, "Description", toDescription(md.getDescription()), 1);
 
         String deprecation = md.getDeprecated();
-        if ( deprecation != null && deprecation.length() <= 0 )
-        {
+        if (deprecation != null && deprecation.length() <= 0) {
             deprecation = NO_REASON;
         }
 
-        if ( StringUtils.isNotEmpty( deprecation ) )
-        {
-            append( buffer, MessageUtils.buffer().warning( "Deprecated. " + deprecation ).toString(), 1 );
+        if (StringUtils.isNotEmpty(deprecation)) {
+            append(
+                    buffer,
+                    MessageUtils.buffer().warning("Deprecated. " + deprecation).toString(),
+                    1);
         }
 
-        if ( isReportGoal( md ) )
-        {
-            append( buffer, "Note", "This goal should be used as a Maven report.", 1 );
+        if (isReportGoal(md)) {
+            append(buffer, "Note", "This goal should be used as a Maven report.", 1);
         }
 
-        if ( !fullDescription )
-        {
+        if (!fullDescription) {
             return;
         }
 
-        append( buffer, "Implementation", md.getImplementation(), 1 );
-        append( buffer, "Language", md.getLanguage(), 1 );
+        append(buffer, "Implementation", md.getImplementation(), 1);
+        append(buffer, "Language", md.getLanguage(), 1);
 
         String phase = md.getPhase();
-        if ( StringUtils.isNotEmpty( phase ) )
-        {
-            append( buffer, "Bound to phase", phase, 1 );
+        if (StringUtils.isNotEmpty(phase)) {
+            append(buffer, "Bound to phase", phase, 1);
         }
 
         String eGoal = md.getExecuteGoal();
         String eLife = md.getExecuteLifecycle();
         String ePhase = md.getExecutePhase();
 
-        if ( StringUtils.isNotEmpty( eGoal ) || StringUtils.isNotEmpty( ePhase ) )
-        {
-            append( buffer, "Before this goal executes, it will call:", 1 );
+        if (StringUtils.isNotEmpty(eGoal) || StringUtils.isNotEmpty(ePhase)) {
+            append(buffer, "Before this goal executes, it will call:", 1);
 
-            if ( StringUtils.isNotEmpty( eGoal ) )
-            {
-                append( buffer, "Single goal", "'" + eGoal + "'", 2 );
+            if (StringUtils.isNotEmpty(eGoal)) {
+                append(buffer, "Single goal", "'" + eGoal + "'", 2);
             }
 
-            if ( StringUtils.isNotEmpty( ePhase ) )
-            {
+            if (StringUtils.isNotEmpty(ePhase)) {
                 String s = "Phase: '" + ePhase + "'";
 
-                if ( StringUtils.isNotEmpty( eLife ) )
-                {
+                if (StringUtils.isNotEmpty(eLife)) {
                     s += " in Lifecycle Overlay: '" + eLife + "'";
                 }
 
-                append( buffer, s, 2 );
+                append(buffer, s, 2);
             }
         }
 
-        buffer.append( LS );
+        buffer.append(LS);
 
-        describeMojoParameters( md, buffer );
+        describeMojoParameters(md, buffer);
     }
 
     /**
@@ -599,93 +544,82 @@ public class DescribeMojo
      * @throws MojoFailureException   if any reflection exceptions occur.
      * @throws MojoExecutionException if any
      */
-    private void describeMojoParameters( MojoDescriptor md, StringBuilder buffer )
-        throws MojoFailureException, MojoExecutionException
-    {
+    private void describeMojoParameters(MojoDescriptor md, StringBuilder buffer)
+            throws MojoFailureException, MojoExecutionException {
         List<Parameter> params = md.getParameters();
 
-        if ( params == null || params.isEmpty() )
-        {
-            append( buffer, "This mojo doesn't use any parameters.", 1 );
+        if (params == null || params.isEmpty()) {
+            append(buffer, "This mojo doesn't use any parameters.", 1);
             return;
         }
 
-        params = new ArrayList<>( params );
-        PluginUtils.sortMojoParameters( params );
+        params = new ArrayList<>(params);
+        PluginUtils.sortMojoParameters(params);
 
-        append( buffer, "Available parameters:", 1 );
+        append(buffer, "Available parameters:", 1);
 
         // indent 2
-        for ( Parameter parameter : params )
-        {
-            if ( !parameter.isEditable() )
-            {
+        for (Parameter parameter : params) {
+            if (!parameter.isEditable()) {
                 continue;
             }
 
-            buffer.append( LS );
+            buffer.append(LS);
 
             // DGF wouldn't it be nice if this worked?
             String defaultVal = parameter.getDefaultValue();
-            if ( defaultVal == null )
-            {
+            if (defaultVal == null) {
                 // defaultVal is ALWAYS null, this is a bug in PluginDescriptorBuilder (cf. MNG-4941)
                 defaultVal =
-                    md.getMojoConfiguration().getChild( parameter.getName() ).getAttribute( "default-value", null );
+                        md.getMojoConfiguration().getChild(parameter.getName()).getAttribute("default-value", null);
             }
 
-            if ( StringUtils.isNotEmpty( defaultVal ) )
-            {
-                defaultVal = " (Default: " + MessageUtils.buffer().strong( defaultVal ) + ")";
-            }
-            else
-            {
+            if (StringUtils.isNotEmpty(defaultVal)) {
+                defaultVal = " (Default: " + MessageUtils.buffer().strong(defaultVal) + ")";
+            } else {
                 defaultVal = "";
             }
-            append( buffer, MessageUtils.buffer().strong( parameter.getName() ) + defaultVal, 2 );
+            append(buffer, MessageUtils.buffer().strong(parameter.getName()) + defaultVal, 2);
 
             String alias = parameter.getAlias();
-            if ( !StringUtils.isEmpty( alias ) )
-            {
-                append ( buffer, "Alias", alias, 3 );
+            if (!StringUtils.isEmpty(alias)) {
+                append(buffer, "Alias", alias, 3);
             }
 
-            if ( parameter.isRequired() )
-            {
-                append( buffer, "Required", "true", 3 );
+            if (parameter.isRequired()) {
+                append(buffer, "Required", "true", 3);
             }
 
             String expression = parameter.getExpression();
-            if ( StringUtils.isEmpty( expression ) )
-            {
+            if (StringUtils.isEmpty(expression)) {
                 // expression is ALWAYS null, this is a bug in PluginDescriptorBuilder (cf. MNG-4941).
                 // Fixed with Maven-3.0.1
-                expression = md.getMojoConfiguration().getChild( parameter.getName() ).getValue( null );
+                expression =
+                        md.getMojoConfiguration().getChild(parameter.getName()).getValue(null);
             }
-            if ( StringUtils.isNotEmpty( expression ) )
-            {
-                Matcher matcher = EXPRESSION.matcher( expression );
-                if ( matcher.matches() )
-                {
-                    append( buffer, "User property", matcher.group( 1 ), 3 );
-                }
-                else
-                {
-                    append( buffer, "Expression", expression, 3 );
+            if (StringUtils.isNotEmpty(expression)) {
+                Matcher matcher = EXPRESSION.matcher(expression);
+                if (matcher.matches()) {
+                    append(buffer, "User property", matcher.group(1), 3);
+                } else {
+                    append(buffer, "Expression", expression, 3);
                 }
             }
 
-            append( buffer, toDescription( parameter.getDescription() ), 3 );
+            append(buffer, toDescription(parameter.getDescription()), 3);
 
             String deprecation = parameter.getDeprecated();
-            if ( deprecation != null && deprecation.length() <= 0 )
-            {
+            if (deprecation != null && deprecation.length() <= 0) {
                 deprecation = NO_REASON;
             }
 
-            if ( StringUtils.isNotEmpty( deprecation ) )
-            {
-                append( buffer, MessageUtils.buffer().warning( "Deprecated. " + deprecation ).toString(), 3 );
+            if (StringUtils.isNotEmpty(deprecation)) {
+                append(
+                        buffer,
+                        MessageUtils.buffer()
+                                .warning("Deprecated. " + deprecation)
+                                .toString(),
+                        3);
             }
         }
     }
@@ -697,87 +631,72 @@ public class DescribeMojo
      * @return <code>true</code> if it implies to describe a plugin, <code>false</code> otherwise.
      * @throws MojoExecutionException if any
      */
-    private boolean describeCommand( StringBuilder descriptionBuffer )
-        throws MojoExecutionException
-    {
-        if ( cmd.indexOf( ':' ) == -1 )
-        {
+    private boolean describeCommand(StringBuilder descriptionBuffer) throws MojoExecutionException {
+        if (cmd.indexOf(':') == -1) {
             // phase
-            Lifecycle lifecycle = defaultLifecycles.getPhaseToLifecycleMap().get( cmd );
-            if ( lifecycle == null )
-            {
-                throw new MojoExecutionException( "The given phase '" + cmd + "' is an unknown phase." );
+            Lifecycle lifecycle = defaultLifecycles.getPhaseToLifecycleMap().get(cmd);
+            if (lifecycle == null) {
+                throw new MojoExecutionException("The given phase '" + cmd + "' is an unknown phase.");
             }
 
-            Map<String, String> defaultLifecyclePhases =
-                lifecycleMappings.get( project.getPackaging() ).getLifecycles().get( "default" ).getPhases();
+            Map<String, String> defaultLifecyclePhases = lifecycleMappings
+                    .get(project.getPackaging())
+                    .getLifecycles()
+                    .get("default")
+                    .getPhases();
             List<String> phases = lifecycle.getPhases();
 
-            if ( lifecycle.getDefaultPhases() == null )
-            {
-                descriptionBuffer.append( "'" ).append( cmd );
-                descriptionBuffer.append( "' is a phase corresponding to this plugin:" ).append( LS );
-                for ( String key : phases )
-                {
-                    if ( !key.equals( cmd ) )
-                    {
+            if (lifecycle.getDefaultPhases() == null) {
+                descriptionBuffer.append("'").append(cmd);
+                descriptionBuffer
+                        .append("' is a phase corresponding to this plugin:")
+                        .append(LS);
+                for (String key : phases) {
+                    if (!key.equals(cmd)) {
                         continue;
                     }
-                    if ( defaultLifecyclePhases.get( key ) != null )
-                    {
-                        descriptionBuffer.append( defaultLifecyclePhases.get( key ) );
-                        descriptionBuffer.append( LS );
+                    if (defaultLifecyclePhases.get(key) != null) {
+                        descriptionBuffer.append(defaultLifecyclePhases.get(key));
+                        descriptionBuffer.append(LS);
                     }
                 }
 
-                descriptionBuffer.append( LS );
-                descriptionBuffer.append( "It is a part of the lifecycle for the POM packaging '" );
-                descriptionBuffer.append( project.getPackaging() );
-                descriptionBuffer.append( "'. This lifecycle includes the following phases:" );
-                descriptionBuffer.append( LS );
-                for ( String key : phases )
-                {
-                    descriptionBuffer.append( "* " ).append( key ).append( ": " );
-                    String value = defaultLifecyclePhases.get( key );
-                    if ( StringUtils.isNotEmpty( value ) )
-                    {
-                        for ( StringTokenizer tok = new StringTokenizer( value, "," ); tok.hasMoreTokens(); )
-                        {
-                            descriptionBuffer.append( tok.nextToken().trim() );
+                descriptionBuffer.append(LS);
+                descriptionBuffer.append("It is a part of the lifecycle for the POM packaging '");
+                descriptionBuffer.append(project.getPackaging());
+                descriptionBuffer.append("'. This lifecycle includes the following phases:");
+                descriptionBuffer.append(LS);
+                for (String key : phases) {
+                    descriptionBuffer.append("* ").append(key).append(": ");
+                    String value = defaultLifecyclePhases.get(key);
+                    if (StringUtils.isNotEmpty(value)) {
+                        for (StringTokenizer tok = new StringTokenizer(value, ","); tok.hasMoreTokens(); ) {
+                            descriptionBuffer.append(tok.nextToken().trim());
 
-                            if ( !tok.hasMoreTokens() )
-                            {
-                                descriptionBuffer.append( LS );
-                            }
-                            else
-                            {
-                                descriptionBuffer.append( ", " );
+                            if (!tok.hasMoreTokens()) {
+                                descriptionBuffer.append(LS);
+                            } else {
+                                descriptionBuffer.append(", ");
                             }
                         }
-                    }
-                    else
-                    {
-                        descriptionBuffer.append( NOT_DEFINED ).append( LS );
+                    } else {
+                        descriptionBuffer.append(NOT_DEFINED).append(LS);
                     }
                 }
-            }
-            else
-            {
-                descriptionBuffer.append( "'" ).append( cmd );
-                descriptionBuffer.append( "' is a phase within the '" ).append( lifecycle.getId() );
-                descriptionBuffer.append( "' lifecycle, which has the following phases: " );
-                descriptionBuffer.append( LS );
+            } else {
+                descriptionBuffer.append("'").append(cmd);
+                descriptionBuffer.append("' is a phase within the '").append(lifecycle.getId());
+                descriptionBuffer.append("' lifecycle, which has the following phases: ");
+                descriptionBuffer.append(LS);
 
-                for ( String key : phases )
-                {
-                    descriptionBuffer.append( "* " ).append( key ).append( ": " );
-                    if ( lifecycle.getDefaultPhases().get( key ) != null )
-                    {
-                        descriptionBuffer.append( lifecycle.getDefaultPhases().get( key ) ).append( LS );
-                    }
-                    else
-                    {
-                        descriptionBuffer.append( NOT_DEFINED ).append( LS );
+                for (String key : phases) {
+                    descriptionBuffer.append("* ").append(key).append(": ");
+                    if (lifecycle.getDefaultPhases().get(key) != null) {
+                        descriptionBuffer
+                                .append(lifecycle.getDefaultPhases().get(key))
+                                .append(LS);
+                    } else {
+                        descriptionBuffer.append(NOT_DEFINED).append(LS);
                     }
                 }
             }
@@ -786,16 +705,17 @@ public class DescribeMojo
 
         // goals
         MojoDescriptor mojoDescriptor;
-        try
-        {
-            mojoDescriptor = mojoDescriptorCreator.getMojoDescriptor( cmd, session, project );
+        try {
+            mojoDescriptor = mojoDescriptorCreator.getMojoDescriptor(cmd, session, project);
+        } catch (Exception e) {
+            throw new MojoExecutionException("Unable to get descriptor for " + cmd, e);
         }
-        catch ( Exception e )
-        {
-            throw new MojoExecutionException( "Unable to get descriptor for " + cmd, e );
-        }
-        descriptionBuffer.append( "'" ).append( cmd ).append( "' is a plugin goal (aka mojo)" ).append( "." );
-        descriptionBuffer.append( LS );
+        descriptionBuffer
+                .append("'")
+                .append(cmd)
+                .append("' is a plugin goal (aka mojo)")
+                .append(".");
+        descriptionBuffer.append(LS);
         plugin = mojoDescriptor.getPluginDescriptor().getId();
         goal = mojoDescriptor.getGoal();
 
@@ -815,50 +735,36 @@ public class DescribeMojo
      * @throws MojoExecutionException if no line was found for <code>text</code>
      * @see HelpMojo#toLines(String, int, int, int)
      */
-    private static List<String> toLines( String text, int indent, int indentSize, int lineLength )
-        throws MojoFailureException, MojoExecutionException
-    {
-        try
-        {
-            Method m = HelpMojo.class.getDeclaredMethod( "toLines", String.class, Integer.TYPE, Integer.TYPE,
-                    Integer.TYPE );
-            m.setAccessible( true );
-            @SuppressWarnings( "unchecked" )
-            List<String> output = (List<String>) m.invoke( HelpMojo.class, text, indent, indentSize, lineLength );
+    private static List<String> toLines(String text, int indent, int indentSize, int lineLength)
+            throws MojoFailureException, MojoExecutionException {
+        try {
+            Method m =
+                    HelpMojo.class.getDeclaredMethod("toLines", String.class, Integer.TYPE, Integer.TYPE, Integer.TYPE);
+            m.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            List<String> output = (List<String>) m.invoke(HelpMojo.class, text, indent, indentSize, lineLength);
 
-            if ( output == null )
-            {
-                throw new MojoExecutionException( "No output was specified." );
+            if (output == null) {
+                throw new MojoExecutionException("No output was specified.");
             }
 
             return output;
-        }
-        catch ( SecurityException e )
-        {
-            throw new MojoFailureException( "SecurityException: " + e.getMessage() );
-        }
-        catch ( IllegalArgumentException e )
-        {
-            throw new MojoFailureException( "IllegalArgumentException: " + e.getMessage() );
-        }
-        catch ( NoSuchMethodException e )
-        {
-            throw new MojoFailureException( "NoSuchMethodException: " + e.getMessage() );
-        }
-        catch ( IllegalAccessException e )
-        {
-            throw new MojoFailureException( "IllegalAccessException: " + e.getMessage() );
-        }
-        catch ( InvocationTargetException e )
-        {
+        } catch (SecurityException e) {
+            throw new MojoFailureException("SecurityException: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new MojoFailureException("IllegalArgumentException: " + e.getMessage());
+        } catch (NoSuchMethodException e) {
+            throw new MojoFailureException("NoSuchMethodException: " + e.getMessage());
+        } catch (IllegalAccessException e) {
+            throw new MojoFailureException("IllegalAccessException: " + e.getMessage());
+        } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
 
-            if ( cause instanceof NegativeArraySizeException )
-            {
-                throw new MojoFailureException( "NegativeArraySizeException: " + cause.getMessage() );
+            if (cause instanceof NegativeArraySizeException) {
+                throw new MojoFailureException("NegativeArraySizeException: " + cause.getMessage());
             }
 
-            throw new MojoFailureException( "InvocationTargetException: " + e.getMessage() );
+            throw new MojoFailureException("InvocationTargetException: " + e.getMessage());
         }
     }
 
@@ -873,18 +779,15 @@ public class DescribeMojo
      * @throws MojoExecutionException if any
      * @see #toLines(String, int, int, int)
      */
-    private static void append( StringBuilder sb, String description, int indent )
-        throws MojoFailureException, MojoExecutionException
-    {
-        if ( StringUtils.isEmpty( description ) )
-        {
-            sb.append( UNKNOWN ).append( LS );
+    private static void append(StringBuilder sb, String description, int indent)
+            throws MojoFailureException, MojoExecutionException {
+        if (StringUtils.isEmpty(description)) {
+            sb.append(UNKNOWN).append(LS);
             return;
         }
 
-        for ( String line : toLines( description, indent, INDENT_SIZE, LINE_LENGTH ) )
-        {
-            sb.append( line ).append( LS );
+        for (String line : toLines(description, indent, INDENT_SIZE, LINE_LENGTH)) {
+            sb.append(line).append(LS);
         }
     }
 
@@ -900,23 +803,19 @@ public class DescribeMojo
      * @throws MojoExecutionException if any
      * @see #toLines(String, int, int, int)
      */
-    private static void append( StringBuilder sb, String key, String value, int indent )
-        throws MojoFailureException, MojoExecutionException
-    {
-        if ( StringUtils.isEmpty( key ) )
-        {
-            throw new IllegalArgumentException( "Key is required!" );
+    private static void append(StringBuilder sb, String key, String value, int indent)
+            throws MojoFailureException, MojoExecutionException {
+        if (StringUtils.isEmpty(key)) {
+            throw new IllegalArgumentException("Key is required!");
         }
 
-        if ( StringUtils.isEmpty( value ) )
-        {
+        if (StringUtils.isEmpty(value)) {
             value = UNKNOWN;
         }
 
         String description = key + ": " + value;
-        for ( String line : toLines( description, indent, INDENT_SIZE, LINE_LENGTH ) )
-        {
-            sb.append( line ).append( LS );
+        for (String line : toLines(description, indent, INDENT_SIZE, LINE_LENGTH)) {
+            sb.append(line).append(LS);
         }
     }
 
@@ -933,30 +832,24 @@ public class DescribeMojo
      * @throws MojoExecutionException if any
      * @see #toLines(String, int, int, int)
      */
-    private static void appendAsParagraph( StringBuilder sb, String key, String value, int indent )
-        throws MojoFailureException, MojoExecutionException
-    {
-        if ( StringUtils.isEmpty( value ) )
-        {
+    private static void appendAsParagraph(StringBuilder sb, String key, String value, int indent)
+            throws MojoFailureException, MojoExecutionException {
+        if (StringUtils.isEmpty(value)) {
             value = UNKNOWN;
         }
 
         String description;
-        if ( key == null )
-        {
+        if (key == null) {
             description = value;
-        }
-        else
-        {
+        } else {
             description = key + ": " + value;
         }
 
-        List<String> l1 = toLines( description, indent, INDENT_SIZE, LINE_LENGTH - INDENT_SIZE );
-        List<String> l2 = toLines( description, indent + 1, INDENT_SIZE, LINE_LENGTH );
-        l2.set( 0, l1.get( 0 ) );
-        for ( String line : l2 )
-        {
-            sb.append( line ).append( LS );
+        List<String> l1 = toLines(description, indent, INDENT_SIZE, LINE_LENGTH - INDENT_SIZE);
+        List<String> l2 = toLines(description, indent + 1, INDENT_SIZE, LINE_LENGTH);
+        l2.set(0, l1.get(0));
+        for (String line : l2) {
+            sb.append(line).append(LS);
         }
     }
 
@@ -967,37 +860,32 @@ public class DescribeMojo
      * @param md Mojo descriptor
      * @return Whether or not this goal should be used as a report.
      */
-    private boolean isReportGoal( MojoDescriptor md )
-    {
+    private boolean isReportGoal(MojoDescriptor md) {
         PluginDescriptor pd = md.getPluginDescriptor();
         List<URL> urls = new ArrayList<>();
-        ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest( session.getProjectBuildingRequest() );
-        pbr.setRemoteRepositories( remoteRepositories );
-        pbr.setResolveDependencies( true );
-        pbr.setProject( null );
-        pbr.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
-        try
-        {
+        ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
+        pbr.setRemoteRepositories(remoteRepositories);
+        pbr.setResolveDependencies(true);
+        pbr.setProject(null);
+        pbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+        try {
             Artifact jar = resolveArtifact(
-                    new DefaultArtifact( pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion() ) ).getArtifact();
+                            new DefaultArtifact(pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion()))
+                    .getArtifact();
             Artifact pom = resolveArtifact(
-                    new DefaultArtifact( pd.getGroupId(), pd.getArtifactId(), "pom", pd.getVersion() ) ).getArtifact();
-            MavenProject mavenProject = projectBuilder.build( pom.getFile(), pbr ).getProject();
-            urls.add( jar.getFile().toURI().toURL() );
-            for ( String artifact : mavenProject.getCompileClasspathElements() )
-            {
-                urls.add( new File( artifact ).toURI().toURL() );
+                            new DefaultArtifact(pd.getGroupId(), pd.getArtifactId(), "pom", pd.getVersion()))
+                    .getArtifact();
+            MavenProject mavenProject = projectBuilder.build(pom.getFile(), pbr).getProject();
+            urls.add(jar.getFile().toURI().toURL());
+            for (String artifact : mavenProject.getCompileClasspathElements()) {
+                urls.add(new File(artifact).toURI().toURL());
             }
-            try ( URLClassLoader classLoader = new URLClassLoader( urls.toArray( new URL[0] ),
-                    getClass().getClassLoader() ) )
-            {
-                return MavenReport.class.isAssignableFrom(
-                        Class.forName( md.getImplementation(), false, classLoader ) );
+            try (URLClassLoader classLoader =
+                    new URLClassLoader(urls.toArray(new URL[0]), getClass().getClassLoader())) {
+                return MavenReport.class.isAssignableFrom(Class.forName(md.getImplementation(), false, classLoader));
             }
-        }
-        catch ( Exception e )
-        {
-            getLog().warn( "Couldn't identify if this goal is a report goal: " + e.getMessage() );
+        } catch (Exception e) {
+            getLog().warn("Couldn't identify if this goal is a report goal: " + e.getMessage());
             return false;
         }
     }
@@ -1008,11 +896,9 @@ public class DescribeMojo
      * @param description The description of the element, may be <code>null</code>.
      * @return The effective description string, never <code>null</code>.
      */
-    private static String toDescription( String description )
-    {
-        if ( StringUtils.isNotEmpty( description ) )
-        {
-            return GeneratorUtils.toText( description );
+    private static String toDescription(String description) {
+        if (StringUtils.isNotEmpty(description)) {
+            return GeneratorUtils.toText(description);
         }
 
         return "(no description available)";
@@ -1021,8 +907,7 @@ public class DescribeMojo
     /**
      * Class to wrap Plugin information.
      */
-    static class PluginInfo
-    {
+    static class PluginInfo {
         private String prefix;
 
         private String groupId;
@@ -1034,66 +919,57 @@ public class DescribeMojo
         /**
          * @return the prefix
          */
-        public String getPrefix()
-        {
+        public String getPrefix() {
             return prefix;
         }
 
         /**
          * @param prefix the prefix to set
          */
-        public void setPrefix( String prefix )
-        {
+        public void setPrefix(String prefix) {
             this.prefix = prefix;
         }
 
         /**
          * @return the groupId
          */
-        public String getGroupId()
-        {
+        public String getGroupId() {
             return groupId;
         }
 
         /**
          * @param groupId the groupId to set
          */
-        public void setGroupId( String groupId )
-        {
+        public void setGroupId(String groupId) {
             this.groupId = groupId;
         }
 
         /**
          * @return the artifactId
          */
-        public String getArtifactId()
-        {
+        public String getArtifactId() {
             return artifactId;
         }
 
         /**
          * @param artifactId the artifactId to set
          */
-        public void setArtifactId( String artifactId )
-        {
+        public void setArtifactId(String artifactId) {
             this.artifactId = artifactId;
         }
 
         /**
          * @return the version
          */
-        public String getVersion()
-        {
+        public String getVersion() {
             return version;
         }
 
         /**
          * @param version the version to set
          */
-        public void setVersion( String version )
-        {
+        public void setVersion(String version) {
             this.version = version;
         }
-
     }
 }

@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.help;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,9 +16,7 @@ package org.apache.maven.plugins.help;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+package org.apache.maven.plugins.help;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,86 +31,77 @@ import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.IOUtil;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 /**
  * Test class for the active-profiles mojo of the Help Plugin.
  */
-public class ActiveProfilesMojoTest
-    extends AbstractMojoTestCase
-{
+public class ActiveProfilesMojoTest extends AbstractMojoTestCase {
 
     /**
      * Tests that profiles activated in the settings are resolved.
-     * 
+     *
      * @throws Exception in case of errors.
      */
-    public void testActiveProfilesFromSettings()
-        throws Exception
-    {
-        File testPom = new File( getBasedir(), "target/test-classes/unit/active-profiles/plugin-config.xml" );
+    public void testActiveProfilesFromSettings() throws Exception {
+        File testPom = new File(getBasedir(), "target/test-classes/unit/active-profiles/plugin-config.xml");
 
-        ActiveProfilesMojo mojo = (ActiveProfilesMojo) lookupMojo( "active-profiles", testPom );
+        ActiveProfilesMojo mojo = (ActiveProfilesMojo) lookupMojo("active-profiles", testPom);
 
-        MavenProject project = mock( MavenProject.class );
-        when( project.getInjectedProfileIds() ).thenReturn( getProfiles( Arrays.asList( "from-settings" ),
-                                                                         Collections.<String>emptyList() ) );
+        MavenProject project = mock(MavenProject.class);
+        when(project.getInjectedProfileIds())
+                .thenReturn(getProfiles(Arrays.asList("from-settings"), Collections.<String>emptyList()));
 
-        setUpMojo( mojo, Arrays.asList( project ), "from-settings.txt" );
+        setUpMojo(mojo, Arrays.asList(project), "from-settings.txt");
 
         mojo.execute();
 
-        String file = readFile( "from-settings.txt" );
-        assertTrue( file.contains( "from-settings (source: external)" ) );
+        String file = readFile("from-settings.txt");
+        assertTrue(file.contains("from-settings (source: external)"));
     }
 
     /**
      * Tests that profiles activated in the POM are resolved.
-     * 
+     *
      * @throws Exception in case of errors.
      */
-    public void testActiveProfilesFromPom()
-        throws Exception
-    {
-        File testPom = new File( getBasedir(), "target/test-classes/unit/active-profiles/plugin-config.xml" );
+    public void testActiveProfilesFromPom() throws Exception {
+        File testPom = new File(getBasedir(), "target/test-classes/unit/active-profiles/plugin-config.xml");
 
-        ActiveProfilesMojo mojo = (ActiveProfilesMojo) lookupMojo( "active-profiles", testPom );
+        ActiveProfilesMojo mojo = (ActiveProfilesMojo) lookupMojo("active-profiles", testPom);
 
-        MavenProject project = mock( MavenProject.class );
-        when( project.getInjectedProfileIds() ).thenReturn( getProfiles( Collections.<String>emptyList(),
-                                                                         Arrays.asList( "from-pom" ) ) );
+        MavenProject project = mock(MavenProject.class);
+        when(project.getInjectedProfileIds())
+                .thenReturn(getProfiles(Collections.<String>emptyList(), Arrays.asList("from-pom")));
 
-        setUpMojo( mojo, Arrays.asList( project ), "from-pom.txt" );
+        setUpMojo(mojo, Arrays.asList(project), "from-pom.txt");
 
         mojo.execute();
 
-        String file = readFile( "from-pom.txt" );
-        assertTrue( file.contains( "from-pom (source: org.apache.maven.test:test:1.0)" ) );
+        String file = readFile("from-pom.txt");
+        assertTrue(file.contains("from-pom (source: org.apache.maven.test:test:1.0)"));
     }
 
-    private Map<String, List<String>> getProfiles( List<String> externals, List<String> pom )
-    {
+    private Map<String, List<String>> getProfiles(List<String> externals, List<String> pom) {
         Map<String, List<String>> profiles = new HashMap<>();
-        profiles.put( "external", externals ); // from settings
-        profiles.put( "org.apache.maven.test:test:1.0", pom ); // from POM
-        profiles.put( "", Collections.<String>emptyList() ); // from super POM
+        profiles.put("external", externals); // from settings
+        profiles.put("org.apache.maven.test:test:1.0", pom); // from POM
+        profiles.put("", Collections.<String>emptyList()); // from super POM
         return profiles;
     }
 
-    private void setUpMojo( ActiveProfilesMojo mojo, List<MavenProject> projects, String output )
-        throws IllegalAccessException
-    {
-        setVariableValueToObject( mojo, "projects", projects );
-        setVariableValueToObject( mojo, "output",
-                                  new File( getBasedir(), "target/test-classes/unit/active-profiles/" + output ) );
+    private void setUpMojo(ActiveProfilesMojo mojo, List<MavenProject> projects, String output)
+            throws IllegalAccessException {
+        setVariableValueToObject(mojo, "projects", projects);
+        setVariableValueToObject(
+                mojo, "output", new File(getBasedir(), "target/test-classes/unit/active-profiles/" + output));
     }
 
-    private String readFile( String path )
-        throws IOException
-    {
-        try ( FileInputStream fis = new FileInputStream(
-                new File( getBasedir(), "target/test-classes/unit/active-profiles/" + path ) ) )
-        {
-            return IOUtil.toString( fis );
+    private String readFile(String path) throws IOException {
+        try (FileInputStream fis =
+                new FileInputStream(new File(getBasedir(), "target/test-classes/unit/active-profiles/" + path))) {
+            return IOUtil.toString(fis);
         }
     }
-
 }
