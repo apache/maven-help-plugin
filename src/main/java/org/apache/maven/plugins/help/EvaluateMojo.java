@@ -53,7 +53,6 @@ import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.components.interactivity.InputHandler;
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.artifact.Artifact;
@@ -479,14 +478,12 @@ public class EvaluateMojo extends AbstractHelpMojo {
             throw new MojoExecutionException("The help plugin artifact was not found.");
         }
         Properties properties = new Properties();
-        try {
-            properties.load(resourceAsStream);
+        try (InputStream is = resourceAsStream) {
+            properties.load(is);
         } catch (IOException e) {
             if (getLog().isDebugEnabled()) {
                 getLog().debug("IOException: " + e.getMessage(), e);
             }
-        } finally {
-            IOUtil.close(resourceAsStream);
         }
 
         String artifactString = properties.getProperty("groupId", "unknown") + ":"

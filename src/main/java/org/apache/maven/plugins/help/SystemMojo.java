@@ -67,14 +67,10 @@ public class SystemMojo extends AbstractHelpMojo {
         message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
         message.append("Environment Variables").append(LS);
         message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
-        try {
-            Properties envVars = CommandLineUtils.getSystemEnvVars();
-            for (String key : envVars.stringPropertyNames()) {
-                message.append(LS);
-                message.append(key).append("=").append(envVars.getProperty(key));
-            }
-        } catch (IOException e) {
-            getLog().warn("Unable to get the environment variables: " + e.getMessage());
+        Properties envVars = CommandLineUtils.getSystemEnvVars();
+        for (String key : envVars.stringPropertyNames()) {
+            message.append(LS);
+            message.append(key).append("=").append(envVars.getProperty(key));
         }
 
         message.append(LS);
