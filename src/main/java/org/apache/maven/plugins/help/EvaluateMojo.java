@@ -132,12 +132,6 @@ public class EvaluateMojo extends AbstractHelpMojo {
     private String expression;
 
     /**
-     * Maven project built from the given {@link #artifact}. Otherwise, the current Maven project or the super pom.
-     */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
-
-    /**
      * The system settings for Maven.
      */
     @Parameter(defaultValue = "${settings}", readonly = true, required = true)

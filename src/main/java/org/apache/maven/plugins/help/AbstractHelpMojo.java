@@ -21,11 +21,8 @@ package org.apache.maven.plugins.help;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.List;
 
-import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.plugin.AbstractMojo;
@@ -42,7 +39,6 @@ import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.eclipse.aether.resolution.ArtifactRequest;
@@ -73,22 +69,10 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
     protected RepositorySystem repositorySystem;
 
     /**
-     * Remote repositories used for the project.
+     * Current Maven project.
      */
-    @Parameter(defaultValue = "${project.remoteArtifactRepositories}", required = true, readonly = true)
-    protected List<ArtifactRepository> remoteRepositories;
-
-    /**
-     * Plugin repositories used for the project.
-     */
-    @Parameter(defaultValue = "${project.pluginArtifactRepositories}", required = true, readonly = true)
-    protected List<ArtifactRepository> pluginArtifactRepositories;
-
-    /**
-     * Local Repository.
-     */
-    @Parameter(defaultValue = "${localRepository}", required = true, readonly = true)
-    protected ArtifactRepository localRepository;
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    protected MavenProject project;
 
     /**
      * The current build session instance. This is used for
@@ -185,9 +169,8 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
     protected MavenProject getMavenProject(String artifactString) throws MojoExecutionException {
         try {
             ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-            pbr.setRemoteRepositories(remoteRepositories);
-            pbr.setLocalRepository(localRepository);
-            pbr.setPluginArtifactRepositories(pluginArtifactRepositories);
+            pbr.setRemoteRepositories(project.getRemoteArtifactRepositories());
+            pbr.setPluginArtifactRepositories(project.getPluginArtifactRepositories());
             pbr.setProject(null);
             pbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             pbr.setResolveDependencies(true);
@@ -205,15 +188,15 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
 
     protected org.eclipse.aether.resolution.ArtifactResult resolveArtifact(
             org.eclipse.aether.artifact.Artifact artifact) throws RepositoryException {
-        List<RemoteRepository> repositories = RepositoryUtils.toRepos(remoteRepositories);
-        RepositorySystemSession repositorySession =
-                session.getProjectBuildingRequest().getRepositorySession();
+        RepositorySystemSession repositorySession = session.getRepositorySession();
 
         // use descriptor to respect relocation
         ArtifactDescriptorResult artifactDescriptor = repositorySystem.readArtifactDescriptor(
-                repositorySession, new ArtifactDescriptorRequest(artifact, repositories, null));
+                repositorySession,
+                new ArtifactDescriptorRequest(artifact, project.getRemoteProjectRepositories(), null));
 
         return repositorySystem.resolveArtifact(
-                repositorySession, new ArtifactRequest(artifactDescriptor.getArtifact(), repositories, null));
+                repositorySession,
+                new ArtifactRequest(artifactDescriptor.getArtifact(), project.getRemoteProjectRepositories(), null));
     }
 }
