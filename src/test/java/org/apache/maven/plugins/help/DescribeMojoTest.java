@@ -19,10 +19,12 @@
 package org.apache.maven.plugins.help;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.plugin.MavenPluginManager;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.Parameter;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
@@ -31,7 +33,7 @@ import org.apache.maven.plugin.version.PluginVersionResolver;
 import org.apache.maven.plugin.version.PluginVersionResult;
 import org.apache.maven.plugins.help.DescribeMojo.PluginInfo;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.reporting.exec.MavenPluginManagerHelper;
+import org.eclipse.aether.RepositorySystemSession;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -196,14 +198,19 @@ public class DescribeMojoTest {
 
         MojoDescriptorCreator mojoDescriptorCreator = mock(MojoDescriptorCreator.class);
         PluginVersionResolver pluginVersionResolver = mock(PluginVersionResolver.class);
-        MavenPluginManagerHelper pluginManager = mock(MavenPluginManagerHelper.class);
+        MavenPluginManager pluginManager = mock(MavenPluginManager.class);
         MavenSession session = mock(MavenSession.class);
+        when(session.getRepositorySession()).thenReturn(mock(RepositorySystemSession.class));
         writeDeclaredField(mojo, "mojoDescriptorCreator", mojoDescriptorCreator, true);
         writeDeclaredField(mojo, "pluginVersionResolver", pluginVersionResolver, true);
         writeDeclaredField(mojo, "pluginManager", pluginManager, true);
         writeField(mojo, "session", session, true);
+        MavenProject mavenProject = new MavenProject();
+        mavenProject.setPluginArtifactRepositories(Collections.emptyList());
+        writeField(mojo, "project", mavenProject, true);
         when(mojoDescriptorCreator.findPluginForPrefix("help", session)).thenReturn(plugin);
-        when(pluginManager.getPluginDescriptor(any(Plugin.class), eq(session))).thenReturn(pd);
+        when(pluginManager.getPluginDescriptor(any(Plugin.class), anyList(), any()))
+                .thenReturn(pd);
 
         PluginDescriptor returned = (PluginDescriptor) invokeMethod(mojo, true, "lookupPluginDescriptor", pi);
 
@@ -212,7 +219,7 @@ public class DescribeMojoTest {
         verify(mojoDescriptorCreator).findPluginForPrefix("help", session);
         verify(pluginVersionResolver, never()).resolve(any(PluginVersionRequest.class));
         ArgumentCaptor<Plugin> argument = ArgumentCaptor.forClass(Plugin.class);
-        verify(pluginManager).getPluginDescriptor(argument.capture(), eq(session));
+        verify(pluginManager).getPluginDescriptor(argument.capture(), anyList(), any());
         Plugin capturedPlugin = argument.getValue();
         assertEquals("org.test", capturedPlugin.getGroupId());
         assertEquals("test", capturedPlugin.getArtifactId());
@@ -234,18 +241,22 @@ public class DescribeMojoTest {
 
         MojoDescriptorCreator mojoDescriptorCreator = mock(MojoDescriptorCreator.class);
         PluginVersionResolver pluginVersionResolver = mock(PluginVersionResolver.class);
-        MavenPluginManagerHelper pluginManager = mock(MavenPluginManagerHelper.class);
+        MavenPluginManager pluginManager = mock(MavenPluginManager.class);
         PluginVersionResult versionResult = mock(PluginVersionResult.class);
         MavenSession session = mock(MavenSession.class);
+        when(session.getRepositorySession()).thenReturn(mock(RepositorySystemSession.class));
         writeDeclaredField(mojo, "mojoDescriptorCreator", mojoDescriptorCreator, true);
         writeDeclaredField(mojo, "pluginVersionResolver", pluginVersionResolver, true);
         writeDeclaredField(mojo, "pluginManager", pluginManager, true);
         writeField(mojo, "session", session, true);
-        writeField(mojo, "project", new MavenProject(), true);
+        MavenProject mavenProject = new MavenProject();
+        mavenProject.setPluginArtifactRepositories(Collections.emptyList());
+        writeField(mojo, "project", mavenProject, true);
         when(mojoDescriptorCreator.findPluginForPrefix("help", session)).thenReturn(plugin);
         when(pluginVersionResolver.resolve(any(PluginVersionRequest.class))).thenReturn(versionResult);
         when(versionResult.getVersion()).thenReturn("1.0");
-        when(pluginManager.getPluginDescriptor(any(Plugin.class), eq(session))).thenReturn(pd);
+        when(pluginManager.getPluginDescriptor(any(Plugin.class), anyList(), any()))
+                .thenReturn(pd);
 
         PluginDescriptor returned = (PluginDescriptor) invokeMethod(mojo, true, "lookupPluginDescriptor", pi);
         assertEquals(pd, returned);
@@ -256,7 +267,7 @@ public class DescribeMojoTest {
         assertEquals("org.test", versionArgument.getValue().getGroupId());
         assertEquals("test", versionArgument.getValue().getArtifactId());
         ArgumentCaptor<Plugin> argument = ArgumentCaptor.forClass(Plugin.class);
-        verify(pluginManager).getPluginDescriptor(argument.capture(), eq(session));
+        verify(pluginManager).getPluginDescriptor(argument.capture(), anyList(), any());
         Plugin capturedPlugin = argument.getValue();
         assertEquals("org.test", capturedPlugin.getGroupId());
         assertEquals("test", capturedPlugin.getArtifactId());
@@ -276,13 +287,18 @@ public class DescribeMojoTest {
 
         MojoDescriptorCreator mojoDescriptorCreator = mock(MojoDescriptorCreator.class);
         PluginVersionResolver pluginVersionResolver = mock(PluginVersionResolver.class);
-        MavenPluginManagerHelper pluginManager = mock(MavenPluginManagerHelper.class);
+        MavenPluginManager pluginManager = mock(MavenPluginManager.class);
         MavenSession session = mock(MavenSession.class);
+        when(session.getRepositorySession()).thenReturn(mock(RepositorySystemSession.class));
         writeDeclaredField(mojo, "mojoDescriptorCreator", mojoDescriptorCreator, true);
         writeDeclaredField(mojo, "pluginVersionResolver", pluginVersionResolver, true);
         writeDeclaredField(mojo, "pluginManager", pluginManager, true);
         writeField(mojo, "session", session, true);
-        when(pluginManager.getPluginDescriptor(any(Plugin.class), eq(session))).thenReturn(pd);
+        MavenProject mavenProject = new MavenProject();
+        mavenProject.setPluginArtifactRepositories(Collections.emptyList());
+        writeField(mojo, "project", mavenProject, true);
+        when(pluginManager.getPluginDescriptor(any(Plugin.class), anyList(), any()))
+                .thenReturn(pd);
 
         PluginDescriptor returned = (PluginDescriptor) invokeMethod(mojo, true, "lookupPluginDescriptor", pi);
 
@@ -291,7 +307,7 @@ public class DescribeMojoTest {
         verify(mojoDescriptorCreator, never()).findPluginForPrefix(any(String.class), any(MavenSession.class));
         verify(pluginVersionResolver, never()).resolve(any(PluginVersionRequest.class));
         ArgumentCaptor<Plugin> argument = ArgumentCaptor.forClass(Plugin.class);
-        verify(pluginManager).getPluginDescriptor(argument.capture(), eq(session));
+        verify(pluginManager).getPluginDescriptor(argument.capture(), anyList(), any());
         Plugin capturedPlugin = argument.getValue();
         assertEquals("org.test", capturedPlugin.getGroupId());
         assertEquals("test", capturedPlugin.getArtifactId());

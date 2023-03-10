@@ -38,6 +38,7 @@ import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
 import org.apache.maven.lifecycle.mapping.LifecycleMapping;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.plugin.MavenPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
@@ -54,7 +55,6 @@ import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.reporting.MavenReport;
-import org.apache.maven.reporting.exec.MavenPluginManagerHelper;
 import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.apache.maven.tools.plugin.generator.GeneratorUtils;
 import org.apache.maven.tools.plugin.util.PluginUtils;
@@ -100,7 +100,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      * Component used to get a plugin descriptor from a given plugin.
      */
     @Component
-    private MavenPluginManagerHelper pluginManager;
+    protected MavenPluginManager pluginManager;
 
     /**
      * Component used to get a plugin by its prefix and get mojo descriptors.
@@ -310,7 +310,8 @@ public class DescribeMojo extends AbstractHelpMojo {
         }
 
         try {
-            return pluginManager.getPluginDescriptor(forLookup, session);
+            return pluginManager.getPluginDescriptor(
+                    forLookup, project.getRemotePluginRepositories(), session.getRepositorySession());
         } catch (Exception e) {
             throw new MojoExecutionException(
                     "Error retrieving plugin descriptor for:" + LS + LS + "groupId: '"
