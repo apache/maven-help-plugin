@@ -241,7 +241,7 @@ public class DescribeMojoTest {
         writeDeclaredField(mojo, "pluginVersionResolver", pluginVersionResolver, true);
         writeDeclaredField(mojo, "pluginManager", pluginManager, true);
         writeField(mojo, "session", session, true);
-        writeDeclaredField(mojo, "project", new MavenProject(), true);
+        writeField(mojo, "project", new MavenProject(), true);
         when(mojoDescriptorCreator.findPluginForPrefix("help", session)).thenReturn(plugin);
         when(pluginVersionResolver.resolve(any(PluginVersionRequest.class))).thenReturn(versionResult);
         when(versionResult.getVersion()).thenReturn("1.0");

@@ -131,15 +131,6 @@ public class DescribeMojo extends AbstractHelpMojo {
     // ----------------------------------------------------------------------
 
     /**
-     * The current project, if there is one. This is listed as optional, since
-     * the help plugin should be able to function on its own. If this
-     * parameter is empty at execution time, this Mojo will instead use the
-     * super-project.
-     */
-    @org.apache.maven.plugins.annotations.Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
-
-    /**
      * The Maven Plugin to describe. This must be specified in one of three ways:
      * <br/>
      * <ol>
@@ -389,8 +380,8 @@ public class DescribeMojo extends AbstractHelpMojo {
             // Can be null because of MPLUGIN-137 (and descriptors generated with maven-plugin-tools-api <= 2.4.3)
             Artifact aetherArtifact = new DefaultArtifact(pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion());
             ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-            pbr.setRemoteRepositories(remoteRepositories);
-            pbr.setLocalRepository(localRepository);
+            pbr.setRemoteRepositories(project.getRemoteArtifactRepositories());
+            pbr.setPluginArtifactRepositories(project.getPluginArtifactRepositories());
             pbr.setProject(null);
             pbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             try {
@@ -733,7 +724,6 @@ public class DescribeMojo extends AbstractHelpMojo {
      * @return The sequence of display lines, never <code>null</code>.
      * @throws MojoFailureException   if any can not invoke the method
      * @throws MojoExecutionException if no line was found for <code>text</code>
-     * @see HelpMojo#toLines(String, int, int, int)
      */
     private static List<String> toLines(String text, int indent, int indentSize, int lineLength)
             throws MojoFailureException, MojoExecutionException {
@@ -864,7 +854,8 @@ public class DescribeMojo extends AbstractHelpMojo {
         PluginDescriptor pd = md.getPluginDescriptor();
         List<URL> urls = new ArrayList<>();
         ProjectBuildingRequest pbr = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
-        pbr.setRemoteRepositories(remoteRepositories);
+        pbr.setRemoteRepositories(project.getRemoteArtifactRepositories());
+        pbr.setPluginArtifactRepositories(project.getPluginArtifactRepositories());
         pbr.setResolveDependencies(true);
         pbr.setProject(null);
         pbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);

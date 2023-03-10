@@ -59,14 +59,6 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
     // ----------------------------------------------------------------------
 
     /**
-     * The Maven project.
-     *
-     * @since 2.0.2
-     */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    private MavenProject project;
-
-    /**
      * The projects in the current build. The effective-POM for
      * each of these projects will written.
      */
