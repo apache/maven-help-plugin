@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.lifecycle.DefaultLifecycles;
@@ -56,8 +57,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.shared.utils.logging.MessageUtils;
-import org.apache.maven.tools.plugin.generator.GeneratorUtils;
-import org.apache.maven.tools.plugin.util.PluginUtils;
+import org.apache.maven.tools.plugin.generator.HtmlToPlainTextConverter;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -420,8 +420,9 @@ public class DescribeMojo extends AbstractHelpMojo {
             append(buffer, "This plugin has " + mojos.size() + " goal" + (mojos.size() > 1 ? "s" : "") + ":", 0);
             buffer.append(LS);
 
-            mojos = new ArrayList<>(mojos);
-            PluginUtils.sortMojos(mojos);
+            mojos = mojos.stream()
+                    .sorted((m1, m2) -> m1.getGoal().compareToIgnoreCase(m2.getGoal()))
+                    .collect(Collectors.toList());
 
             for (MojoDescriptor md : mojos) {
                 describeMojoGuts(md, buffer, detail);
@@ -545,8 +546,9 @@ public class DescribeMojo extends AbstractHelpMojo {
             return;
         }
 
-        params = new ArrayList<>(params);
-        PluginUtils.sortMojoParameters(params);
+        params = params.stream()
+                .sorted((p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()))
+                .collect(Collectors.toList());
 
         append(buffer, "Available parameters:", 1);
 
@@ -890,7 +892,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      */
     private static String toDescription(String description) {
         if (StringUtils.isNotEmpty(description)) {
-            return GeneratorUtils.toText(description);
+            return new HtmlToPlainTextConverter().convert(description);
         }
 
         return "(no description available)";
