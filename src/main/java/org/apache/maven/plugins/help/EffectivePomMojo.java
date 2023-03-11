@@ -208,10 +208,11 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
         public String toString(InputLocation location) {
             InputSource source = location.getSource();
 
-            String s = source.getLocation(); // by default, display the path
+            String s = source.getModelId(); // by default, display modelId
 
-            if (s == null || s.trim().isEmpty()) {
-                s = source.getModelId();
+            if (StringUtils.isBlank(s) || s.contains("[unknown-version]")) {
+                // unless it is blank or does not provide version information
+                s = source.toString();
             }
 
             return '}' + s + ((location.getLineNumber() >= 0) ? ", line " + location.getLineNumber() : "") + ' ';
