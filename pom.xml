@@ -175,8 +175,8 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <!-- commons-lang3 > 3.8.1 requires at least Java 8 -->
-      <version>3.8.1</version>
+      <!-- commons-lang3 > 3.12.0 requires at least Java 8 -->
+      <version>3.12.0</version>
     </dependency>
 
     <!-- test -->
