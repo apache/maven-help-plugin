@@ -29,7 +29,16 @@ under the License.
   <body>
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
-      <item name="Goals" href="plugin-info.html"/>
+      <item name="Goals" href="plugin-info.html" collapse="true">
+        <item name="help:active-profiles" href="active-profiles-mojo.html"/>
+        <item name="help:all-profiles" href="all-profiles-mojo.html"/>
+        <item name="help:describe" href="describe-mojo.html"/>
+        <item name="help:effective-pom" href="effective-pom-mojo.html"/>
+        <item name="help:effective-settings" href="effective-settings-mojo.html"/>
+        <item name="help:evaluate" href="evaluate-mojo.html"/>
+        <item name="help:system" href="system-mojo.html"/>
+        <item name="help:help" href="help-mojo.html"/>
+      </item>
       <item name="Usage" href="usage.html"/>
       <item name="FAQ" href="faq.html"/>
       <!-- According to https://issues.apache.org/jira/browse/MNGSITE-152 -->
