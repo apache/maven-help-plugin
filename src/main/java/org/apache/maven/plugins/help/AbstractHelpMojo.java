@@ -33,7 +33,6 @@ import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.WriterFactory;
 import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.RepositorySystem;
@@ -129,7 +128,7 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
      */
     protected org.eclipse.aether.artifact.Artifact getAetherArtifact(String artifactString, String type)
             throws MojoExecutionException {
-        if (StringUtils.isEmpty(artifactString)) {
+        if (artifactString == null || artifactString.isEmpty()) {
             throw new IllegalArgumentException("artifact parameter could not be empty");
         }
 

@@ -213,14 +213,14 @@ public class DescribeMojo extends AbstractHelpMojo {
         StringBuilder descriptionBuffer = new StringBuilder();
 
         boolean describePlugin = true;
-        if (StringUtils.isNotEmpty(cmd)) {
+        if (cmd != null && !cmd.isEmpty()) {
             describePlugin = describeCommand(descriptionBuffer);
         }
 
         if (describePlugin) {
             PluginInfo pi = parsePluginLookupInfo();
             PluginDescriptor descriptor = lookupPluginDescriptor(pi);
-            if (StringUtils.isNotEmpty(goal)) {
+            if (goal != null && !goal.isEmpty()) {
                 MojoDescriptor mojo = descriptor.getMojo(goal);
                 if (mojo == null) {
                     throw new MojoFailureException(
@@ -331,7 +331,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      */
     private PluginInfo parsePluginLookupInfo() throws MojoFailureException {
         PluginInfo pi = new PluginInfo();
-        if (StringUtils.isNotEmpty(plugin)) {
+        if (plugin != null && !plugin.isEmpty()) {
             if (plugin.indexOf(':') > -1) {
                 String[] pluginParts = plugin.split(":");
 
@@ -479,7 +479,7 @@ public class DescribeMojo extends AbstractHelpMojo {
             deprecation = NO_REASON;
         }
 
-        if (StringUtils.isNotEmpty(deprecation)) {
+        if (deprecation != null && !deprecation.isEmpty()) {
             append(
                     buffer,
                     MessageUtils.buffer().warning("Deprecated. " + deprecation).toString(),
@@ -498,7 +498,7 @@ public class DescribeMojo extends AbstractHelpMojo {
         append(buffer, "Language", md.getLanguage(), 1);
 
         String phase = md.getPhase();
-        if (StringUtils.isNotEmpty(phase)) {
+        if (phase != null && !phase.isEmpty()) {
             append(buffer, "Bound to phase", phase, 1);
         }
 
@@ -506,17 +506,17 @@ public class DescribeMojo extends AbstractHelpMojo {
         String eLife = md.getExecuteLifecycle();
         String ePhase = md.getExecutePhase();
 
-        if (StringUtils.isNotEmpty(eGoal) || StringUtils.isNotEmpty(ePhase)) {
+        if ((eGoal != null && !eGoal.isEmpty()) || (ePhase != null && !ePhase.isEmpty())) {
             append(buffer, "Before this goal executes, it will call:", 1);
 
-            if (StringUtils.isNotEmpty(eGoal)) {
+            if (eGoal != null && !eGoal.isEmpty()) {
                 append(buffer, "Single goal", "'" + eGoal + "'", 2);
             }
 
-            if (StringUtils.isNotEmpty(ePhase)) {
+            if (ePhase != null && !ePhase.isEmpty()) {
                 String s = "Phase: '" + ePhase + "'";
 
-                if (StringUtils.isNotEmpty(eLife)) {
+                if (eLife != null && !eLife.isEmpty()) {
                     s += " in Lifecycle Overlay: '" + eLife + "'";
                 }
 
@@ -568,7 +568,7 @@ public class DescribeMojo extends AbstractHelpMojo {
                         md.getMojoConfiguration().getChild(parameter.getName()).getAttribute("default-value", null);
             }
 
-            if (StringUtils.isNotEmpty(defaultVal)) {
+            if (defaultVal != null && !defaultVal.isEmpty()) {
                 defaultVal = " (Default: " + MessageUtils.buffer().strong(defaultVal) + ")";
             } else {
                 defaultVal = "";
@@ -576,7 +576,7 @@ public class DescribeMojo extends AbstractHelpMojo {
             append(buffer, MessageUtils.buffer().strong(parameter.getName()) + defaultVal, 2);
 
             String alias = parameter.getAlias();
-            if (!StringUtils.isEmpty(alias)) {
+            if (!(alias == null || alias.isEmpty())) {
                 append(buffer, "Alias", alias, 3);
             }
 
@@ -585,13 +585,13 @@ public class DescribeMojo extends AbstractHelpMojo {
             }
 
             String expression = parameter.getExpression();
-            if (StringUtils.isEmpty(expression)) {
+            if (expression == null || expression.isEmpty()) {
                 // expression is ALWAYS null, this is a bug in PluginDescriptorBuilder (cf. MNG-4941).
                 // Fixed with Maven-3.0.1
                 expression =
                         md.getMojoConfiguration().getChild(parameter.getName()).getValue(null);
             }
-            if (StringUtils.isNotEmpty(expression)) {
+            if (expression != null && !expression.isEmpty()) {
                 Matcher matcher = EXPRESSION.matcher(expression);
                 if (matcher.matches()) {
                     append(buffer, "User property", matcher.group(1), 3);
@@ -607,7 +607,7 @@ public class DescribeMojo extends AbstractHelpMojo {
                 deprecation = NO_REASON;
             }
 
-            if (StringUtils.isNotEmpty(deprecation)) {
+            if (deprecation != null && !deprecation.isEmpty()) {
                 append(
                         buffer,
                         MessageUtils.buffer()
@@ -663,7 +663,7 @@ public class DescribeMojo extends AbstractHelpMojo {
                 for (String key : phases) {
                     descriptionBuffer.append("* ").append(key).append(": ");
                     String value = defaultLifecyclePhases.get(key);
-                    if (StringUtils.isNotEmpty(value)) {
+                    if (value != null && !value.isEmpty()) {
                         for (StringTokenizer tok = new StringTokenizer(value, ","); tok.hasMoreTokens(); ) {
                             descriptionBuffer.append(tok.nextToken().trim());
 
@@ -774,7 +774,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      */
     private static void append(StringBuilder sb, String description, int indent)
             throws MojoFailureException, MojoExecutionException {
-        if (StringUtils.isEmpty(description)) {
+        if (description == null || description.isEmpty()) {
             sb.append(UNKNOWN).append(LS);
             return;
         }
@@ -798,11 +798,11 @@ public class DescribeMojo extends AbstractHelpMojo {
      */
     private static void append(StringBuilder sb, String key, String value, int indent)
             throws MojoFailureException, MojoExecutionException {
-        if (StringUtils.isEmpty(key)) {
+        if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Key is required!");
         }
 
-        if (StringUtils.isEmpty(value)) {
+        if (value == null || value.isEmpty()) {
             value = UNKNOWN;
         }
 
@@ -827,7 +827,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      */
     private static void appendAsParagraph(StringBuilder sb, String key, String value, int indent)
             throws MojoFailureException, MojoExecutionException {
-        if (StringUtils.isEmpty(value)) {
+        if (value == null || value.isEmpty()) {
             value = UNKNOWN;
         }
 
@@ -891,7 +891,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      * @return The effective description string, never <code>null</code>.
      */
     private static String toDescription(String description) {
-        if (StringUtils.isNotEmpty(description)) {
+        if (description != null && !description.isEmpty()) {
             return new HtmlToPlainTextConverter().convert(description);
         }
 
