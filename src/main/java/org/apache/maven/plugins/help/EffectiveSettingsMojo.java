@@ -245,7 +245,7 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
      */
     private static String getUserName() {
         String userName = System.getProperty("user.name");
-        if (StringUtils.isEmpty(userName)) {
+        if (userName == null || userName.isEmpty()) {
             return "unknown";
         }
 

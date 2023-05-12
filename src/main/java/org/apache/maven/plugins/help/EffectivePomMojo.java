@@ -91,7 +91,7 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
 
     /** {@inheritDoc} */
     public void execute() throws MojoExecutionException {
-        if (StringUtils.isNotEmpty(artifact)) {
+        if (artifact != null && !artifact.isEmpty()) {
             project = getMavenProject(artifact);
             projects = Collections.singletonList(project);
         }

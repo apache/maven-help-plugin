@@ -161,7 +161,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
 
         validateParameters();
 
-        if (StringUtils.isNotEmpty(artifact)) {
+        if (artifact != null && !artifact.isEmpty()) {
             project = getMavenProject(artifact);
         }
 
@@ -453,8 +453,8 @@ public class EvaluateMojo extends AbstractHelpMojo {
     private File getArtifactFile(String artifactId) throws MojoExecutionException, RepositoryException {
         List<Dependency> dependencies = getHelpPluginPom().getDependencies();
         for (Dependency dependency : dependencies) {
-            if (("org.apache.maven".equals(dependency.getGroupId()))) {
-                if ((artifactId.equals(dependency.getArtifactId()))) {
+            if ("org.apache.maven".equals(dependency.getGroupId())) {
+                if (artifactId.equals(dependency.getArtifactId())) {
                     Artifact mavenArtifact = new DefaultArtifact(
                             dependency.getGroupId(), dependency.getArtifactId(), "jar", dependency.getVersion());
 
@@ -498,7 +498,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
      * @return the plural of the name
      */
     private static String pluralize(String name) {
-        if (StringUtils.isEmpty(name)) {
+        if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("name is required");
         }
 
