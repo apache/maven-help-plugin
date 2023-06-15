@@ -22,10 +22,11 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.maven.api.settings.InputLocation;
+import org.apache.maven.api.settings.InputSource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -33,8 +34,8 @@ import org.apache.maven.settings.Profile;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
-import org.apache.maven.settings.SettingsUtils;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
+import org.apache.maven.settings.v4.SettingsXpp3WriterEx;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
@@ -67,6 +68,14 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
     @Parameter(property = "showPasswords", defaultValue = "false")
     private boolean showPasswords;
 
+    /**
+     * Output POM input location as comments.
+     *
+     * @since 3.5.0
+     */
+    @Parameter(property = "verbose", defaultValue = "false")
+    private boolean verbose = false;
+
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
@@ -95,6 +104,10 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
         writeEffectiveSettings(copySettings, writer);
 
         String effectiveSettings = prettyFormat(w.toString(), encoding, false);
+        if (verbose) {
+            // tweak location tracking comment, that are put on a separate line by pretty print
+            effectiveSettings = effectiveSettings.replaceAll("(?m)>\\s+<!--}", ">  <!-- ");
+        }
 
         if (output != null) {
             try {
@@ -147,45 +160,7 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
         if (settings == null) {
             return null;
         }
-
-        // Not a deep copy in M2.2.1 !!!
-        Settings clone = SettingsUtils.copySettings(settings);
-
-        List<Server> clonedServers = new ArrayList<>(settings.getServers().size());
-        for (Server server : settings.getServers()) {
-            Server clonedServer = new Server();
-            clonedServer.setConfiguration(server.getConfiguration());
-            clonedServer.setDirectoryPermissions(server.getDirectoryPermissions());
-            clonedServer.setFilePermissions(server.getFilePermissions());
-            clonedServer.setId(server.getId());
-            clonedServer.setPassphrase(server.getPassphrase());
-            clonedServer.setPassword(server.getPassword());
-            clonedServer.setPrivateKey(server.getPrivateKey());
-            clonedServer.setSourceLevel(server.getSourceLevel());
-            clonedServer.setUsername(server.getUsername());
-
-            clonedServers.add(clonedServer);
-        }
-        clone.setServers(clonedServers);
-
-        List<Proxy> clonedProxies = new ArrayList<>(settings.getProxies().size());
-        for (Proxy proxy : settings.getProxies()) {
-            Proxy clonedProxy = new Proxy();
-            clonedProxy.setActive(proxy.isActive());
-            clonedProxy.setHost(proxy.getHost());
-            clonedProxy.setId(proxy.getId());
-            clonedProxy.setNonProxyHosts(proxy.getNonProxyHosts());
-            clonedProxy.setPassword(proxy.getPassword());
-            clonedProxy.setPort(proxy.getPort());
-            clonedProxy.setProtocol(proxy.getProtocol());
-            clonedProxy.setSourceLevel(proxy.getSourceLevel());
-            clonedProxy.setUsername(proxy.getUsername());
-
-            clonedProxies.add(clonedProxy);
-        }
-        clone.setProxies(clonedProxies);
-
-        return clone;
+        return new Settings(settings.getDelegate());
     }
 
     /**
@@ -195,13 +170,18 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
      * @param writer the XML writer used, not null.
      * @throws MojoExecutionException if any
      */
-    private static void writeEffectiveSettings(Settings settings, XMLWriter writer) throws MojoExecutionException {
+    private void writeEffectiveSettings(Settings settings, XMLWriter writer) throws MojoExecutionException {
         cleanSettings(settings);
 
         StringWriter sWriter = new StringWriter();
-        SettingsXpp3Writer settingsWriter = new SettingsXpp3Writer();
         try {
-            settingsWriter.write(sWriter, settings);
+            if (verbose) {
+                SettingsXpp3WriterEx settingsWriter = new SettingsXpp3WriterEx();
+                settingsWriter.setStringFormatter(new InputLocationStringFormatter());
+                settingsWriter.write(sWriter, settings.getDelegate());
+            } else {
+                new SettingsXpp3Writer().write(sWriter, settings);
+            }
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot serialize Settings to XML.", e);
         }
@@ -250,5 +230,16 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
         }
 
         return userName;
+    }
+
+    private static class InputLocationStringFormatter implements InputLocation.StringFormatter {
+        @Override
+        public String toString(InputLocation location) {
+            InputSource source = location.getSource();
+
+            String s = source.toString();
+
+            return '}' + s + ((location.getLineNumber() >= 0) ? ", line " + location.getLineNumber() : "") + ' ';
+        }
     }
 }
