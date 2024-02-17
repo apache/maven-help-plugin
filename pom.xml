@@ -106,7 +106,7 @@
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-tools-generators</artifactId>
-      <version>${maven.plugin.tools.version}</version>
+      <version>${version.maven-plugin-tools}</version>
       <exclusions>
         <!-- we only need one class HtmlToPlainTextConverter -->
         <exclusion>
@@ -200,7 +200,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <!-- commons-lang3 > 3.14.0 requires at least Java 8 -->
       <version>3.14.0</version>
     </dependency>
 
