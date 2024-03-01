@@ -19,8 +19,10 @@ package org.apache.maven.plugins.help;
  * under the License.
  */
 
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -32,11 +34,13 @@ import java.lang.reflect.Method;
  */
 public class Maven4InputLocationFormatter extends InputLocation.StringFormatter
 {
-    private final Method getReferencedByMethod;
+    private final Method getImportedFromMethod;
+    private final MavenProject project;
 
-    public Maven4InputLocationFormatter( final Method getReferencedByMethod )
+    public Maven4InputLocationFormatter( final Method getImportedFromMethod, final MavenProject project )
     {
-        this.getReferencedByMethod = getReferencedByMethod;
+        this.getImportedFromMethod = getImportedFromMethod;
+        this.project = project;
     }
 
     @Override
@@ -52,26 +56,58 @@ public class Maven4InputLocationFormatter extends InputLocation.StringFormatter
             s = source.toString();
         }
 
-        InputLocation referencedBy = getReferencedBy( location );
+        InputLocation importedFrom = getImportedFrom( location );
 
         StringBuilder p = new StringBuilder();
 
-        while ( referencedBy != null )
+        while ( importedFrom != null )
         {
-            p.append( " from " ).append( referencedBy.getSource().getModelId() );
-            referencedBy = getReferencedBy( referencedBy );
+            p.append( " from " ).append( importedFrom.getSource().getModelId() );
+            importedFrom = getImportedFrom( importedFrom );
         }
 
         return '}' + s + ( ( location.getLineNumber() >= 0 ) ? ", line " + location.getLineNumber() : "" ) + p;
     }
 
-    private InputLocation getReferencedBy( final InputLocation location )
+    private InputLocation getImportedFrom( final InputLocation location )
     {
         try
         {
-            return (InputLocation) getReferencedByMethod.invoke( location );
+            InputLocation result = (InputLocation) getImportedFromMethod.invoke( location );
+
+            // TODO: Replace black magic
+            if ( result == null && project != null )
+            {
+                for ( Dependency dependency : project.getDependencyManagement().getDependencies() )
+                {
+                    InputLocation groupIdLocation = dependency.getLocation( "groupId" );
+                    InputLocation artifactIdLocation = dependency.getLocation( "artifactId" );
+                    InputLocation versionLocation = dependency.getLocation( "version" );
+
+                    if ( groupIdLocation != null && groupIdLocation.toString().equals( location.toString() ) )
+                    {
+                        result = (InputLocation) Dependency.class.getMethod( "getImportedFrom" )
+                                .invoke( dependency );
+                        break;
+                    }
+                    if ( artifactIdLocation != null && artifactIdLocation.toString().equals( location.toString() ) )
+                    {
+                        result = (InputLocation) Dependency.class.getMethod( "getImportedFrom" )
+                                .invoke( dependency );
+                        break;
+                    }
+                    if ( versionLocation != null && versionLocation.toString().equals( location.toString() ) )
+                    {
+                        result = (InputLocation) Dependency.class.getMethod( "getImportedFrom" )
+                                .invoke( dependency );
+                        break;
+                    }
+                }
+            }
+
+            return result;
         }
-        catch ( IllegalAccessException | InvocationTargetException e )
+        catch ( IllegalAccessException | InvocationTargetException | NoSuchMethodException e )
         {
             throw new RuntimeException( e );
         }
