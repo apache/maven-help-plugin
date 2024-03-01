@@ -21,6 +21,7 @@ package org.apache.maven.plugins.help;
 
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 
 import java.lang.reflect.Method;
 
@@ -29,13 +30,13 @@ import java.lang.reflect.Method;
  */
 public class InputLocationFormatterFactory
 {
-    public static InputLocation.StringFormatter produce( final Log log )
+    public static InputLocation.StringFormatter produce( final Log log, final MavenProject project )
     {
         try
         {
             // This method was introduced in Maven 4.
-            Method getReferencedByMethod = InputLocation.class.getDeclaredMethod( "getReferencedBy", InputLocation.class );
-            return new Maven4InputLocationFormatter( getReferencedByMethod );
+            Method getImportedFromMethod = InputLocation.class.getDeclaredMethod( "getImportedFrom" );
+            return new Maven4InputLocationFormatter( getImportedFromMethod, project );
         }
         catch ( NoSuchMethodException nsme )
         {
