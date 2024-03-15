@@ -82,6 +82,7 @@ public class Maven4InputLocationFormatter extends InputLocation.StringFormatter
             {
                 for ( Dependency dependency : project.getDependencyManagement().getDependencies() )
                 {
+                    // Until a new maven api model is released, we need to use reflection to access the locations
                     Set<?> locationKeys = getLocationKeys( dependency );
                     for ( Object key : locationKeys )
                     {
