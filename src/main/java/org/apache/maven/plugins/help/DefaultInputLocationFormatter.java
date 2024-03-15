@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.help;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,7 @@ package org.apache.maven.plugins.help;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.help;
 
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
@@ -26,21 +25,18 @@ import org.codehaus.plexus.util.StringUtils;
 /**
  * Maven 3.x-based implementation of {@link InputLocation.StringFormatter}.
  */
-public class DefaultInputLocationFormatter extends InputLocation.StringFormatter
-{
+public class DefaultInputLocationFormatter extends InputLocation.StringFormatter {
     @Override
-    public String toString( InputLocation location )
-    {
+    public String toString(InputLocation location) {
         InputSource source = location.getSource();
 
         String s = source.getModelId(); // by default, display modelId
 
-        if ( StringUtils.isBlank( s ) || s.contains( "[unknown-version]" ) )
-        {
+        if (StringUtils.isBlank(s) || s.contains("[unknown-version]")) {
             // unless it is blank or does not provide version information
             s = source.toString();
         }
 
-        return '}' + s + ( ( location.getLineNumber() >= 0 ) ? ", line " + location.getLineNumber() : "" ) + ' ';
+        return '}' + s + ((location.getLineNumber() >= 0) ? ", line " + location.getLineNumber() : "") + ' ';
     }
 }

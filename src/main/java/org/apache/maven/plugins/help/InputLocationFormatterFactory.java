@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.help;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,33 +16,29 @@ package org.apache.maven.plugins.help;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.help;
+
+import java.lang.reflect.Method;
 
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
-import java.lang.reflect.Method;
-
 /**
  * Selects the most suitable implementation for {@link InputLocation.StringFormatter}.
  */
-public class InputLocationFormatterFactory
-{
+public class InputLocationFormatterFactory {
     static Class<?> inputLocationClass = InputLocation.class;
 
-    public static InputLocation.StringFormatter produce( final Log log, final MavenProject project )
-    {
-        try
-        {
+    public static InputLocation.StringFormatter produce(final Log log, final MavenProject project) {
+        try {
             // This method was introduced in Maven 4.
-            Method getImportedFromMethod = inputLocationClass.getDeclaredMethod( "getImportedFrom" );
-            return new Maven4InputLocationFormatter( getImportedFromMethod, project );
-        }
-        catch ( NoSuchMethodException nsme )
-        {
+            Method getImportedFromMethod = inputLocationClass.getDeclaredMethod("getImportedFrom");
+            return new ImportedFromLocationFormatter(getImportedFromMethod, project);
+        } catch (NoSuchMethodException nsme) {
             // Fallback to pre-Maven 4 implementation.
-             log.info( "Unable to print chain of POM imports, falling back to printing the source POM "
-                     + "without import information. This feature is available in Maven 4.0.0+." );
+            log.info("Unable to print chain of POM imports, falling back to printing the source POM "
+                    + "without import information. This feature is available in Maven 4.0.0+.");
             return new DefaultInputLocationFormatter();
         }
     }

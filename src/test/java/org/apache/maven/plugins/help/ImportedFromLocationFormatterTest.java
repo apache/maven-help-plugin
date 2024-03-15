@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.help;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,23 +16,24 @@ package org.apache.maven.plugins.help;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.help;
+
+import java.util.Stack;
 
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
 import org.apache.maven.project.MavenProject;
 import org.junit.Test;
 
-import java.util.Stack;
-
 import static org.junit.Assert.assertEquals;
 
-public class Maven4InputLocationFormatterTest {
+public class ImportedFromLocationFormatterTest {
 
     @Test
     public void testImportedFromNullToString() {
         // Arrange
         final MavenProject project = new MavenProject();
-        final Maven4InputLocationFormatter formatter = new Maven4InputLocationFormatterMock(project);
+        final ImportedFromLocationFormatter formatter = new ImportedFromLocationFormatterMock(project);
 
         final InputSource source = new InputSource();
         source.setModelId("org.example:MPG-183-project:1-SNAPSHOT");
@@ -55,7 +54,7 @@ public class Maven4InputLocationFormatterTest {
         final InputLocation importedFrom = new InputLocation(7, 5, importedFromSource);
 
         final MavenProject project = new MavenProject();
-        final Maven4InputLocationFormatter formatter = new Maven4InputLocationFormatterMock(project, importedFrom);
+        final ImportedFromLocationFormatter formatter = new ImportedFromLocationFormatterMock(project, importedFrom);
 
         final InputSource source = new InputSource();
         source.setModelId("org.example:MPG-183-project:1-SNAPSHOT");
@@ -71,7 +70,7 @@ public class Maven4InputLocationFormatterTest {
     @Test
     public void testMultipleImportedFromToString() {
         // Arrange
-        final Maven4InputLocationFormatter formatter = createMultiImportedFromFormatter();
+        final ImportedFromLocationFormatter formatter = createMultiImportedFromFormatter();
 
         final InputSource source = new InputSource();
         source.setModelId("org.example:MPG-183-project:1-SNAPSHOT");
@@ -81,10 +80,12 @@ public class Maven4InputLocationFormatterTest {
         final String result = formatter.toString(location);
 
         // Assert
-        assertEquals("}org.example:MPG-183-project:1-SNAPSHOT, line 7 from org.example:MPG-183-bom-2:1-SNAPSHOT from org.example:MPG-183-bom-1:1-SNAPSHOT", result);
+        String expected =
+                "}org.example:MPG-183-project:1-SNAPSHOT, line 7 from org.example:MPG-183-bom-2:1-SNAPSHOT from org.example:MPG-183-bom-1:1-SNAPSHOT";
+        assertEquals(expected, result);
     }
 
-    private static Maven4InputLocationFormatter createMultiImportedFromFormatter() {
+    private static ImportedFromLocationFormatter createMultiImportedFromFormatter() {
         final InputSource importedFromSource1 = new InputSource();
         importedFromSource1.setModelId("org.example:MPG-183-bom-1:1-SNAPSHOT");
         final InputLocation importedFrom1 = new InputLocation(7, 5, importedFromSource1);
@@ -93,22 +94,22 @@ public class Maven4InputLocationFormatterTest {
         importedFromSource2.setModelId("org.example:MPG-183-bom-2:1-SNAPSHOT");
         final InputLocation importedFrom2 = new InputLocation(7, 5, importedFromSource2);
 
-        return new Maven4InputLocationFormatterMock(new MavenProject(), importedFrom1, importedFrom2);
+        return new ImportedFromLocationFormatterMock(new MavenProject(), importedFrom1, importedFrom2);
     }
 
-    private static class Maven4InputLocationFormatterMock extends Maven4InputLocationFormatter {
+    private static class ImportedFromLocationFormatterMock extends ImportedFromLocationFormatter {
         private final Stack<InputLocation> mockedImportedFrom;
 
-        public Maven4InputLocationFormatterMock(MavenProject project) {
+        public ImportedFromLocationFormatterMock(MavenProject project) {
             this(project, new Stack<>());
         }
 
-        public Maven4InputLocationFormatterMock(MavenProject project, Stack<InputLocation> mockedImportedFrom) {
+        public ImportedFromLocationFormatterMock(MavenProject project, Stack<InputLocation> mockedImportedFrom) {
             super(null, project);
             this.mockedImportedFrom = mockedImportedFrom;
         }
 
-        public Maven4InputLocationFormatterMock(MavenProject project, InputLocation... mockedImportedFrom) {
+        public ImportedFromLocationFormatterMock(MavenProject project, InputLocation... mockedImportedFrom) {
             super(null, project);
 
             this.mockedImportedFrom = new Stack<>();
