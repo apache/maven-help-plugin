@@ -25,8 +25,11 @@ import org.apache.maven.model.InputSource;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Maven 4.x-based implementation of {@link InputLocation.StringFormatter}. Enhances the default implementation
@@ -69,47 +72,62 @@ public class Maven4InputLocationFormatter extends InputLocation.StringFormatter
         return '}' + s + ( ( location.getLineNumber() >= 0 ) ? ", line " + location.getLineNumber() : "" ) + p;
     }
 
-    private InputLocation getImportedFrom( final InputLocation location )
+    protected InputLocation getImportedFrom( final InputLocation location )
     {
         try
         {
             InputLocation result = (InputLocation) getImportedFromMethod.invoke( location );
 
-            // TODO: Replace black magic
             if ( result == null && project != null )
             {
                 for ( Dependency dependency : project.getDependencyManagement().getDependencies() )
                 {
-                    InputLocation groupIdLocation = dependency.getLocation( "groupId" );
-                    InputLocation artifactIdLocation = dependency.getLocation( "artifactId" );
-                    InputLocation versionLocation = dependency.getLocation( "version" );
+                    Set<?> locationKeys = getLocationKeys( dependency );
+                    for ( Object key : locationKeys )
+                    {
+                        if ( !( key instanceof String ) )
+                        {
+                            throw new RuntimeException( "Expected a String, got " + key.getClass().getName() );
+                        }
 
-                    if ( groupIdLocation != null && groupIdLocation.toString().equals( location.toString() ) )
-                    {
-                        result = (InputLocation) Dependency.class.getMethod( "getImportedFrom" )
-                                .invoke( dependency );
-                        break;
-                    }
-                    if ( artifactIdLocation != null && artifactIdLocation.toString().equals( location.toString() ) )
-                    {
-                        result = (InputLocation) Dependency.class.getMethod( "getImportedFrom" )
-                                .invoke( dependency );
-                        break;
-                    }
-                    if ( versionLocation != null && versionLocation.toString().equals( location.toString() ) )
-                    {
-                        result = (InputLocation) Dependency.class.getMethod( "getImportedFrom" )
-                                .invoke( dependency );
-                        break;
+                        InputLocation dependencyLocation = dependency.getLocation( key );
+                        if ( dependencyLocation != null && dependencyLocation.toString().equals( location.toString() ) )
+                        {
+                            result = ( InputLocation ) Dependency.class.getMethod( "getImportedFrom" )
+                                    .invoke( dependency );
+                            break;
+                        }
                     }
                 }
             }
 
             return result;
         }
-        catch ( IllegalAccessException | InvocationTargetException | NoSuchMethodException e )
+        catch ( IllegalAccessException | InvocationTargetException | NoSuchMethodException | NoSuchFieldException
+                | ClassNotFoundException e )
         {
             throw new RuntimeException( e );
         }
+    }
+
+    private Set<?> getLocationKeys( Dependency dependency ) throws NoSuchFieldException, IllegalAccessException
+            , ClassNotFoundException
+    {
+        Field delegateField = Class.forName( "org.apache.maven.model.BaseObject" ).getDeclaredField( "delegate" );
+        delegateField.setAccessible( true );
+        Object delegate = delegateField.get( dependency );
+        delegateField.setAccessible( false );
+
+        Field locationsField = delegate.getClass().getDeclaredField( "locations" );
+        locationsField.setAccessible( true );
+        Object locations = locationsField.get( delegate );
+        locationsField.setAccessible( false );
+
+        if ( !( locations instanceof Map ) )
+        {
+            throw new RuntimeException( "Expected a Map, got " + locations.getClass().getName() );
+        }
+
+        return ( (Map<?, ?>) locations ).keySet();
     }
 }
