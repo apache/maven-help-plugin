@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.help;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,75 +16,75 @@ package org.apache.maven.plugins.help;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.help;
 
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
 import org.junit.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
 
-public class DefaultInputLocationFormatterTest
-{
+public class DefaultInputLocationFormatterTest {
     private final InputLocation.StringFormatter formatter = new DefaultInputLocationFormatter();
 
     @Test
     public void withLineNumberShouldIncludeLineNumber() {
         // Arrange
         final InputSource source = new InputSource();
-        source.setModelId( "foo:bar:1.0-SNAPSHOT" );
-        source.setLocation( "/tmp/project/pom.xml" );
-        final InputLocation location = new InputLocation( 3, 5, source );
+        source.setModelId("foo:bar:1.0-SNAPSHOT");
+        source.setLocation("/tmp/project/pom.xml");
+        final InputLocation location = new InputLocation(3, 5, source);
 
         // Act
-        final String result = formatter.toString( location );
+        final String result = formatter.toString(location);
 
         // Assert
-        assertThat( result, containsString( "line 3" ) );
+        assertThat(result, containsString("line 3"));
     }
 
     @Test
     public void withoutLineNumberShouldNotIncludeLineNumber() {
         // Arrange
         final InputSource source = new InputSource();
-        source.setModelId( "foo:bar:1.0-SNAPSHOT" );
-        source.setLocation( "/tmp/project/pom.xml" );
-        final InputLocation location = new InputLocation( -1, -1, source );
+        source.setModelId("foo:bar:1.0-SNAPSHOT");
+        source.setLocation("/tmp/project/pom.xml");
+        final InputLocation location = new InputLocation(-1, -1, source);
 
         // Act
-        final String result = formatter.toString( location );
+        final String result = formatter.toString(location);
 
         // Assert
-        assertThat( result, not( containsString( "line" ) ) );
+        assertThat(result, not(containsString("line")));
     }
 
     @Test
     public void withModelIdShouldIncludeModelId() {
         // Arrange
         final InputSource source = new InputSource();
-        source.setModelId( "foo:bar:1.0-SNAPSHOT" );
-        source.setLocation( "/tmp/project/pom.xml" );
-        final InputLocation location = new InputLocation( 3, 5, source );
+        source.setModelId("foo:bar:1.0-SNAPSHOT");
+        source.setLocation("/tmp/project/pom.xml");
+        final InputLocation location = new InputLocation(3, 5, source);
 
         // Act
-        final String result = formatter.toString( location );
+        final String result = formatter.toString(location);
 
         // Assert
-        assertThat( result, containsString( "foo:bar:1.0-SNAPSHOT" ) );
+        assertThat(result, containsString("foo:bar:1.0-SNAPSHOT"));
     }
 
     @Test
     public void withoutModelIdShouldIncludeUnknownVersion() {
         // Arrange
         final InputSource source = new InputSource();
-        source.setLocation( "/tmp/project/pom.xml" );
-        final InputLocation location = new InputLocation( 3, 5, source );
+        source.setLocation("/tmp/project/pom.xml");
+        final InputLocation location = new InputLocation(3, 5, source);
 
         // Act
-        final String result = formatter.toString( location );
+        final String result = formatter.toString(location);
 
         // Assert
-        assertThat( result, not( containsString( "foo:bar:1.0-SNAPSHOT" ) ) );
+        assertThat(result, not(containsString("foo:bar:1.0-SNAPSHOT")));
     }
 }

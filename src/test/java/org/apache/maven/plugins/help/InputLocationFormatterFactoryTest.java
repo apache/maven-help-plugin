@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.help;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,15 +16,15 @@ package org.apache.maven.plugins.help;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugins.help;
 
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.junit.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.instanceOf;
-
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
 
 public class InputLocationFormatterFactoryTest {
@@ -46,7 +44,7 @@ public class InputLocationFormatterFactoryTest {
     @Test
     public void whenMethodExistsReturnsMaven4InputLocationFormatter() {
         // Arrange
-        InputLocationFormatterFactory.inputLocationClass = Maven4InputLocationStub.class;
+        InputLocationFormatterFactory.inputLocationClass = InputLocationStub.class;
 
         final Log log = mock(Log.class);
         final MavenProject project = mock(MavenProject.class);
@@ -55,10 +53,10 @@ public class InputLocationFormatterFactoryTest {
         final InputLocation.StringFormatter result = InputLocationFormatterFactory.produce(log, project);
 
         // Assert
-        assertThat(result, instanceOf(Maven4InputLocationFormatter.class));
+        assertThat(result, instanceOf(ImportedFromLocationFormatter.class));
     }
 
-    private static class Maven4InputLocationStub {
+    private static class InputLocationStub {
         public String getImportedFrom() {
             return "";
         }
