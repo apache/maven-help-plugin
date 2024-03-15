@@ -30,12 +30,14 @@ import java.lang.reflect.Method;
  */
 public class InputLocationFormatterFactory
 {
+    static Class<?> inputLocationClass = InputLocation.class;
+
     public static InputLocation.StringFormatter produce( final Log log, final MavenProject project )
     {
         try
         {
             // This method was introduced in Maven 4.
-            Method getImportedFromMethod = InputLocation.class.getDeclaredMethod( "getImportedFrom" );
+            Method getImportedFromMethod = inputLocationClass.getDeclaredMethod( "getImportedFrom" );
             return new Maven4InputLocationFormatter( getImportedFromMethod, project );
         }
         catch ( NoSuchMethodException nsme )
