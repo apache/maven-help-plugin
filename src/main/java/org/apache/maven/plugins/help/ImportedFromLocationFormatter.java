@@ -58,7 +58,8 @@ public class ImportedFromLocationFormatter extends InputLocation.StringFormatter
 
         StringBuilder p = new StringBuilder();
 
-        while (importedFrom != null) {
+        while (importedFrom != null
+                && !source.toString().equals(importedFrom.getSource().toString())) {
             p.append(" from ").append(importedFrom.getSource().getModelId());
             importedFrom = getImportedFrom(importedFrom);
         }
