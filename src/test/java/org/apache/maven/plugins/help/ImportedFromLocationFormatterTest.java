@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 public class ImportedFromLocationFormatterTest {
 
     @Test
-    public void testImportedFromNullToString() {
+    public void testImportedFromSingleLocation() {
         // Arrange
         final MavenProject project = new MavenProject();
         final ImportedFromLocationFormatter formatter = new ImportedFromLocationFormatterMock(project);
@@ -47,7 +47,28 @@ public class ImportedFromLocationFormatterTest {
     }
 
     @Test
-    public void testImportedFromNotNullToString() {
+    public void testImportedFromDifferentLocation() {
+        // Arrange
+        final InputSource importedFromSource = new InputSource();
+        importedFromSource.setModelId("org.example:MPG-183-bom2:1-SNAPSHOT");
+        final InputLocation importedFrom = new InputLocation(7, 5, importedFromSource);
+
+        final MavenProject project = new MavenProject();
+        final ImportedFromLocationFormatter formatter = new ImportedFromLocationFormatterMock(project, importedFrom);
+
+        final InputSource source = new InputSource();
+        source.setModelId("org.example:MPG-183-bom1:1-SNAPSHOT");
+        final InputLocation location = new InputLocation(7, 5, source);
+
+        // Act
+        final String result = formatter.toString(location);
+
+        // Assert
+        assertEquals("}org.example:MPG-183-bom1:1-SNAPSHOT, line 7 from org.example:MPG-183-bom2:1-SNAPSHOT", result);
+    }
+
+    @Test
+    public void testImportedFromDoNotPrintSameLocationTwice() {
         // Arrange
         final InputSource importedFromSource = new InputSource();
         importedFromSource.setModelId("org.example:MPG-183-bom:1-SNAPSHOT");
@@ -57,18 +78,18 @@ public class ImportedFromLocationFormatterTest {
         final ImportedFromLocationFormatter formatter = new ImportedFromLocationFormatterMock(project, importedFrom);
 
         final InputSource source = new InputSource();
-        source.setModelId("org.example:MPG-183-project:1-SNAPSHOT");
+        source.setModelId("org.example:MPG-183-bom:1-SNAPSHOT");
         final InputLocation location = new InputLocation(7, 5, source);
 
         // Act
         final String result = formatter.toString(location);
 
         // Assert
-        assertEquals("}org.example:MPG-183-project:1-SNAPSHOT, line 7 from org.example:MPG-183-bom:1-SNAPSHOT", result);
+        assertEquals("}org.example:MPG-183-bom:1-SNAPSHOT, line 7", result);
     }
 
     @Test
-    public void testMultipleImportedFromToString() {
+    public void testImportedFromMultiLevelPrintsWithFrom() {
         // Arrange
         final ImportedFromLocationFormatter formatter = createMultiImportedFromFormatter();
 
