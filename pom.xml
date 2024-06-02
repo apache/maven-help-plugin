@@ -28,7 +28,7 @@
   </parent>
 
   <artifactId>maven-help-plugin</artifactId>
-  <version>3.4.1</version>
+  <version>3.4.2-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
   <name>Apache Maven Help Plugin</name>
@@ -45,7 +45,7 @@
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-help-plugin.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-help-plugin.git</developerConnection>
-    <tag>maven-help-plugin-3.4.1</tag>
+    <tag>HEAD</tag>
     <url>https://github.com/apache/maven-help-plugin/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
@@ -67,7 +67,7 @@
     <javaVersion>8</javaVersion>
     <mavenVersion>3.6.3</mavenVersion>
     <resolverVersion>1.4.1</resolverVersion>
-    <project.build.outputTimestamp>2024-06-02T15:16:41Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-06-02T15:17:10Z</project.build.outputTimestamp>
   </properties>
 
   <dependencies>
