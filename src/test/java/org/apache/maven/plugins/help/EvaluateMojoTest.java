@@ -24,7 +24,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.maven.monitor.logging.DefaultLog;
+import org.apache.maven.internal.impl.DefaultLog;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
@@ -32,8 +32,8 @@ import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.components.interactivity.InputHandler;
-import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.logging.LoggerManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -51,8 +51,7 @@ public class EvaluateMojoTest extends AbstractMojoTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        interceptingLogger =
-                new InterceptingLog(getContainer().lookup(LoggerManager.class).getLoggerForComponent(Mojo.ROLE));
+        interceptingLogger = new InterceptingLog(LoggerFactory.getLogger(Mojo.ROLE));
     }
 
     /**
