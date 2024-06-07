@@ -35,7 +35,6 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.collections.PropertiesConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
@@ -425,7 +424,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
 
                     if (name.contains(packageFilter) && !name.contains("$")) {
                         try {
-                            Class<?> clazz = ClassUtils.getClass(name);
+                            Class<?> clazz = Class.forName(name);
                             String alias = StringUtils.lowercaseFirstLetter(clazz.getSimpleName());
                             xstreamObject.alias(alias, clazz);
                             if (!clazz.equals(Model.class)) {
