@@ -24,8 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.maven.model.InputLocation;
-import org.apache.maven.model.InputSource;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.model.io.xpp3.MavenXpp3WriterEx;
@@ -175,7 +173,7 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
         try {
             if (verbose) {
                 MavenXpp3WriterEx mavenXpp3WriterEx = new MavenXpp3WriterEx();
-                mavenXpp3WriterEx.setStringFormatter(new InputLocationStringFormatter());
+                mavenXpp3WriterEx.setStringFormatter(InputLocationFormatterFactory.produce(getLog(), project));
                 mavenXpp3WriterEx.write(sWriter, pom);
             } else {
                 new MavenXpp3Writer().write(sWriter, pom);
@@ -201,21 +199,5 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
         Properties properties = new SortedProperties();
         properties.putAll(pom.getProperties());
         pom.setProperties(properties);
-    }
-
-    private static class InputLocationStringFormatter extends InputLocation.StringFormatter {
-        @Override
-        public String toString(InputLocation location) {
-            InputSource source = location.getSource();
-
-            String s = source.getModelId(); // by default, display modelId
-
-            if (StringUtils.isBlank(s) || s.contains("[unknown-version]")) {
-                // unless it is blank or does not provide version information
-                s = source.toString();
-            }
-
-            return '}' + s + ((location.getLineNumber() >= 0) ? ", line " + location.getLineNumber() : "") + ' ';
-        }
     }
 }
