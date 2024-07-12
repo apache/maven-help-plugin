@@ -370,7 +370,13 @@ public class DescribeMojoTest {
         field.setAccessible(false);
     }
 
-    private static void setFieldsOnMojo(DescribeMojo mojo, MojoDescriptorCreator mojoDescriptorCreator, PluginVersionResolver pluginVersionResolver, MavenPluginManager pluginManager, MavenSession session) throws NoSuchFieldException, IllegalAccessException {
+    private static void setFieldsOnMojo(
+            DescribeMojo mojo,
+            MojoDescriptorCreator mojoDescriptorCreator,
+            PluginVersionResolver pluginVersionResolver,
+            MavenPluginManager pluginManager,
+            MavenSession session)
+            throws NoSuchFieldException, IllegalAccessException {
         setFieldWithReflection(mojo, "mojoDescriptorCreator", mojoDescriptorCreator);
         setFieldWithReflection(mojo, "pluginVersionResolver", pluginVersionResolver);
         setFieldWithReflection(mojo, "pluginManager", pluginManager);
@@ -389,5 +395,4 @@ public class DescribeMojoTest {
         parsePluginLookupInfo.setAccessible(true);
         return parsePluginLookupInfo;
     }
-
 }
