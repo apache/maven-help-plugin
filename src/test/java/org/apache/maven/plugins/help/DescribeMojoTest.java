@@ -371,11 +371,11 @@ public class DescribeMojoTest {
     }
 
     private static void setFieldsOnMojo(
-            DescribeMojo mojo,
-            MojoDescriptorCreator mojoDescriptorCreator,
-            PluginVersionResolver pluginVersionResolver,
-            MavenPluginManager pluginManager,
-            MavenSession session)
+            final DescribeMojo mojo,
+            final MojoDescriptorCreator mojoDescriptorCreator,
+            final PluginVersionResolver pluginVersionResolver,
+            final MavenPluginManager pluginManager,
+            final MavenSession session)
             throws NoSuchFieldException, IllegalAccessException {
         setFieldWithReflection(mojo, "mojoDescriptorCreator", mojoDescriptorCreator);
         setFieldWithReflection(mojo, "pluginVersionResolver", pluginVersionResolver);
