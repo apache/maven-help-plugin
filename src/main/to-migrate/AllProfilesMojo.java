@@ -23,13 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.maven.model.Profile;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.settings.SettingsUtils;
+import org.apache.maven.api.Project;
+import org.apache.maven.api.plugin.MojoException;
+import org.apache.maven.api.model.Profile;
+import org.apache.maven.api.plugin.annotations.Mojo;
+import org.apache.maven.api.plugin.annotations.Parameter;
 
 /**
  * Displays a list of available profiles under the current project.
@@ -41,7 +39,7 @@ import org.apache.maven.settings.SettingsUtils;
  * @author <a href="mailto:rahul.thakur.xdev@gmail.com">Rahul Thakur</a>
  * @since 2.1
  */
-@Mojo(name = "all-profiles", requiresProject = false)
+@Mojo(name = "all-profiles", projectRequired = false)
 public class AllProfilesMojo extends AbstractHelpMojo {
     // ----------------------------------------------------------------------
     // Mojo parameters
@@ -50,24 +48,24 @@ public class AllProfilesMojo extends AbstractHelpMojo {
     /**
      * This is the list of projects currently slated to be built by Maven.
      */
-    @Parameter(defaultValue = "${reactorProjects}", required = true, readonly = true)
-    private List<MavenProject> projects;
+    @Parameter(defaultValue = "${session.projects}", required = true, readonly = true)
+    private List<Project> projects;
 
     /**
      * The list of profiles defined in the current Maven settings.
      */
     @Parameter(defaultValue = "${settings.profiles}", readonly = true, required = true)
-    private List<org.apache.maven.settings.Profile> settingsProfiles;
+    private List<org.apache.maven.api.settings.Profile> settingsProfiles;
 
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoException {
         StringBuilder descriptionBuffer = new StringBuilder();
 
-        for (MavenProject project : projects) {
+        for (Project project : projects) {
             descriptionBuffer
                     .append("Listing Profiles for Project: ")
                     .append(project.getId())
@@ -94,7 +92,7 @@ public class AllProfilesMojo extends AbstractHelpMojo {
             try {
                 writeFile(output, descriptionBuffer);
             } catch (IOException e) {
-                throw new MojoExecutionException("Cannot write profiles description to output: " + output, e);
+                throw new MojoException("Cannot write profiles description to output: " + output, e);
             }
 
             getLog().info("Wrote descriptions to: " + output);
@@ -127,7 +125,7 @@ public class AllProfilesMojo extends AbstractHelpMojo {
      * @param activeProfiles Map to add the active profiles to.
      */
     private void addProjectPomProfiles(
-            MavenProject project, Map<String, Profile> allProfiles, Map<String, Profile> activeProfiles) {
+            Project project, Map<String, Profile> allProfiles, Map<String, Profile> activeProfiles) {
         if (project == null) {
             // shouldn't happen as this mojo requires a project
             getLog().debug("No pom.xml found to read Profiles from.");
@@ -156,7 +154,7 @@ public class AllProfilesMojo extends AbstractHelpMojo {
      */
     private void addSettingsProfiles(Map<String, Profile> allProfiles) {
         getLog().debug("Attempting to read profiles from settings.xml...");
-        for (org.apache.maven.settings.Profile settingsProfile : settingsProfiles) {
+        for (org.apache.maven.api.settings.Profile settingsProfile : settingsProfiles) {
             Profile profile = SettingsUtils.convertFromSettingsProfile(settingsProfile);
             allProfiles.put(profile.getId(), profile);
         }

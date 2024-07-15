@@ -22,19 +22,20 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.function.Supplier;
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.settings.Profile;
-import org.apache.maven.settings.Proxy;
-import org.apache.maven.settings.Server;
-import org.apache.maven.settings.Settings;
-import org.apache.maven.settings.SettingsUtils;
-import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
+import org.apache.maven.api.plugin.MojoException;
+import org.apache.maven.api.plugin.annotations.Mojo;
+import org.apache.maven.api.plugin.annotations.Parameter;
+import org.apache.maven.api.services.xml.SettingsXmlFactory;
+import org.apache.maven.api.settings.Profile;
+import org.apache.maven.api.settings.Proxy;
+import org.apache.maven.api.settings.Server;
+import org.apache.maven.api.settings.Settings;
+import org.apache.maven.settings.v4.SettingsTransformer;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
@@ -46,7 +47,7 @@ import org.codehaus.plexus.util.xml.XmlWriterUtil;
  *
  * @since 2.0
  */
-@Mojo(name = "effective-settings", requiresProject = false)
+@Mojo(name = "effective-settings", projectRequired = false)
 public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
     // ----------------------------------------------------------------------
     // Mojo parameters
@@ -56,7 +57,7 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
      * The system settings for Maven. This is the instance resulting from
      * merging global and user-level settings files.
      */
-    @Parameter(defaultValue = "${settings}", readonly = true, required = true)
+    @Parameter(property = "session.settings")
     private Settings settings;
 
     /**
@@ -72,21 +73,13 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
-    public void execute() throws MojoExecutionException {
-        Settings copySettings;
-        if (showPasswords) {
-            copySettings = settings;
-        } else {
-            copySettings = copySettings(settings);
-            if (copySettings != null) {
-                hidePasswords(copySettings);
-            }
-        }
+    public void execute() throws MojoException {
+        Settings copySettings = copySettings(settings, showPasswords);
 
         StringWriter w = new StringWriter();
         String encoding = output != null && copySettings != null
                 ? copySettings.getModelEncoding()
-                : System.getProperty("file.encoding");
+                : Charset.defaultCharset().displayName();
         XMLWriter writer = new PrettyPrintXMLWriter(
                 w, StringUtils.repeat(" ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE), encoding, null);
 
@@ -98,14 +91,19 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
 
         if (output != null) {
             try {
-                writeXmlFile(output, effectiveSettings);
+                writeFile(output, effectiveSettings);
             } catch (IOException e) {
-                throw new MojoExecutionException("Cannot write effective-settings to output: " + output, e);
+                throw new MojoException("Cannot write effective-settings to output: " + output, e);
             }
 
             getLog().info("Effective-settings written to: " + output);
         } else {
-            getLog().info(LS + "Effective user-specific configuration settings:" + LS + LS + effectiveSettings + LS);
+            if (getLog().isInfoEnabled()) {
+                getLog().info(LS + "Effective user-specific configuration settings:" + LS + LS + effectiveSettings
+                        + LS);
+            } else if (forceStdout) {
+                System.out.println(effectiveSettings);
+            }
         }
     }
 
@@ -114,78 +112,57 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
     // ----------------------------------------------------------------------
 
     /**
-     * Hide proxy and server passwords.
-     *
-     * @param aSettings not null
-     */
-    private static void hidePasswords(Settings aSettings) {
-        List<Proxy> proxies = aSettings.getProxies();
-        for (Proxy proxy : proxies) {
-            if (StringUtils.isNotEmpty(proxy.getPassword())) {
-                proxy.setPassword("***");
-            }
-        }
-
-        List<Server> servers = aSettings.getServers();
-        for (Server server : servers) {
-            // Password
-            if (StringUtils.isNotEmpty(server.getPassword())) {
-                server.setPassword("***");
-            }
-            // Passphrase
-            if (StringUtils.isNotEmpty(server.getPassphrase())) {
-                server.setPassphrase("***");
-            }
-        }
-    }
-
-    /**
      * @param settings could be {@code null}
      * @return a new instance of settings or {@code null} if settings was {@code null}.
      */
-    private static Settings copySettings(Settings settings) {
+    private static Settings copySettings(Settings settings, boolean showPasswords) {
         if (settings == null) {
             return null;
         }
 
-        // Not a deep copy in M2.2.1 !!!
-        Settings clone = SettingsUtils.copySettings(settings);
+        SettingsTransformer transformer = new SettingsTransformer(s -> s) {
+            @Override
+            protected Server.Builder transformServer_Password(
+                    Supplier<? extends Server.Builder> creator, Server.Builder builder, Server target) {
+                String oldVal = target.getPassword();
+                String newVal = !showPasswords && oldVal != null && !oldVal.isEmpty() ? "***" : oldVal;
+                return newVal != oldVal ? (builder != null ? builder : creator.get()).password(newVal) : builder;
+            }
 
-        List<Server> clonedServers = new ArrayList<>(settings.getServers().size());
-        for (Server server : settings.getServers()) {
-            Server clonedServer = new Server();
-            clonedServer.setConfiguration(server.getConfiguration());
-            clonedServer.setDirectoryPermissions(server.getDirectoryPermissions());
-            clonedServer.setFilePermissions(server.getFilePermissions());
-            clonedServer.setId(server.getId());
-            clonedServer.setPassphrase(server.getPassphrase());
-            clonedServer.setPassword(server.getPassword());
-            clonedServer.setPrivateKey(server.getPrivateKey());
-            clonedServer.setSourceLevel(server.getSourceLevel());
-            clonedServer.setUsername(server.getUsername());
+            @Override
+            protected Server.Builder transformServer_Passphrase(
+                    Supplier<? extends Server.Builder> creator, Server.Builder builder, Server target) {
+                String oldVal = target.getPassphrase();
+                String newVal = !showPasswords && oldVal != null && !oldVal.isEmpty() ? "***" : oldVal;
+                return newVal != oldVal ? (builder != null ? builder : creator.get()).passphrase(newVal) : builder;
+            }
 
-            clonedServers.add(clonedServer);
-        }
-        clone.setServers(clonedServers);
+            @Override
+            protected Proxy.Builder transformProxy_Password(
+                    Supplier<? extends Proxy.Builder> creator, Proxy.Builder builder, Proxy target) {
+                String oldVal = target.getPassword();
+                String newVal = !showPasswords && oldVal != null && !oldVal.isEmpty() ? "***" : oldVal;
+                return newVal != oldVal ? (builder != null ? builder : creator.get()).password(newVal) : builder;
+            }
 
-        List<Proxy> clonedProxies = new ArrayList<>(settings.getProxies().size());
-        for (Proxy proxy : settings.getProxies()) {
-            Proxy clonedProxy = new Proxy();
-            clonedProxy.setActive(proxy.isActive());
-            clonedProxy.setHost(proxy.getHost());
-            clonedProxy.setId(proxy.getId());
-            clonedProxy.setNonProxyHosts(proxy.getNonProxyHosts());
-            clonedProxy.setPassword(proxy.getPassword());
-            clonedProxy.setPort(proxy.getPort());
-            clonedProxy.setProtocol(proxy.getProtocol());
-            clonedProxy.setSourceLevel(proxy.getSourceLevel());
-            clonedProxy.setUsername(proxy.getUsername());
+            @Override
+            protected Profile.Builder transformProfile_Properties(
+                    Supplier<? extends Profile.Builder> creator, Profile.Builder builder, Profile target) {
+                Map<String, String> props = target.getProperties();
+                Map<String, String> newProps = new TreeMap<>(props);
+                for (Map.Entry<String, String> entry : props.entrySet()) {
+                    String newVal = transform(entry.getValue());
+                    if (newVal != null) {
+                        newProps.put(entry.getKey(), newVal);
+                    }
+                }
+                builder = builder != null ? builder : creator.get();
+                builder.properties(newProps);
+                return builder;
+            }
+        };
 
-            clonedProxies.add(clonedProxy);
-        }
-        clone.setProxies(clonedProxies);
-
-        return clone;
+        return transformer.visit(settings);
     }
 
     /**
@@ -193,17 +170,14 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
      *
      * @param settings the settings, not null.
      * @param writer the XML writer used, not null.
-     * @throws MojoExecutionException if any
+     * @throws MojoException if any
      */
-    private static void writeEffectiveSettings(Settings settings, XMLWriter writer) throws MojoExecutionException {
-        cleanSettings(settings);
-
+    private void writeEffectiveSettings(Settings settings, XMLWriter writer) throws MojoException {
         StringWriter sWriter = new StringWriter();
-        SettingsXpp3Writer settingsWriter = new SettingsXpp3Writer();
         try {
-            settingsWriter.write(sWriter, settings);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Cannot serialize Settings to XML.", e);
+            session.getService(SettingsXmlFactory.class).write(settings, sWriter);
+        } catch (Exception e) {
+            throw new MojoException("Cannot serialize Settings to XML.", e);
         }
 
         // This removes the XML declaration written by MavenXpp3Writer
@@ -212,20 +186,6 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
         writeComment(writer, "Effective Settings for '" + getUserName() + "' on '" + getHostName() + "'");
 
         writer.writeMarkup(effectiveSettings);
-    }
-
-    /**
-     * Apply some logic to clean the model before writing it.
-     *
-     * @param settings not null
-     */
-    private static void cleanSettings(Settings settings) {
-        List<Profile> profiles = settings.getProfiles();
-        for (Profile profile : profiles) {
-            Properties properties = new SortedProperties();
-            properties.putAll(profile.getProperties());
-            profile.setProperties(properties);
-        }
     }
 
     /**

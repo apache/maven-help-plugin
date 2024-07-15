@@ -19,12 +19,12 @@
 package org.apache.maven.plugins.help;
 
 import java.io.IOException;
-import java.util.Properties;
+import java.util.Locale;
+import java.util.Map;
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.apache.maven.api.plugin.MojoException;
+import org.apache.maven.api.plugin.annotations.Mojo;
+import org.apache.maven.api.plugin.annotations.Parameter;
 
 /**
  * Displays a list of the platform details like system properties and environment variables.
@@ -32,47 +32,85 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @since 2.1
  */
-@Mojo(name = "system", requiresProject = false)
+@Mojo(name = "system", projectRequired = false)
 public class SystemMojo extends AbstractHelpMojo {
+
     /** Magic number to beautify the output */
     private static final int REPEAT = 25;
+
+    /**
+     * This options gives the option to output information in cases where the output has been suppressed by using
+     * <code>-q</code> (quiet option) in Maven.
+     *
+     * @since 4.0.0
+     */
+    @Parameter(property = "forceStdout", defaultValue = "false")
+    protected boolean forceStdout;
+
+    /**
+     * Property to control whether property values are escaped or not.
+     *
+     * @since 4.0.0
+     */
+    @Parameter(property = "escape", defaultValue = "true")
+    boolean escape;
 
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
-    public void execute() throws MojoExecutionException {
+    public void execute() throws MojoException {
         StringBuilder message = new StringBuilder();
 
+        String eqStr = "=".repeat(LINE_LENGTH);
+        String reStr = "=".repeat(REPEAT);
+
         message.append(LS);
-        message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
-        message.append(StringUtils.repeat("=", REPEAT));
-        message.append(" Platform Properties Details ");
-        message.append(StringUtils.repeat("=", REPEAT)).append(LS);
-        message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
+        message.append(eqStr).append(LS);
+        message.append(reStr)
+                .append(" Platform Properties Details ")
+                .append(reStr)
+                .append(LS);
+        message.append(eqStr).append(LS);
         message.append(LS);
 
-        message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
+        message.append(eqStr).append(LS);
+        message.append("User Properties").append(LS);
+        message.append(eqStr).append(LS);
+        message.append(LS);
+        session.getUserProperties().entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(e -> message.append(e.getKey())
+                        .append("=")
+                        .append(escape ? escapeJava(e.getValue()) : e.getValue())
+                        .append(LS));
+        message.append(LS);
+
+        message.append(eqStr).append(LS);
         message.append("System Properties").append(LS);
-        message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
+        message.append(eqStr).append(LS);
+        message.append(LS);
+        session.getSystemProperties().entrySet().stream()
+                .filter(e -> !e.getKey().startsWith("env."))
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(e -> message.append(e.getKey())
+                        .append("=")
+                        .append(escape ? escapeJava(e.getValue()) : e.getValue())
+                        .append(LS));
+        message.append(LS);
 
-        Properties systemProperties = System.getProperties();
-        for (String key : systemProperties.stringPropertyNames()) {
-            message.append(LS);
-            message.append(key).append("=").append(systemProperties.getProperty(key));
-        }
-
-        message.append(LS).append(LS);
-        message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
-        message.append("Environment Variables").append(LS);
-        message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
-        Properties envVars = CommandLineUtils.getSystemEnvVars();
-        for (String key : envVars.stringPropertyNames()) {
-            message.append(LS);
-            message.append(key).append("=").append(envVars.getProperty(key));
-        }
-
+        message.append(eqStr).append(LS);
+        message.append("Environment Properties").append(LS);
+        message.append(eqStr).append(LS);
+        message.append(LS);
+        session.getSystemProperties().entrySet().stream()
+                .filter(e -> e.getKey().startsWith("env."))
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(e -> message.append(e.getKey().substring("env.".length()))
+                        .append("=")
+                        .append(escape ? escapeJava(e.getValue()) : e.getValue())
+                        .append(LS));
         message.append(LS);
 
         if (output != null) {
@@ -81,17 +119,118 @@ public class SystemMojo extends AbstractHelpMojo {
             sb.append("See: https://maven.apache.org/plugins/maven-help-plugin/")
                     .append(LS)
                     .append(LS);
-            sb.append(message.toString());
+            sb.append(message);
 
             try {
                 writeFile(output, sb);
             } catch (IOException e) {
-                throw new MojoExecutionException("Cannot write system report to output: " + output, e);
+                throw new MojoException("Cannot write system report to output: " + output, e);
             }
 
             getLog().info("System report written to: " + output);
         } else {
-            getLog().info(message);
+            if (getLog().isInfoEnabled()) {
+                getLog().info(message);
+            } else if (forceStdout) {
+                System.out.println(message);
+            }
         }
+    }
+
+    /**
+     * <p>Escapes the characters in a <code>String</code> using Java String rules.</p>
+     *
+     * <p>Deals correctly with quotes and control-chars (tab, backslash, cr, ff, etc.) </p>
+     *
+     * <p>So a tab becomes the characters <code>'\\'</code> and
+     * <code>'t'</code>.</p>
+     *
+     * <p>The only difference between Java strings and JavaScript strings
+     * is that in JavaScript, a single quote must be escaped.</p>
+     *
+     * <p>Example:</p>
+     * <pre>
+     * input string: He didn't say, "Stop!"
+     * output string: He didn't say, \"Stop!\"
+     * </pre>
+     *
+     *
+     * @param str  String to escape values in, may be null
+     * @return String with escaped values, <code>null</code> if null string input
+     */
+    @SuppressWarnings("checkstyle:MagicNumber")
+    protected static String escapeJava(String str) {
+        if (str == null) {
+            return null;
+        }
+        int sz = str.length();
+        StringBuilder out = new StringBuilder(sz * 2);
+        for (int i = 0; i < sz; i++) {
+            char ch = str.charAt(i);
+            // handle unicode
+            if (ch > 0xfff) {
+                out.append("\\u").append(hex(ch));
+            } else if (ch > 0xff) {
+                out.append("\\u0").append(hex(ch));
+            } else if (ch > 0x7f) {
+                out.append("\\u00").append(hex(ch));
+            } else if (ch < 32) {
+                switch (ch) {
+                    case '\b':
+                        out.append('\\');
+                        out.append('b');
+                        break;
+                    case '\n':
+                        out.append('\\');
+                        out.append('n');
+                        break;
+                    case '\t':
+                        out.append('\\');
+                        out.append('t');
+                        break;
+                    case '\f':
+                        out.append('\\');
+                        out.append('f');
+                        break;
+                    case '\r':
+                        out.append('\\');
+                        out.append('r');
+                        break;
+                    default:
+                        if (ch > 0xf) {
+                            out.append("\\u00").append(hex(ch));
+                        } else {
+                            out.append("\\u000").append(hex(ch));
+                        }
+                        break;
+                }
+            } else {
+                switch (ch) {
+                    case '"':
+                        out.append('\\');
+                        out.append('"');
+                        break;
+                    case '\\':
+                        out.append('\\');
+                        out.append('\\');
+                        break;
+                    default:
+                        out.append(ch);
+                        break;
+                }
+            }
+        }
+        return out.toString();
+    }
+
+    /**
+     * <p>Returns an upper case hexadecimal <code>String</code> for the given
+     * character.</p>
+     *
+     * @param ch The character to convert.
+     * @return An upper case hexadecimal <code>String</code>
+     */
+    protected static String hex(char ch) {
+        return Integer.toHexString(ch).toUpperCase(Locale.ENGLISH);
     }
 }

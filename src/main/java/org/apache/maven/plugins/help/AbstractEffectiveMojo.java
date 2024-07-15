@@ -20,19 +20,13 @@ package org.apache.maven.plugins.help;
 
 import javax.xml.XMLConstants;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
-import org.codehaus.plexus.util.WriterFactory;
+import org.apache.maven.api.Session;
+import org.apache.maven.api.di.Inject;
+import org.apache.maven.api.plugin.annotations.Parameter;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
 import org.jdom2.Document;
@@ -48,24 +42,18 @@ import org.jdom2.output.XMLOutputter;
  * @since 2.1
  */
 public abstract class AbstractEffectiveMojo extends AbstractHelpMojo {
-    /**
-     * Utility method to write an XML content in a given file.
-     *
-     * @param output is the wanted output file.
-     * @param content contains the XML content to be written to the file.
-     * @throws IOException if any
-     * @see AbstractHelpMojo#writeFile(File, String) if encoding is null.
-     */
-    protected static void writeXmlFile(File output, String content) throws IOException {
-        if (output == null) {
-            return;
-        }
 
-        output.getParentFile().mkdirs();
-        try (Writer out = WriterFactory.newXmlWriter(output)) {
-            out.write(content);
-        }
-    }
+    /**
+     * This options gives the option to output information in cases where the output has been suppressed by using
+     * <code>-q</code> (quiet option) in Maven.
+     *
+     * @since 4.0.0
+     */
+    @Parameter(property = "forceStdout", defaultValue = "false")
+    protected boolean forceStdout;
+
+    @Inject
+    protected Session session;
 
     /**
      * Write comments in the Effective POM/settings header.
@@ -122,25 +110,6 @@ public abstract class AbstractEffectiveMojo extends AbstractHelpMojo {
             return w.toString();
         } catch (JDOMException | IOException e) {
             return effectiveModel;
-        }
-    }
-
-    /**
-     * Properties which provides a sorted keySet().
-     */
-    protected static class SortedProperties extends Properties {
-        /** serialVersionUID */
-        static final long serialVersionUID = -8985316072702233744L;
-
-        /** {@inheritDoc} */
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        @Override
-        public Set<Object> keySet() {
-            Set<Object> keynames = super.keySet();
-            List list = new ArrayList(keynames);
-            Collections.sort(list);
-
-            return new LinkedHashSet<>(list);
         }
     }
 }

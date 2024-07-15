@@ -18,6 +18,14 @@
  */
 package org.apache.maven.plugins.help;
 
+import org.apache.maven.api.Session;
+import org.apache.maven.api.di.Inject;
+import org.apache.maven.api.plugin.MojoException;
+import org.apache.maven.api.plugin.annotations.Mojo;
+import org.apache.maven.api.plugin.descriptor.MojoDescriptor;
+import org.apache.maven.api.plugin.descriptor.Parameter;
+import org.apache.maven.api.plugin.descriptor.PluginDescriptor;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -32,35 +40,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.maven.RepositoryUtils;
-import org.apache.maven.lifecycle.DefaultLifecycles;
-import org.apache.maven.lifecycle.Lifecycle;
-import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
-import org.apache.maven.lifecycle.mapping.LifecycleMapping;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.building.ModelBuildingRequest;
-import org.apache.maven.plugin.MavenPluginManager;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.descriptor.MojoDescriptor;
-import org.apache.maven.plugin.descriptor.Parameter;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.maven.plugin.prefix.NoPluginFoundForPrefixException;
-import org.apache.maven.plugin.version.DefaultPluginVersionRequest;
-import org.apache.maven.plugin.version.PluginVersionResolutionException;
-import org.apache.maven.plugin.version.PluginVersionResolver;
-import org.apache.maven.plugin.version.PluginVersionResult;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.reporting.MavenReport;
-import org.apache.maven.shared.utils.logging.MessageUtils;
-import org.apache.maven.tools.plugin.generator.HtmlToPlainTextConverter;
-import org.codehaus.plexus.util.StringUtils;
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
 
 /**
  * Displays a list of the attributes for a Maven Plugin and/or goals (aka Mojo - Maven plain Old Java Object).
@@ -68,7 +47,7 @@ import org.eclipse.aether.artifact.DefaultArtifact;
  * @see <a href="http://maven.apache.org/general.html#What_is_a_Mojo">What is a Mojo?</a>
  * @since 2.0
  */
-@Mojo(name = "describe", requiresProject = false, aggregator = true)
+@Mojo(name = "describe", projectRequired = false, aggregator = true)
 public class DescribeMojo extends AbstractHelpMojo {
     /**
      * The default indent size when writing description's Mojo.
@@ -95,37 +74,10 @@ public class DescribeMojo extends AbstractHelpMojo {
     // ----------------------------------------------------------------------
     // Mojo components
     // ----------------------------------------------------------------------
-
-    /**
-     * Component used to get a plugin descriptor from a given plugin.
-     */
-    @Component
-    protected MavenPluginManager pluginManager;
-
-    /**
-     * Component used to get a plugin by its prefix and get mojo descriptors.
-     */
-    @Component
-    private MojoDescriptorCreator mojoDescriptorCreator;
-
-    /**
-     * Component used to resolve the version for a plugin.
-     */
-    @Component
-    private PluginVersionResolver pluginVersionResolver;
-
-    /**
-     * The Maven default built-in lifecycles.
-     */
-    @Component
-    private DefaultLifecycles defaultLifecycles;
-
-    /**
-     * A map from each packaging to its lifecycle mapping.
-     */
-    @Component
-    private Map<String, LifecycleMapping> lifecycleMappings;
-
+    
+    @Inject
+    Session session;
+    
     // ----------------------------------------------------------------------
     // Mojo parameters
     // ----------------------------------------------------------------------
@@ -139,7 +91,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      * <li>groupId:artifactId:version, i.e. 'org.apache.maven.plugins:maven-help-plugin:2.0'</li>
      * </ol>
      */
-    @org.apache.maven.plugins.annotations.Parameter(property = "plugin", alias = "prefix")
+    @org.apache.maven.api.plugin.annotations.Parameter(property = "plugin", alias = "prefix")
     private String plugin;
 
     /**
@@ -147,7 +99,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      * <br/>
      * <b>Note</b>: Should be used with <code>artifactId</code> parameter.
      */
-    @org.apache.maven.plugins.annotations.Parameter(property = "groupId")
+    @org.apache.maven.api.plugin.annotations.Parameter(property = "groupId")
     private String groupId;
 
     /**
@@ -155,7 +107,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      * <br/>
      * <b>Note</b>: Should be used with <code>groupId</code> parameter.
      */
-    @org.apache.maven.plugins.annotations.Parameter(property = "artifactId")
+    @org.apache.maven.api.plugin.annotations.Parameter(property = "artifactId")
     private String artifactId;
 
     /**
@@ -163,7 +115,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      * <br/>
      * <b>Note</b>: Should be used with <code>groupId/artifactId</code> parameters.
      */
-    @org.apache.maven.plugins.annotations.Parameter(property = "version")
+    @org.apache.maven.api.plugin.annotations.Parameter(property = "version")
     private String version;
 
     /**
@@ -173,7 +125,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      *
      * @since 2.1
      */
-    @org.apache.maven.plugins.annotations.Parameter(property = "goal")
+    @org.apache.maven.api.plugin.annotations.Parameter(property = "goal")
     private String goal;
 
     /**
@@ -181,7 +133,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      *
      * @since 2.1
      */
-    @org.apache.maven.plugins.annotations.Parameter(property = "detail", defaultValue = "false")
+    @org.apache.maven.api.plugin.annotations.Parameter(property = "detail", defaultValue = "false")
     private boolean detail;
 
     /**
@@ -189,7 +141,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      *
      * @since 2.1
      */
-    @org.apache.maven.plugins.annotations.Parameter(property = "minimal", defaultValue = "false")
+    @org.apache.maven.api.plugin.annotations.Parameter(property = "minimal", defaultValue = "false")
     private boolean minimal;
 
     /**
@@ -199,7 +151,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      *
      * @since 2.1
      */
-    @org.apache.maven.plugins.annotations.Parameter(property = "cmd")
+    @org.apache.maven.api.plugin.annotations.Parameter(property = "cmd")
     private String cmd;
 
     // ----------------------------------------------------------------------
@@ -209,7 +161,7 @@ public class DescribeMojo extends AbstractHelpMojo {
     /**
      * {@inheritDoc}
      */
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoException {
         StringBuilder descriptionBuffer = new StringBuilder();
 
         boolean describePlugin = true;
@@ -221,9 +173,10 @@ public class DescribeMojo extends AbstractHelpMojo {
             PluginInfo pi = parsePluginLookupInfo();
             PluginDescriptor descriptor = lookupPluginDescriptor(pi);
             if (goal != null && !goal.isEmpty()) {
-                MojoDescriptor mojo = descriptor.getMojo(goal);
+                MojoDescriptor mojo = descriptor.getMojos()
+                        .stream().filter(m -> goal.equals(m.getGoal())).findAny().orElse(null);
                 if (mojo == null) {
-                    throw new MojoFailureException(
+                    throw new MojoException(
                             "The goal '" + goal + "' does not exist in the plugin '" + pi.getPrefix() + "'");
                 }
                 describeMojo(mojo, descriptionBuffer);
@@ -243,14 +196,14 @@ public class DescribeMojo extends AbstractHelpMojo {
      * Method to write the Mojo description into the output file
      *
      * @param descriptionBuffer contains the description to be written to the file
-     * @throws MojoExecutionException if any
+     * @throws MojoException if any
      */
-    private void writeDescription(StringBuilder descriptionBuffer) throws MojoExecutionException {
+    private void writeDescription(StringBuilder descriptionBuffer) throws MojoException {
         if (output != null) {
             try {
                 writeFile(output, descriptionBuffer);
             } catch (IOException e) {
-                throw new MojoExecutionException("Cannot write plugin/goal description to output: " + output, e);
+                throw new MojoException("Cannot write plugin/goal description to output: " + output, e);
             }
 
             getLog().info("Wrote descriptions to: " + output);
@@ -264,16 +217,16 @@ public class DescribeMojo extends AbstractHelpMojo {
      *
      * @param pi holds information of the plugin whose description is to be retrieved
      * @return a PluginDescriptor where the plugin description is to be retrieved
-     * @throws MojoExecutionException if the plugin could not be verify
-     * @throws MojoFailureException   if groupId or artifactId is empty
+     * @throws MojoException if the plugin could not be verify
+     * @throws MojoException   if groupId or artifactId is empty
      */
-    private PluginDescriptor lookupPluginDescriptor(PluginInfo pi) throws MojoExecutionException, MojoFailureException {
+    private PluginDescriptor lookupPluginDescriptor(PluginInfo pi) throws MojoException, MojoException {
         Plugin forLookup = null;
-        if (StringUtils.isNotEmpty(pi.getPrefix())) {
+        if (pi.getPrefix() != null && !pi.getPrefix().isEmpty()) {
             try {
                 forLookup = mojoDescriptorCreator.findPluginForPrefix(pi.getPrefix(), session);
             } catch (NoPluginFoundForPrefixException e) {
-                throw new MojoExecutionException("Unable to find the plugin with prefix: " + pi.getPrefix(), e);
+                throw new MojoException("Unable to find the plugin with prefix: " + pi.getPrefix(), e);
             }
         } else if (StringUtils.isNotEmpty(pi.getGroupId()) && StringUtils.isNotEmpty(pi.getArtifactId())) {
             forLookup = new Plugin();
@@ -292,7 +245,7 @@ public class DescribeMojo extends AbstractHelpMojo {
                     + "  # mvn help:describe -DgroupId=org.apache.maven.plugins -DartifactId=maven-help-plugin" + LS
                     + LS
                     + "Try 'mvn help:help -Ddetail=true' for more information.";
-            throw new MojoFailureException(msg);
+            throw new MojoException(msg);
         }
 
         if (StringUtils.isNotEmpty(pi.getVersion())) {
@@ -304,7 +257,7 @@ public class DescribeMojo extends AbstractHelpMojo {
                 PluginVersionResult versionResult = pluginVersionResolver.resolve(versionRequest);
                 forLookup.setVersion(versionResult.getVersion());
             } catch (PluginVersionResolutionException e) {
-                throw new MojoExecutionException(
+                throw new MojoException(
                         "Unable to resolve the version of the plugin with prefix: " + pi.getPrefix(), e);
             }
         }
@@ -313,7 +266,7 @@ public class DescribeMojo extends AbstractHelpMojo {
             return pluginManager.getPluginDescriptor(
                     forLookup, project.getRemotePluginRepositories(), session.getRepositorySession());
         } catch (Exception e) {
-            throw new MojoExecutionException(
+            throw new MojoException(
                     "Error retrieving plugin descriptor for:" + LS + LS + "groupId: '"
                             + groupId + "'" + LS + "artifactId: '" + artifactId + "'" + LS + "version: '" + version
                             + "'" + LS
@@ -326,10 +279,10 @@ public class DescribeMojo extends AbstractHelpMojo {
      * Method for parsing the plugin parameter
      *
      * @return Plugin info containing information about the plugin whose description is to be retrieved
-     * @throws MojoFailureException if <code>plugin<*code> parameter is not conform to
+     * @throws MojoException if <code>plugin<*code> parameter is not conform to
      *                              <code>groupId:artifactId[:version]</code>
      */
-    private PluginInfo parsePluginLookupInfo() throws MojoFailureException {
+    private PluginInfo parsePluginLookupInfo() throws MojoException {
         PluginInfo pi = new PluginInfo();
         if (plugin != null && !plugin.isEmpty()) {
             if (plugin.indexOf(':') > -1) {
@@ -349,7 +302,7 @@ public class DescribeMojo extends AbstractHelpMojo {
                         pi.setVersion(pluginParts[2]);
                         break;
                     default:
-                        throw new MojoFailureException("plugin parameter must be a plugin prefix,"
+                        throw new MojoException("plugin parameter must be a plugin prefix,"
                                 + " or conform to: 'groupId:artifactId[:version]'.");
                 }
             } else {
@@ -368,11 +321,11 @@ public class DescribeMojo extends AbstractHelpMojo {
      *
      * @param pd     contains the plugin description
      * @param buffer contains the information to be displayed or printed
-     * @throws MojoFailureException   if any reflection exceptions occur.
-     * @throws MojoExecutionException if any
+     * @throws MojoException   if any reflection exceptions occur.
+     * @throws MojoException if any
      */
     private void describePlugin(PluginDescriptor pd, StringBuilder buffer)
-            throws MojoFailureException, MojoExecutionException {
+            throws MojoException, MojoException {
         append(buffer, pd.getId(), 0);
         buffer.append(LS);
 
@@ -441,11 +394,11 @@ public class DescribeMojo extends AbstractHelpMojo {
      *
      * @param md     contains the description of the Plugin Mojo
      * @param buffer the displayed output
-     * @throws MojoFailureException   if any reflection exceptions occur.
-     * @throws MojoExecutionException if any
+     * @throws MojoException   if any reflection exceptions occur.
+     * @throws MojoException if any
      */
     private void describeMojo(MojoDescriptor md, StringBuilder buffer)
-            throws MojoFailureException, MojoExecutionException {
+            throws MojoException, MojoException {
         buffer.append("Mojo: '").append(md.getFullGoalName()).append("'");
         buffer.append(LS);
 
@@ -464,11 +417,11 @@ public class DescribeMojo extends AbstractHelpMojo {
      * @param md              contains the description of the Plugin Mojo
      * @param buffer          contains information to be printed or displayed
      * @param fullDescription specifies whether all the details about the Plugin Mojo is to  be displayed
-     * @throws MojoFailureException   if any reflection exceptions occur.
-     * @throws MojoExecutionException if any
+     * @throws MojoException   if any reflection exceptions occur.
+     * @throws MojoException if any
      */
     private void describeMojoGuts(MojoDescriptor md, StringBuilder buffer, boolean fullDescription)
-            throws MojoFailureException, MojoExecutionException {
+            throws MojoException, MojoException {
         append(buffer, MessageUtils.buffer().strong(md.getFullGoalName()).toString(), 0);
 
         // indent 1
@@ -534,11 +487,11 @@ public class DescribeMojo extends AbstractHelpMojo {
      *
      * @param md     contains the description of the Plugin Mojo
      * @param buffer contains information to be printed or displayed
-     * @throws MojoFailureException   if any reflection exceptions occur.
-     * @throws MojoExecutionException if any
+     * @throws MojoException   if any reflection exceptions occur.
+     * @throws MojoException if any
      */
     private void describeMojoParameters(MojoDescriptor md, StringBuilder buffer)
-            throws MojoFailureException, MojoExecutionException {
+            throws MojoException, MojoException {
         List<Parameter> params = md.getParameters();
 
         if (params == null || params.isEmpty()) {
@@ -548,7 +501,7 @@ public class DescribeMojo extends AbstractHelpMojo {
 
         params = params.stream()
                 .sorted((p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()))
-                .collect(Collectors.toList());
+                .toList();
 
         append(buffer, "Available parameters:", 1);
 
@@ -623,14 +576,14 @@ public class DescribeMojo extends AbstractHelpMojo {
      *
      * @param descriptionBuffer not null
      * @return <code>true</code> if it implies to describe a plugin, <code>false</code> otherwise.
-     * @throws MojoExecutionException if any
+     * @throws MojoException if any
      */
-    private boolean describeCommand(StringBuilder descriptionBuffer) throws MojoExecutionException {
+    private boolean describeCommand(StringBuilder descriptionBuffer) throws MojoException {
         if (cmd.indexOf(':') == -1) {
             // phase
             Lifecycle lifecycle = defaultLifecycles.getPhaseToLifecycleMap().get(cmd);
             if (lifecycle == null) {
-                throw new MojoExecutionException("The given phase '" + cmd + "' is an unknown phase.");
+                throw new MojoException("The given phase '" + cmd + "' is an unknown phase.");
             }
 
             Map<String, String> defaultLifecyclePhases = lifecycleMappings
@@ -702,7 +655,7 @@ public class DescribeMojo extends AbstractHelpMojo {
         try {
             mojoDescriptor = mojoDescriptorCreator.getMojoDescriptor(cmd, session, project);
         } catch (Exception e) {
-            throw new MojoExecutionException("Unable to get descriptor for " + cmd, e);
+            throw new MojoException("Unable to get descriptor for " + cmd, e);
         }
         descriptionBuffer
                 .append("'")
@@ -725,11 +678,11 @@ public class DescribeMojo extends AbstractHelpMojo {
      * @param indentSize The size of each indentation, must not be negative.
      * @param lineLength The length of the line, must not be negative.
      * @return The sequence of display lines, never <code>null</code>.
-     * @throws MojoFailureException   if any can not invoke the method
-     * @throws MojoExecutionException if no line was found for <code>text</code>
+     * @throws MojoException   if any can not invoke the method
+     * @throws MojoException if no line was found for <code>text</code>
      */
     private static List<String> toLines(String text, int indent, int indentSize, int lineLength)
-            throws MojoFailureException, MojoExecutionException {
+            throws MojoException, MojoException {
         try {
             Method m =
                     HelpMojo.class.getDeclaredMethod("toLines", String.class, Integer.TYPE, Integer.TYPE, Integer.TYPE);
@@ -738,26 +691,26 @@ public class DescribeMojo extends AbstractHelpMojo {
             List<String> output = (List<String>) m.invoke(HelpMojo.class, text, indent, indentSize, lineLength);
 
             if (output == null) {
-                throw new MojoExecutionException("No output was specified.");
+                throw new MojoException("No output was specified.");
             }
 
             return output;
         } catch (SecurityException e) {
-            throw new MojoFailureException("SecurityException: " + e.getMessage());
+            throw new MojoException("SecurityException: " + e.getMessage());
         } catch (IllegalArgumentException e) {
-            throw new MojoFailureException("IllegalArgumentException: " + e.getMessage());
+            throw new MojoException("IllegalArgumentException: " + e.getMessage());
         } catch (NoSuchMethodException e) {
-            throw new MojoFailureException("NoSuchMethodException: " + e.getMessage());
+            throw new MojoException("NoSuchMethodException: " + e.getMessage());
         } catch (IllegalAccessException e) {
-            throw new MojoFailureException("IllegalAccessException: " + e.getMessage());
+            throw new MojoException("IllegalAccessException: " + e.getMessage());
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
 
             if (cause instanceof NegativeArraySizeException) {
-                throw new MojoFailureException("NegativeArraySizeException: " + cause.getMessage());
+                throw new MojoException("NegativeArraySizeException: " + cause.getMessage());
             }
 
-            throw new MojoFailureException("InvocationTargetException: " + e.getMessage());
+            throw new MojoException("InvocationTargetException: " + e.getMessage());
         }
     }
 
@@ -768,12 +721,12 @@ public class DescribeMojo extends AbstractHelpMojo {
      * @param sb          The buffer to append the description, not <code>null</code>.
      * @param description The description, not <code>null</code>.
      * @param indent      The base indentation level of each line, must not be negative.
-     * @throws MojoFailureException   if any reflection exceptions occur.
-     * @throws MojoExecutionException if any
+     * @throws MojoException   if any reflection exceptions occur.
+     * @throws MojoException if any
      * @see #toLines(String, int, int, int)
      */
     private static void append(StringBuilder sb, String description, int indent)
-            throws MojoFailureException, MojoExecutionException {
+            throws MojoException, MojoException {
         if (description == null || description.isEmpty()) {
             sb.append(UNKNOWN).append(LS);
             return;
@@ -792,12 +745,12 @@ public class DescribeMojo extends AbstractHelpMojo {
      * @param key    The key, not <code>null</code>.
      * @param value  The value associated to the key, could be <code>null</code>.
      * @param indent The base indentation level of each line, must not be negative.
-     * @throws MojoFailureException   if any reflection exceptions occur.
-     * @throws MojoExecutionException if any
+     * @throws MojoException   if any reflection exceptions occur.
+     * @throws MojoException if any
      * @see #toLines(String, int, int, int)
      */
     private static void append(StringBuilder sb, String key, String value, int indent)
-            throws MojoFailureException, MojoExecutionException {
+            throws MojoException, MojoException {
         if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Key is required!");
         }
@@ -821,12 +774,12 @@ public class DescribeMojo extends AbstractHelpMojo {
      * @param key    The key, not <code>null</code>.
      * @param value  The value, could be <code>null</code>.
      * @param indent The base indentation level of each line, must not be negative.
-     * @throws MojoFailureException   if any reflection exceptions occur.
-     * @throws MojoExecutionException if any
+     * @throws MojoException   if any reflection exceptions occur.
+     * @throws MojoException if any
      * @see #toLines(String, int, int, int)
      */
     private static void appendAsParagraph(StringBuilder sb, String key, String value, int indent)
-            throws MojoFailureException, MojoExecutionException {
+            throws MojoException, MojoException {
         if (value == null || value.isEmpty()) {
             value = UNKNOWN;
         }
@@ -851,7 +804,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      * transitive dependencies to determine if the Java class of this goal implements <code>MavenReport</code>.
      *
      * @param md Mojo descriptor
-     * @return Whether or not this goal should be used as a report.
+     * @return Whether this goal should be used as a report.
      */
     private boolean isReportGoal(MojoDescriptor md) {
         PluginDescriptor pd = md.getPluginDescriptor();

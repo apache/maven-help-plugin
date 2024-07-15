@@ -19,44 +19,38 @@
 package org.apache.maven.plugins.help;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.URL;
+import java.nio.file.Path;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Optional;
 import java.util.TreeMap;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
+import java.util.zip.ZipFile;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.collections.PropertiesConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
-import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
-import org.apache.maven.plugin.descriptor.MojoDescriptor;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.settings.Settings;
-import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
+import org.apache.maven.api.MojoExecution;
+import org.apache.maven.api.Project;
+import org.apache.maven.api.di.Inject;
+import org.apache.maven.api.model.Model;
+import org.apache.maven.api.plugin.MojoException;
+import org.apache.maven.api.plugin.annotations.Mojo;
+import org.apache.maven.api.plugin.annotations.Parameter;
+import org.apache.maven.api.services.MavenException;
+import org.apache.maven.api.services.Prompter;
+import org.apache.maven.api.services.PrompterException;
+import org.apache.maven.api.services.xml.ModelXmlFactory;
+import org.apache.maven.api.services.xml.SettingsXmlFactory;
+import org.apache.maven.api.services.xml.XmlWriterException;
+import org.apache.maven.api.settings.Settings;
+import org.apache.maven.plugin.PluginParameterExpressionEvaluatorV4;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
-import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.util.StringUtils;
-import org.eclipse.aether.RepositoryException;
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
 
 /**
  * Evaluates Maven expressions given by the user in an interactive mode.
@@ -64,23 +58,8 @@ import org.eclipse.aether.artifact.DefaultArtifact;
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @since 2.1
  */
-@Mojo(name = "evaluate", requiresProject = false)
+@Mojo(name = "evaluate", projectRequired = false)
 public class EvaluateMojo extends AbstractHelpMojo {
-    // ----------------------------------------------------------------------
-    // Mojo components
-    // ----------------------------------------------------------------------
-
-    /**
-     * Input handler, needed for command line handling.
-     */
-    @Component
-    private InputHandler inputHandler;
-
-    /**
-     * Component used to get mojo descriptors.
-     */
-    @Component
-    private MojoDescriptorCreator mojoDescriptorCreator;
 
     // ----------------------------------------------------------------------
     // Mojo parameters
@@ -96,7 +75,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
      * @since 3.0.0
      */
     @Parameter(property = "output")
-    private File output;
+    private Path output;
 
     /**
      * This options gives the option to output information in cases where the output has been suppressed by using
@@ -130,30 +109,22 @@ public class EvaluateMojo extends AbstractHelpMojo {
     @Parameter(property = "expression")
     private String expression;
 
+    @Inject
+    private MojoExecution mojoExecution;
+
     /**
      * The system settings for Maven.
      */
-    @Parameter(defaultValue = "${settings}", readonly = true, required = true)
+    @Parameter(property = "session.settings")
     private Settings settings;
-
-    // ----------------------------------------------------------------------
-    // Instance variables
-    // ----------------------------------------------------------------------
-
-    /** lazy loading evaluator variable */
-    private PluginParameterExpressionEvaluator evaluator;
-
-    /** lazy loading xstream variable */
-    private XStream xstream;
 
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoException {
         if (expression == null && !settings.isInteractiveMode()) {
-
             getLog().error("Maven is configured to NOT interact with the user for input. "
                     + "This Mojo requires that 'interactiveMode' in your settings file is flag to 'true'.");
             return;
@@ -174,15 +145,16 @@ public class EvaluateMojo extends AbstractHelpMojo {
                 getLog().info("Enter the Maven expression i.e. ${project.groupId} or 0 to exit?:");
 
                 try {
-                    String userExpression = inputHandler.readLine();
-                    if (userExpression == null
-                            || userExpression.toLowerCase(Locale.ENGLISH).equals("0")) {
+                    Prompter prompter = session.getService(Prompter.class);
+                    String userExpression =
+                            prompter.prompt("Enter the Maven expression i.e. ${project.groupId} or 0 to exit?");
+                    if (userExpression == null || userExpression.equals("0")) {
                         break;
                     }
 
                     handleResponse(userExpression, null);
-                } catch (IOException e) {
-                    throw new MojoExecutionException("Unable to read from standard input.", e);
+                } catch (PrompterException e) {
+                    throw new MojoException("Unable to read from standard input.", e);
                 }
             }
         } else {
@@ -206,45 +178,25 @@ public class EvaluateMojo extends AbstractHelpMojo {
 
     /**
      * @return a lazy loading evaluator object.
-     * @throws MojoFailureException if any reflection exceptions occur or missing components.
+     * @throws MojoException if any reflection exceptions occur or missing components.
      */
-    private PluginParameterExpressionEvaluator getEvaluator() throws MojoFailureException {
-        if (evaluator == null) {
-            MojoDescriptor mojoDescriptor;
-            try {
-                mojoDescriptor = mojoDescriptorCreator.getMojoDescriptor("help:evaluate", session, project);
-            } catch (Exception e) {
-                throw new MojoFailureException("Failure while evaluating.", e);
-            }
-            MojoExecution mojoExecution = new MojoExecution(mojoDescriptor);
-
-            MavenProject currentProject = session.getCurrentProject();
-            // Maven 3: PluginParameterExpressionEvaluator gets the current project from the session:
-            // synchronize in case another thread wants to fetch the real current project in between
-            synchronized (session) {
-                session.setCurrentProject(project);
-                evaluator = new PluginParameterExpressionEvaluator(session, mojoExecution);
-                session.setCurrentProject(currentProject);
-            }
-        }
-
-        return evaluator;
+    private PluginParameterExpressionEvaluatorV4 getEvaluator() throws MojoException {
+        return new PluginParameterExpressionEvaluatorV4(session, project, mojoExecution);
     }
 
     /**
      * @param expr the user expression asked.
      * @param output the file where to write the result, or <code>null</code> to print in standard output.
-     * @throws MojoExecutionException if any
-     * @throws MojoFailureException if any reflection exceptions occur or missing components.
+     * @throws MojoException if any reflection exceptions occur or missing components.
      */
-    private void handleResponse(String expr, File output) throws MojoExecutionException, MojoFailureException {
+    private void handleResponse(String expr, Path output) throws MojoException {
         StringBuilder response = new StringBuilder();
 
         Object obj;
         try {
             obj = getEvaluator().evaluate(expr);
         } catch (ExpressionEvaluationException e) {
-            throw new MojoExecutionException("Error when evaluating the Maven expression", e);
+            throw new MojoException("Error when evaluating the Maven expression", e);
         }
 
         if (obj != null && expr.equals(obj.toString())) {
@@ -277,35 +229,30 @@ public class EvaluateMojo extends AbstractHelpMojo {
             response.append(obj.toString());
         }
         // handle specific objects
-        else if (obj instanceof File) {
-            File f = (File) obj;
+        else if (obj instanceof File f) {
             response.append(f.getAbsolutePath());
+        } else if (obj instanceof Path p) {
+            response.append(p.toAbsolutePath().toString());
         }
         // handle Maven pom object
-        else if (obj instanceof MavenProject) {
-            MavenProject projectAsked = (MavenProject) obj;
-            StringWriter sWriter = new StringWriter();
-            MavenXpp3Writer pomWriter = new MavenXpp3Writer();
+        else if (obj instanceof Project projectAsked) {
             try {
-                pomWriter.write(sWriter, projectAsked.getModel());
-            } catch (IOException e) {
-                throw new MojoExecutionException("Error when writing pom", e);
+                StringWriter sWriter = new StringWriter();
+                session.getService(ModelXmlFactory.class).write(projectAsked.getModel(), sWriter);
+                response.append(sWriter);
+            } catch (XmlWriterException e) {
+                throw new MojoException("Error when writing pom", e);
             }
-
-            response.append(sWriter.toString());
         }
         // handle Maven Settings object
-        else if (obj instanceof Settings) {
-            Settings settingsAsked = (Settings) obj;
-            StringWriter sWriter = new StringWriter();
-            SettingsXpp3Writer settingsWriter = new SettingsXpp3Writer();
+        else if (obj instanceof Settings settingsAsked) {
             try {
-                settingsWriter.write(sWriter, settingsAsked);
-            } catch (IOException e) {
-                throw new MojoExecutionException("Error when writing settings", e);
+                StringWriter sWriter = new StringWriter();
+                session.getService(SettingsXmlFactory.class).write(settingsAsked, sWriter);
+                response.append(sWriter.toString());
+            } catch (XmlWriterException e) {
+                throw new MojoException("Error when writing settings", e);
             }
-
-            response.append(sWriter.toString());
         } else {
             // others Maven objects
             response.append(toXML(expr, obj));
@@ -315,7 +262,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
             try {
                 writeFile(output, response);
             } catch (IOException e) {
-                throw new MojoExecutionException("Cannot write evaluation of expression to output: " + output, e);
+                throw new MojoException("Cannot write evaluation of expression to output: " + output, e);
             }
             getLog().info("Result of evaluation written to: " + output);
         } else {
@@ -339,8 +286,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
         XStream currentXStream = getXStream();
 
         // beautify list
-        if (obj instanceof List) {
-            List<?> list = (List<?>) obj;
+        if (obj instanceof List<?> list) {
             if (!list.isEmpty()) {
                 Object elt = list.iterator().next();
 
@@ -362,31 +308,28 @@ public class EvaluateMojo extends AbstractHelpMojo {
      * @return lazy loading xstream object.
      */
     private XStream getXStream() {
-        if (xstream == null) {
-            xstream = new XStream();
-            addAlias(xstream);
+        XStream xstream = new XStream();
+        addAlias(xstream);
 
-            // handle Properties a la Maven
-            xstream.registerConverter(new PropertiesConverter() {
-                /** {@inheritDoc} */
-                @Override
-                public boolean canConvert(Class type) {
-                    return Properties.class == type;
-                }
+        // handle Properties a la Maven
+        xstream.registerConverter(new PropertiesConverter() {
+            /** {@inheritDoc} */
+            @Override
+            public boolean canConvert(Class type) {
+                return Map.class.isAssignableFrom(type);
+            }
 
-                /** {@inheritDoc} */
-                @Override
-                public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-                    Properties properties = (Properties) source;
-                    Map<?, ?> map = new TreeMap<>(properties); // sort
-                    for (Map.Entry<?, ?> entry : map.entrySet()) {
-                        writer.startNode(entry.getKey().toString());
-                        writer.setValue(entry.getValue().toString());
-                        writer.endNode();
-                    }
+            /** {@inheritDoc} */
+            @Override
+            public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+                Map<?, ?> map = new TreeMap<>((Map) source); // sort
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    writer.startNode(entry.getKey().toString());
+                    writer.setValue(entry.getValue() != null ? entry.getValue().toString() : null);
+                    writer.endNode();
                 }
-            });
-        }
+            }
+        });
 
         return xstream;
     }
@@ -396,9 +339,9 @@ public class EvaluateMojo extends AbstractHelpMojo {
      */
     private void addAlias(XStream xstreamObject) {
         try {
-            addAlias(xstreamObject, getArtifactFile("maven-model"), "org.apache.maven.model");
-            addAlias(xstreamObject, getArtifactFile("maven-settings"), "org.apache.maven.settings");
-        } catch (MojoExecutionException | RepositoryException e) {
+            addAlias(xstreamObject, Model.class);
+            addAlias(xstreamObject, Settings.class);
+        } catch (MavenException e) {
             if (getLog().isDebugEnabled()) {
                 getLog().debug(e.getMessage(), e);
             }
@@ -407,90 +350,36 @@ public class EvaluateMojo extends AbstractHelpMojo {
         // TODO need to handle specific Maven objects like DefaultArtifact?
     }
 
-    /**
-     * @param xstreamObject not null
-     * @param jarFile not null
-     * @param packageFilter a package name to filter.
-     */
-    private void addAlias(XStream xstreamObject, File jarFile, String packageFilter) {
-        try (FileInputStream fis = new FileInputStream(jarFile);
-                JarInputStream jarStream = new JarInputStream(fis)) {
-            for (JarEntry jarEntry = jarStream.getNextJarEntry();
-                    jarEntry != null;
-                    jarEntry = jarStream.getNextJarEntry()) {
-                if (jarEntry.getName().toLowerCase(Locale.ENGLISH).endsWith(".class")) {
-                    String name =
-                            jarEntry.getName().substring(0, jarEntry.getName().indexOf("."));
-                    name = name.replace("/", "\\.");
-
-                    if (name.contains(packageFilter) && !name.contains("$")) {
-                        try {
-                            Class<?> clazz = ClassUtils.getClass(name);
-                            String alias = StringUtils.lowercaseFirstLetter(clazz.getSimpleName());
-                            xstreamObject.alias(alias, clazz);
-                            if (!clazz.equals(Model.class)) {
-                                xstreamObject.omitField(clazz, "modelEncoding"); // unnecessary field
-                            }
-                        } catch (ClassNotFoundException e) {
-                            getLog().error(e);
-                        }
+    private void addAlias(XStream xstreamObject, Class<?> clazz) {
+        String url = Optional.ofNullable(
+                        clazz.getClassLoader().getResource(clazz.getName().replace('.', '/') + ".class"))
+                .map(URL::toExternalForm)
+                .orElse(null);
+        if (url != null && url.startsWith("jar:file:")) {
+            int exId = url.indexOf('!');
+            String path = url.substring("jar:file:".length(), exId);
+            try (ZipFile zipFile = new ZipFile(path)) {
+                String prefix = clazz.getPackageName().replace('.', '/') + "/";
+                List<String> classes = zipFile.stream()
+                        .map(e -> e.getName())
+                        .filter(e -> e.startsWith(prefix)
+                                && e.endsWith(".class")
+                                && !e.contains("$")
+                                && !e.contains("package-info"))
+                        .map(e -> e.substring(0, e.length() - ".class".length()).replace('/', '.'))
+                        .toList();
+                for (String c : classes) {
+                    Class<?> cl = ClassUtils.getClass(c);
+                    String alias = StringUtils.lowercaseFirstLetter(cl.getSimpleName());
+                    xstreamObject.alias(alias, cl);
+                    if ("TrackableBase".equals(cl.getSimpleName())) {
+                        xstreamObject.omitField(cl, "locations");
                     }
                 }
-
-                jarStream.closeEntry();
-            }
-        } catch (IOException e) {
-            if (getLog().isDebugEnabled()) {
-                getLog().debug("IOException: " + e.getMessage(), e);
+            } catch (Exception e) {
+                throw new MavenException(e);
             }
         }
-    }
-
-    /**
-     * @return the <code>org.apache.maven: artifactId </code> artifact jar file for this current HelpPlugin pom.
-     * @throws MojoExecutionException if any
-     */
-    private File getArtifactFile(String artifactId) throws MojoExecutionException, RepositoryException {
-        List<Dependency> dependencies = getHelpPluginPom().getDependencies();
-        for (Dependency dependency : dependencies) {
-            if ("org.apache.maven".equals(dependency.getGroupId())) {
-                if (artifactId.equals(dependency.getArtifactId())) {
-                    Artifact mavenArtifact = new DefaultArtifact(
-                            dependency.getGroupId(), dependency.getArtifactId(), "jar", dependency.getVersion());
-
-                    return resolveArtifact(mavenArtifact).getArtifact().getFile();
-                }
-            }
-        }
-
-        throw new MojoExecutionException("Unable to find the 'org.apache.maven:" + artifactId + "' artifact");
-    }
-
-    /**
-     * @return the Maven POM for the current help plugin
-     * @throws MojoExecutionException if any
-     */
-    private MavenProject getHelpPluginPom() throws MojoExecutionException {
-        String resource = "META-INF/maven/org.apache.maven.plugins/maven-help-plugin/pom.properties";
-
-        InputStream resourceAsStream = EvaluateMojo.class.getClassLoader().getResourceAsStream(resource);
-        if (resourceAsStream == null) {
-            throw new MojoExecutionException("The help plugin artifact was not found.");
-        }
-        Properties properties = new Properties();
-        try (InputStream is = resourceAsStream) {
-            properties.load(is);
-        } catch (IOException e) {
-            if (getLog().isDebugEnabled()) {
-                getLog().debug("IOException: " + e.getMessage(), e);
-            }
-        }
-
-        String artifactString = properties.getProperty("groupId", "unknown") + ":"
-                + properties.getProperty("artifactId", "unknown") + ":"
-                + properties.getProperty("version", "unknown");
-
-        return getMavenProject(artifactString);
     }
 
     /**

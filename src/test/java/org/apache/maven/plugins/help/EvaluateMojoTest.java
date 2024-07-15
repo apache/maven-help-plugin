@@ -19,94 +19,101 @@
 package org.apache.maven.plugins.help;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.maven.monitor.logging.DefaultLog;
-import org.apache.maven.plugin.Mojo;
-import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
-import org.apache.maven.settings.Settings;
-import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
-import org.codehaus.plexus.components.interactivity.InputHandler;
-import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.logging.LoggerManager;
+import org.apache.maven.api.di.Provides;
+import org.apache.maven.api.di.Singleton;
+import org.apache.maven.api.plugin.Log;
+import org.apache.maven.api.plugin.testing.Basedir;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoParameter;
+import org.apache.maven.api.plugin.testing.MojoTest;
+import org.apache.maven.api.plugin.testing.stubs.SessionMock;
+import org.apache.maven.api.services.Prompter;
+import org.apache.maven.api.settings.Server;
+import org.apache.maven.api.settings.Settings;
+import org.apache.maven.internal.impl.InternalSession;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 /**
  * Test class for the evaluate mojo of the Help Plugin.
  */
-public class EvaluateMojoTest extends AbstractMojoTestCase {
+@MojoTest
+class EvaluateMojoTest {
 
-    private InterceptingLog interceptingLogger;
+    static final String CONFIG_XML = "classpath:/unit/evaluate/plugin-config.xml";
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        interceptingLogger =
-                new InterceptingLog(getContainer().lookup(LoggerManager.class).getLoggerForComponent(Mojo.ROLE));
+    final Prompter prompter = mock(Prompter.class);
+
+    final Log log = mock(Log.class);
+
+    final ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+
+    @BeforeEach
+    void setUp() {
+        System.setOut(new PrintStream(stdout));
     }
 
     /**
      * Tests evaluation of an expression in interactive mode with a mock input handler.
      * @throws Exception in case of errors.
      */
-    public void testEvaluateWithoutExpression() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/evaluate/plugin-config.xml");
-
-        EvaluateMojo mojo = (EvaluateMojo) lookupMojo("evaluate", testPom);
-
-        InputHandler inputHandler = mock(InputHandler.class);
-        when(inputHandler.readLine()).thenReturn("${project.groupId}", "0");
-
-        ExpressionEvaluator expressionEvaluator = mock(PluginParameterExpressionEvaluator.class);
-        when(expressionEvaluator.evaluate(anyString())).thenReturn("My result");
-
-        setUpMojo(mojo, inputHandler, expressionEvaluator);
+    @Test
+    @InjectMojo(goal = "evaluate", pom = CONFIG_XML)
+    @Basedir
+    public void testEvaluateWithoutExpression(EvaluateMojo mojo) throws Exception {
+        when(prompter.prompt(anyString())).thenReturn("${project.groupId}", "0");
+        when(log.isInfoEnabled()).thenReturn(true);
 
         mojo.execute();
 
-        String ls = System.getProperty("line.separator");
-
-        assertTrue(interceptingLogger.infoLogs.contains(ls + "My result"));
-        assertTrue(interceptingLogger.warnLogs.isEmpty());
-        verify(expressionEvaluator).evaluate("${project.groupId}");
-        verify(inputHandler, times(2)).readLine();
+        verify(log, atLeastOnce()).isInfoEnabled();
+        verify(log)
+                .info(
+                        "No artifact parameter specified, using 'org.apache.maven.its.help:evaluate:jar:1.0-SNAPSHOT' as project.");
+        verify(log, times(2)).info("Enter the Maven expression i.e. ${project.groupId} or 0 to exit?:");
+        verify(log).info(System.lineSeparator() + "org.apache.maven.its.help");
+        verify(log, never()).warn(any(CharSequence.class));
+        verify(prompter, times(2)).prompt("Enter the Maven expression i.e. ${project.groupId} or 0 to exit?");
+        verifyNoMoreInteractions(log, prompter);
     }
 
     /**
      * Tests evaluation of an expression in interactive mode with a mock input handler, when "output" is set.
      * @throws Exception in case of errors.
      */
-    public void testEvaluateWithoutExpressionWithOutput() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/evaluate/plugin-config-output.xml");
-
-        EvaluateMojo mojo = (EvaluateMojo) lookupMojo("evaluate", testPom);
-
-        InputHandler inputHandler = mock(InputHandler.class);
-        when(inputHandler.readLine()).thenReturn("${project.artifactId}", "0");
-
-        ExpressionEvaluator expressionEvaluator = mock(PluginParameterExpressionEvaluator.class);
-        when(expressionEvaluator.evaluate(anyString())).thenReturn("My result");
-
-        setUpMojo(mojo, inputHandler, expressionEvaluator);
+    @Test
+    @InjectMojo(goal = "evaluate", pom = CONFIG_XML)
+    @MojoParameter(name = "output", value = "result.txt")
+    @Basedir
+    public void testEvaluateWithoutExpressionWithOutput(EvaluateMojo mojo) throws Exception {
+        when(prompter.prompt(any())).thenReturn("${project.groupId}", "0");
+        when(log.isInfoEnabled()).thenReturn(true);
 
         mojo.execute();
 
-        String ls = System.getProperty("line.separator");
-
-        assertTrue(interceptingLogger.infoLogs.contains(ls + "My result"));
-        assertFalse(interceptingLogger.warnLogs.isEmpty());
-        verify(expressionEvaluator).evaluate("${project.artifactId}");
-        verify(inputHandler, times(2)).readLine();
+        verify(log, atLeastOnce()).isInfoEnabled();
+        verify(log)
+                .info(
+                        "No artifact parameter specified, using 'org.apache.maven.its.help:evaluate:jar:1.0-SNAPSHOT' as project.");
+        verify(log).warn("When prompting for input, the result will be written to the console, ignoring 'output'.");
+        verify(log, times(2)).info("Enter the Maven expression i.e. ${project.groupId} or 0 to exit?:");
+        verify(log).info(System.lineSeparator() + "org.apache.maven.its.help");
+        verify(prompter, times(2)).prompt("Enter the Maven expression i.e. ${project.groupId} or 0 to exit?");
+        verifyNoMoreInteractions(log, prompter);
     }
 
     /**
@@ -116,76 +123,78 @@ public class EvaluateMojoTest extends AbstractMojoTestCase {
      * @throws Exception in case of errors.
      * @see <a href="https://issues.apache.org/jira/browse/MPH-144">MPH-144</a>
      */
-    public void testEvaluateQuiteModeWithOutputOnStdout() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/evaluate/plugin-config-quiet-stdout.xml");
-
-        EvaluateMojo mojo = (EvaluateMojo) lookupMojo("evaluate", testPom);
-
-        ExpressionEvaluator expressionEvaluator = mock(PluginParameterExpressionEvaluator.class);
-        when(expressionEvaluator.evaluate(anyString())).thenReturn("org.apache.maven.its.help");
-
+    @Test
+    @InjectMojo(goal = "evaluate", pom = CONFIG_XML)
+    @MojoParameter(name = "forceStdout", value = "true")
+    @MojoParameter(name = "expression", value = "project.groupId")
+    @Basedir
+    public void testEvaluateQuietModeWithOutputOnStdout(EvaluateMojo mojo) throws Exception {
         // Quiet mode given on command line.(simulation)
-        interceptingLogger.setInfoEnabled(false);
+        when(log.isInfoEnabled()).thenReturn(false);
 
-        setUpMojo(mojo, null, expressionEvaluator);
+        mojo.execute();
 
-        PrintStream saveOut = System.out;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(baos));
-
-        try {
-            mojo.execute();
-        } finally {
-            System.setOut(saveOut);
-            baos.close();
-        }
-
-        String stdResult = baos.toString();
-        assertEquals("org.apache.maven.its.help", stdResult);
-        assertTrue(interceptingLogger.warnLogs.isEmpty());
+        verify(log, atLeastOnce()).isInfoEnabled();
+        verify(log)
+                .info(
+                        "No artifact parameter specified, using 'org.apache.maven.its.help:evaluate:jar:1.0-SNAPSHOT' as project.");
+        assertEquals("org.apache.maven.its.help", stdout.toString());
+        verifyNoMoreInteractions(log, prompter);
     }
 
-    private void setUpMojo(EvaluateMojo mojo, InputHandler inputHandler, ExpressionEvaluator expressionEvaluator)
-            throws IllegalAccessException {
-        setVariableValueToObject(mojo, "inputHandler", inputHandler);
-        setVariableValueToObject(mojo, "log", interceptingLogger);
-        setVariableValueToObject(mojo, "settings", new Settings());
-        setVariableValueToObject(mojo, "project", new MavenProjectStub());
-        setVariableValueToObject(mojo, "evaluator", expressionEvaluator);
+    /**
+     * This test will check that only the <code>project.groupId</code> is printed to
+     * stdout nothing else.
+     *
+     * @throws Exception in case of errors.
+     * @see <a href="https://issues.apache.org/jira/browse/MPH-144">MPH-144</a>
+     */
+    @Test
+    @InjectMojo(goal = "evaluate", pom = CONFIG_XML)
+    @MojoParameter(name = "forceStdout", value = "true")
+    @MojoParameter(name = "expression", value = "settings.servers[0]")
+    @Basedir
+    public void testEvaluateSettings(EvaluateMojo mojo) throws Exception {
+        // Quiet mode given on command line.(simulation)
+        when(log.isInfoEnabled()).thenReturn(false);
+
+        mojo.execute();
+
+        verify(log, atLeastOnce()).isInfoEnabled();
+        verify(log)
+                .info(
+                        "No artifact parameter specified, using 'org.apache.maven.its.help:evaluate:jar:1.0-SNAPSHOT' as project.");
+        assertEquals(
+                "<server>\n" + "  <id>central</id>\n" + "  <username>foo</username>\n" + "</server>",
+                stdout.toString());
+        verifyNoMoreInteractions(log, prompter);
     }
 
-    private static final class InterceptingLog extends DefaultLog {
-        private boolean isInfoEnabled;
+    @Provides
+    @Singleton
+    Prompter prompter() {
+        return prompter;
+    }
 
-        final List<String> infoLogs = new ArrayList<>();
+    @Provides
+    @Singleton
+    Log createlog() {
+        return log;
+    }
 
-        final List<String> warnLogs = new ArrayList<>();
+    @Provides
+    InternalSession createSession(Prompter prompter) {
+        InternalSession session = SessionMock.getMockSession("target/local-repo");
 
-        public InterceptingLog(Logger logger) {
-            super(logger);
-            this.isInfoEnabled = true;
-        }
+        when(session.getSettings())
+                .thenReturn(Settings.newBuilder()
+                        .servers(List.of(Server.newBuilder()
+                                .id("central")
+                                .username("foo")
+                                .build()))
+                        .build());
+        when(session.getService(Prompter.class)).thenReturn(prompter);
 
-        public void setInfoEnabled(boolean isInfoEnabled) {
-            this.isInfoEnabled = isInfoEnabled;
-        }
-
-        public boolean isInfoEnabled() {
-            return isInfoEnabled;
-        }
-
-        @Override
-        public void info(CharSequence content) {
-            if (this.isInfoEnabled) {
-                super.info(content);
-                infoLogs.add(content.toString());
-            }
-        }
-
-        @Override
-        public void warn(CharSequence content) {
-            super.warn(content);
-            warnLogs.add(content.toString());
-        }
+        return session;
     }
 }
