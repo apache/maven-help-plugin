@@ -175,7 +175,7 @@
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>
       <artifactId>maven-reporting-api</artifactId>
-      <version>4.0.0-M12</version>
+      <version>4.0.0</version>
       <exclusions>
         <!-- we only need one interface MavenReport -->
         <exclusion>
