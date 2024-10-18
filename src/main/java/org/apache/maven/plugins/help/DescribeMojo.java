@@ -240,7 +240,7 @@ public class DescribeMojo extends AbstractHelpMojo {
     // ----------------------------------------------------------------------
 
     /**
-     * Method to write the Mojo description into the output file
+     * Method to write the Mojo description to the output file
      *
      * @param descriptionBuffer contains the description to be written to the file
      * @throws MojoExecutionException if any

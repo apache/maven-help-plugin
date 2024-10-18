@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -32,7 +33,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.codehaus.plexus.util.WriterFactory;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
 import org.jdom2.Document;
@@ -49,7 +49,7 @@ import org.jdom2.output.XMLOutputter;
  */
 public abstract class AbstractEffectiveMojo extends AbstractHelpMojo {
     /**
-     * Utility method to write an XML content in a given file.
+     * Utility method to write an XML content to a given file.
      *
      * @param output is the wanted output file.
      * @param content contains the XML content to be written to the file.
@@ -62,7 +62,7 @@ public abstract class AbstractEffectiveMojo extends AbstractHelpMojo {
         }
 
         output.getParentFile().mkdirs();
-        try (Writer out = WriterFactory.newXmlWriter(output)) {
+        try (Writer out = Files.newBufferedWriter(output.toPath())) {
             out.write(content);
         }
     }

@@ -21,6 +21,7 @@ package org.apache.maven.plugins.help;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
@@ -33,7 +34,6 @@ import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
-import org.codehaus.plexus.util.WriterFactory;
 import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -81,7 +81,8 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
     protected MavenSession session;
 
     /**
-     * Optional parameter to write the output of this help in a given file, instead of writing to the console.
+     * Optional parameter to write the output of this help to a given file using UTF-8 encoding,
+     * instead of writing to the console.
      * <br>
      * <b>Note</b>: Could be a relative path.
      */
@@ -89,7 +90,7 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
     protected File output;
 
     /**
-     * Utility method to write a content in a given file.
+     * Utility method to write a content to a given file.
      *
      * @param output is the wanted output file.
      * @param content contains the content to be written to the file.
@@ -101,7 +102,7 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
     }
 
     /**
-     * Utility method to write a content in a given file.
+     * Utility method to write a content to a given file.
      *
      * @param output is the wanted output file.
      * @param content contains the content to be written to the file.
@@ -113,7 +114,7 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
         }
 
         output.getParentFile().mkdirs();
-        try (Writer out = WriterFactory.newPlatformWriter(output)) {
+        try (Writer out = Files.newBufferedWriter(output.toPath())) {
             out.write(content);
         }
     }
