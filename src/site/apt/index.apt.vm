@@ -36,7 +36,7 @@ ${project.name}
 
 * Goals Overview
 
-  The Help Plugin has 7 goals:
+  The Help Plugin has 8 goals:
 
   * {{{./active-profiles-mojo.html}help:active-profiles}} lists the profiles which are currently active for the build.
 
@@ -55,6 +55,9 @@ ${project.name}
 
   * {{{./system-mojo.html}help:system}} displays a list of the platform details like system properties and environment
   variables.
+  
+  * {{{./help-mojo.html}help:help}} lists the profiles which are currently active for the build.
+
 
   []
 
@@ -85,7 +88,7 @@ ${project.name}
 
 * Examples
 
-   To provide you with better understanding on some usages of the Help Plugin, you can take a look into the
+   To better understand some usages of the Help Plugin, see the
    following example(s):
 
    * {{{./examples/describe-configuration.html}Configuring Describe Goal}}
