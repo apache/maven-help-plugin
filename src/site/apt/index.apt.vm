@@ -53,12 +53,11 @@ ${project.name}
 
   * {{{./evaluate-mojo.html}help:evaluate}} evaluates Maven expressions given by the user in an interactive mode.
 
+  * {{{./help-mojo.html}help:help}} Display help information for the maven-help-plugin itself.
+
   * {{{./system-mojo.html}help:system}} displays a list of the platform details like system properties and environment
   variables.
   
-  * {{{./help-mojo.html}help:help}} lists the profiles which are currently active for the build.
-
-
   []
 
 * Major Version Upgrade to version 3.0.0
