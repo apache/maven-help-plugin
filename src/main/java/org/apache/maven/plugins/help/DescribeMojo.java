@@ -32,6 +32,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.lifecycle.DefaultLifecycles;
 import org.apache.maven.lifecycle.Lifecycle;
@@ -126,6 +128,19 @@ public class DescribeMojo extends AbstractHelpMojo {
     @Component
     private Map<String, LifecycleMapping> lifecycleMappings;
 
+    @Inject
+    public DescribeMojo(MavenPluginManager pluginManager,
+            MojoDescriptorCreator mojoDescriptorCreator,
+            PluginVersionResolver pluginVersionResolver,
+            DefaultLifecycles defaultLifecycles,
+            Map<String, LifecycleMapping> lifecycleMappings) {
+        this.pluginManager = pluginManager;
+        this.mojoDescriptorCreator = mojoDescriptorCreator;
+        this.pluginVersionResolver = pluginVersionResolver;
+        this.defaultLifecycles = defaultLifecycles;
+        this.lifecycleMappings = lifecycleMappings;
+    }
+
     // ----------------------------------------------------------------------
     // Mojo parameters
     // ----------------------------------------------------------------------
@@ -209,6 +224,7 @@ public class DescribeMojo extends AbstractHelpMojo {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         StringBuilder descriptionBuffer = new StringBuilder();
 

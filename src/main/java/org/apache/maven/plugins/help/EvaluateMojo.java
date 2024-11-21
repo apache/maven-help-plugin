@@ -31,6 +31,8 @@ import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
+import javax.inject.Inject;
+
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.collections.PropertiesConverter;
@@ -44,7 +46,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -65,21 +66,6 @@ import org.eclipse.aether.artifact.DefaultArtifact;
  */
 @Mojo(name = "evaluate", requiresProject = false)
 public class EvaluateMojo extends AbstractHelpMojo {
-    // ----------------------------------------------------------------------
-    // Mojo components
-    // ----------------------------------------------------------------------
-
-    /**
-     * Input handler, needed for command line handling.
-     */
-    @Component
-    private InputHandler inputHandler;
-
-    /**
-     * Component used to get mojo descriptors.
-     */
-    @Component
-    private MojoDescriptorCreator mojoDescriptorCreator;
 
     // ----------------------------------------------------------------------
     // Mojo parameters
@@ -146,10 +132,31 @@ public class EvaluateMojo extends AbstractHelpMojo {
     private XStream xstream;
 
     // ----------------------------------------------------------------------
+    // Mojo components
+    // ----------------------------------------------------------------------
+
+    /**
+     * Input handler, needed for command line handling.
+     */
+    private InputHandler inputHandler;
+
+    /**
+     * Component used to get mojo descriptors.
+     */
+    private MojoDescriptorCreator mojoDescriptorCreator;
+
+    @Inject
+    public EvaluateMojo(InputHandler inputHandler, MojoDescriptorCreator mojoDescriptorCreator) {
+        this.inputHandler = inputHandler;
+        this.mojoDescriptorCreator = mojoDescriptorCreator;
+    }
+
+    // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (expression == null && !settings.isInteractiveMode()) {
 
