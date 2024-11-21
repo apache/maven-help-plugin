@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.help;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -31,8 +33,6 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import javax.inject.Inject;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.lifecycle.DefaultLifecycles;
@@ -129,7 +129,8 @@ public class DescribeMojo extends AbstractHelpMojo {
     private Map<String, LifecycleMapping> lifecycleMappings;
 
     @Inject
-    public DescribeMojo(MavenPluginManager pluginManager,
+    public DescribeMojo(
+            MavenPluginManager pluginManager,
             MojoDescriptorCreator mojoDescriptorCreator,
             PluginVersionResolver pluginVersionResolver,
             DefaultLifecycles defaultLifecycles,

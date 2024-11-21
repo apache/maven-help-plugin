@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.help;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -30,8 +32,6 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-
-import javax.inject.Inject;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.MarshallingContext;
