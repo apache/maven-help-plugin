@@ -53,7 +53,7 @@ public class DescribeMojoTest {
     @Test
     public void testGetExpressionsRoot() {
         try {
-            DescribeMojo describeMojo = new DescribeMojo();
+            DescribeMojo describeMojo = new DescribeMojo(null, null, null, null, null);
             Method toLines =
                     describeMojo.getClass().getDeclaredMethod("toLines", String.class, int.class, int.class, int.class);
             toLines.setAccessible(true);
@@ -78,7 +78,7 @@ public class DescribeMojoTest {
             Method describeMojoParameters = DescribeMojo.class.getDeclaredMethod(
                     "describeMojoParameters", MojoDescriptor.class, StringBuilder.class);
             describeMojoParameters.setAccessible(true);
-            describeMojoParameters.invoke(new DescribeMojo(), md, sb);
+            describeMojoParameters.invoke(new DescribeMojo(null, null, null, null, null), md, sb);
 
             assertEquals(
                     "  Available parameters:" + ls + ls + "    name" + ls + "      User property: valid.expression" + ls
@@ -104,7 +104,7 @@ public class DescribeMojoTest {
             Method describeMojoParameters = DescribeMojo.class.getDeclaredMethod(
                     "describeMojoParameters", MojoDescriptor.class, StringBuilder.class);
             describeMojoParameters.setAccessible(true);
-            describeMojoParameters.invoke(new DescribeMojo(), md, sb);
+            describeMojoParameters.invoke(new DescribeMojo(null, null, null, null, null), md, sb);
 
             assertEquals(
                     "  Available parameters:" + ls + ls
@@ -120,7 +120,7 @@ public class DescribeMojoTest {
 
     @Test
     public void testParsePluginInfoGAV() throws Throwable {
-        DescribeMojo mojo = new DescribeMojo();
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null);
         setFieldWithReflection(mojo, "groupId", "org.test");
         setFieldWithReflection(mojo, "artifactId", "test");
         setFieldWithReflection(mojo, "version", "1.0");
@@ -136,7 +136,7 @@ public class DescribeMojoTest {
 
     @Test
     public void testParsePluginInfoPluginPrefix() throws Throwable {
-        DescribeMojo mojo = new DescribeMojo();
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null);
         setFieldWithReflection(mojo, "plugin", "help");
 
         Method parsePluginLookupInfo = setParsePluginLookupInfoAccessibility();
@@ -156,7 +156,7 @@ public class DescribeMojoTest {
 
     @Test
     public void testParsePluginInfoPluginGA() throws Throwable {
-        DescribeMojo mojo = new DescribeMojo();
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null);
         setFieldWithReflection(mojo, "plugin", "org.test:test");
 
         Method parsePluginLookupInfo = setParsePluginLookupInfoAccessibility();
@@ -170,7 +170,7 @@ public class DescribeMojoTest {
 
     @Test
     public void testParsePluginInfoPluginGAV() throws Throwable {
-        DescribeMojo mojo = new DescribeMojo();
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null);
         setFieldWithReflection(mojo, "plugin", "org.test:test:1.0");
 
         Method parsePluginLookupInfo = setParsePluginLookupInfoAccessibility();
@@ -184,7 +184,7 @@ public class DescribeMojoTest {
 
     @Test
     public void testParsePluginInfoPluginIncorrect() throws Throwable {
-        DescribeMojo mojo = new DescribeMojo();
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null);
         setFieldWithReflection(mojo, "plugin", "org.test:test:1.0:invalid");
         try {
             Method parsePluginLookupInfo = setParsePluginLookupInfoAccessibility();
@@ -197,7 +197,7 @@ public class DescribeMojoTest {
 
     @Test
     public void testLookupPluginDescriptorPrefixWithVersion() throws Throwable {
-        DescribeMojo mojo = new DescribeMojo();
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null);
 
         PluginInfo pi = new PluginInfo();
         pi.setPrefix("help");
@@ -239,7 +239,7 @@ public class DescribeMojoTest {
 
     @Test
     public void testLookupPluginDescriptorPrefixWithoutVersion() throws Throwable {
-        DescribeMojo mojo = new DescribeMojo();
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null);
 
         PluginInfo pi = new PluginInfo();
         pi.setPrefix("help");
@@ -285,7 +285,7 @@ public class DescribeMojoTest {
 
     @Test
     public void testLookupPluginDescriptorGAV() throws Throwable {
-        DescribeMojo mojo = new DescribeMojo();
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null);
 
         PluginInfo pi = new PluginInfo();
         pi.setGroupId("org.test");
@@ -323,7 +323,7 @@ public class DescribeMojoTest {
 
     @Test
     public void testLookupPluginDescriptorGMissingA() {
-        DescribeMojo mojo = new DescribeMojo();
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null);
         PluginInfo pi = new PluginInfo();
         pi.setGroupId("org.test");
         try {
@@ -339,7 +339,7 @@ public class DescribeMojoTest {
 
     @Test
     public void testLookupPluginDescriptorAMissingG() {
-        DescribeMojo mojo = new DescribeMojo();
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null);
         PluginInfo pi = new PluginInfo();
         pi.setArtifactId("test");
         try {
