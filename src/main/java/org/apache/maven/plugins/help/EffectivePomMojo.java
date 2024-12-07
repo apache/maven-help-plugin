@@ -90,6 +90,7 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
+    @Override
     public void execute() throws MojoExecutionException {
         if (artifact != null && !artifact.isEmpty()) {
             project = getMavenProject(artifact);
@@ -131,7 +132,7 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
         } else {
             if (MessageUtils.isColorEnabled()) {
                 // add color to comments
-                String comment = MessageUtils.buffer().project("<!--.-->").toString();
+                String comment = MessageUtils.buffer().project("<!--.-->").build();
                 int dotIndex = comment.indexOf(".");
                 String commentStart = comment.substring(0, dotIndex);
                 String commentEnd = comment.substring(dotIndex + 1);

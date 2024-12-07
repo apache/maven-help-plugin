@@ -414,7 +414,7 @@ public class DescribeMojo extends AbstractHelpMojo {
                 name = pd.getId();
             }
         }
-        append(buffer, "Name", MessageUtils.buffer().strong(name).toString(), 0);
+        append(buffer, "Name", MessageUtils.buffer().strong(name).build(), 0);
         appendAsParagraph(buffer, "Description", toDescription(pd.getDescription()), 0);
         append(buffer, "Group Id", pd.getGroupId(), 0);
         append(buffer, "Artifact Id", pd.getArtifactId(), 0);
@@ -422,7 +422,7 @@ public class DescribeMojo extends AbstractHelpMojo {
         append(
                 buffer,
                 "Goal Prefix",
-                MessageUtils.buffer().strong(pd.getGoalPrefix()).toString(),
+                MessageUtils.buffer().strong(pd.getGoalPrefix()).build(),
                 0);
         buffer.append(LS);
 
@@ -486,7 +486,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      */
     private void describeMojoGuts(MojoDescriptor md, StringBuilder buffer, boolean fullDescription)
             throws MojoFailureException, MojoExecutionException {
-        append(buffer, MessageUtils.buffer().strong(md.getFullGoalName()).toString(), 0);
+        append(buffer, MessageUtils.buffer().strong(md.getFullGoalName()).build(), 0);
 
         // indent 1
         appendAsParagraph(buffer, "Description", toDescription(md.getDescription()), 1);
@@ -499,7 +499,7 @@ public class DescribeMojo extends AbstractHelpMojo {
         if (deprecation != null && !deprecation.isEmpty()) {
             append(
                     buffer,
-                    MessageUtils.buffer().warning("Deprecated. " + deprecation).toString(),
+                    MessageUtils.buffer().warning("Deprecated. " + deprecation).build(),
                     1);
         }
 
@@ -629,7 +629,7 @@ public class DescribeMojo extends AbstractHelpMojo {
                         buffer,
                         MessageUtils.buffer()
                                 .warning("Deprecated. " + deprecation)
-                                .toString(),
+                                .build(),
                         3);
             }
         }
