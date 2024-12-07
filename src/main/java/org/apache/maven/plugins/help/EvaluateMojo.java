@@ -49,12 +49,14 @@ import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.RepositoryException;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 
@@ -146,7 +148,12 @@ public class EvaluateMojo extends AbstractHelpMojo {
     private MojoDescriptorCreator mojoDescriptorCreator;
 
     @Inject
-    public EvaluateMojo(InputHandler inputHandler, MojoDescriptorCreator mojoDescriptorCreator) {
+    public EvaluateMojo(
+            ProjectBuilder projectBuilder,
+            RepositorySystem repositorySystem,
+            InputHandler inputHandler,
+            MojoDescriptorCreator mojoDescriptorCreator) {
+        super(projectBuilder, repositorySystem);
         this.inputHandler = inputHandler;
         this.mojoDescriptorCreator = mojoDescriptorCreator;
     }

@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.help;
 
+import javax.inject.Inject;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.eclipse.aether.RepositorySystem;
 
 /**
  * Displays a list of the profiles which are currently active for this build.
@@ -44,11 +48,17 @@ public class ActiveProfilesMojo extends AbstractHelpMojo {
     @Parameter(defaultValue = "${reactorProjects}", required = true, readonly = true)
     private List<MavenProject> projects;
 
+    @Inject
+    public ActiveProfilesMojo(ProjectBuilder projectBuilder, RepositorySystem repositorySystem) {
+        super(projectBuilder, repositorySystem);
+    }
+
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
+    @Override
     public void execute() throws MojoExecutionException {
         StringBuilder message = new StringBuilder();
 

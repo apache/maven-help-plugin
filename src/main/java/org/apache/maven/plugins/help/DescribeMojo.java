@@ -55,11 +55,13 @@ import org.apache.maven.plugin.version.PluginVersionResult;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.apache.maven.tools.plugin.generator.HtmlToPlainTextConverter;
 import org.codehaus.plexus.util.StringUtils;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 
@@ -124,11 +126,15 @@ public class DescribeMojo extends AbstractHelpMojo {
 
     @Inject
     public DescribeMojo(
+            ProjectBuilder projectBuilder,
+            RepositorySystem repositorySystem,
             MavenPluginManager pluginManager,
             MojoDescriptorCreator mojoDescriptorCreator,
             PluginVersionResolver pluginVersionResolver,
             DefaultLifecycles defaultLifecycles,
             Map<String, LifecycleMapping> lifecycleMappings) {
+
+        super(projectBuilder, repositorySystem);
         this.pluginManager = pluginManager;
         this.mojoDescriptorCreator = mojoDescriptorCreator;
         this.pluginVersionResolver = pluginVersionResolver;
