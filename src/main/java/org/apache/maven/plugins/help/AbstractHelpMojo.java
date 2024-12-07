@@ -28,7 +28,6 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
@@ -56,18 +55,6 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
     protected static final String LS = System.getProperty("line.separator");
 
     /**
-     * Maven Project Builder component.
-     */
-    @Component
-    protected ProjectBuilder projectBuilder;
-
-    /**
-     * Component used to resolve artifacts and download their files from remote repositories.
-     */
-    @Component
-    protected RepositorySystem repositorySystem;
-
-    /**
      * Current Maven project.
      */
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
@@ -88,6 +75,21 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
      */
     @Parameter(property = "output")
     protected File output;
+
+    /**
+     * Maven Project Builder component.
+     */
+    protected final ProjectBuilder projectBuilder;
+
+    /**
+     * Component used to resolve artifacts and download their files from remote repositories.
+     */
+    protected final RepositorySystem repositorySystem;
+
+    protected AbstractHelpMojo(ProjectBuilder projectBuilder, RepositorySystem repositorySystem) {
+        this.projectBuilder = projectBuilder;
+        this.repositorySystem = repositorySystem;
+    }
 
     /**
      * Utility method to write a content to a given file.

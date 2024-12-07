@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.help;
 
+import javax.inject.Inject;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.InetAddress;
@@ -29,6 +31,7 @@ import java.util.Properties;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.settings.Profile;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
@@ -39,6 +42,7 @@ import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
+import org.eclipse.aether.RepositorySystem;
 
 /**
  * Displays the calculated settings as XML for this project, given any profile enhancement and the inheritance
@@ -67,11 +71,17 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
     @Parameter(property = "showPasswords", defaultValue = "false")
     private boolean showPasswords;
 
+    @Inject
+    public EffectiveSettingsMojo(ProjectBuilder projectBuilder, RepositorySystem repositorySystem) {
+        super(projectBuilder, repositorySystem);
+    }
+
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
+    @Override
     public void execute() throws MojoExecutionException {
         Settings copySettings;
         if (showPasswords) {

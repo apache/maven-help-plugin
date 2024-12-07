@@ -114,6 +114,16 @@
       <version>${resolverVersion}</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.sisu</groupId>
+      <artifactId>org.eclipse.sisu.plexus</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
     <!-- maven plugin tools -->
     <dependency>

@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.help;
 
+import javax.inject.Inject;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +31,9 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.settings.SettingsUtils;
+import org.eclipse.aether.RepositorySystem;
 
 /**
  * Displays a list of available profiles under the current project.
@@ -59,11 +63,17 @@ public class AllProfilesMojo extends AbstractHelpMojo {
     @Parameter(defaultValue = "${settings.profiles}", readonly = true, required = true)
     private List<org.apache.maven.settings.Profile> settingsProfiles;
 
+    @Inject
+    public AllProfilesMojo(ProjectBuilder projectBuilder, RepositorySystem repositorySystem) {
+        super(projectBuilder, repositorySystem);
+    }
+
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         StringBuilder descriptionBuffer = new StringBuilder();
 

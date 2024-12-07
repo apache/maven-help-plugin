@@ -33,8 +33,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.maven.project.ProjectBuilder;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
+import org.eclipse.aether.RepositorySystem;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
@@ -48,6 +50,11 @@ import org.jdom2.output.XMLOutputter;
  * @since 2.1
  */
 public abstract class AbstractEffectiveMojo extends AbstractHelpMojo {
+
+    protected AbstractEffectiveMojo(ProjectBuilder projectBuilder, RepositorySystem repositorySystem) {
+        super(projectBuilder, repositorySystem);
+    }
+
     /**
      * Utility method to write an XML content to a given file.
      *

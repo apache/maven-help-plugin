@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.help;
 
+import javax.inject.Inject;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collections;
@@ -35,11 +37,13 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
+import org.eclipse.aether.RepositorySystem;
 
 /**
  * Displays the effective POM as an XML for this build, with the active profiles factored in, or a specified artifact.
@@ -84,6 +88,11 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
      */
     @Parameter(property = "verbose", defaultValue = "false")
     private boolean verbose = false;
+
+    @Inject
+    public EffectivePomMojo(ProjectBuilder projectBuilder, RepositorySystem repositorySystem) {
+        super(projectBuilder, repositorySystem);
+    }
 
     // ----------------------------------------------------------------------
     // Public methods

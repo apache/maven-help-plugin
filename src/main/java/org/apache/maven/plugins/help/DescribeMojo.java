@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.help;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -50,15 +52,16 @@ import org.apache.maven.plugin.version.DefaultPluginVersionRequest;
 import org.apache.maven.plugin.version.PluginVersionResolutionException;
 import org.apache.maven.plugin.version.PluginVersionResolver;
 import org.apache.maven.plugin.version.PluginVersionResult;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.apache.maven.tools.plugin.generator.HtmlToPlainTextConverter;
 import org.codehaus.plexus.util.StringUtils;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 
@@ -99,32 +102,45 @@ public class DescribeMojo extends AbstractHelpMojo {
     /**
      * Component used to get a plugin descriptor from a given plugin.
      */
-    @Component
-    protected MavenPluginManager pluginManager;
+    protected final MavenPluginManager pluginManager;
 
     /**
      * Component used to get a plugin by its prefix and get mojo descriptors.
      */
-    @Component
-    private MojoDescriptorCreator mojoDescriptorCreator;
+    private final MojoDescriptorCreator mojoDescriptorCreator;
 
     /**
      * Component used to resolve the version for a plugin.
      */
-    @Component
-    private PluginVersionResolver pluginVersionResolver;
+    private final PluginVersionResolver pluginVersionResolver;
 
     /**
      * The Maven default built-in lifecycles.
      */
-    @Component
-    private DefaultLifecycles defaultLifecycles;
+    private final DefaultLifecycles defaultLifecycles;
 
     /**
      * A map from each packaging to its lifecycle mapping.
      */
-    @Component
-    private Map<String, LifecycleMapping> lifecycleMappings;
+    private final Map<String, LifecycleMapping> lifecycleMappings;
+
+    @Inject
+    public DescribeMojo(
+            ProjectBuilder projectBuilder,
+            RepositorySystem repositorySystem,
+            MavenPluginManager pluginManager,
+            MojoDescriptorCreator mojoDescriptorCreator,
+            PluginVersionResolver pluginVersionResolver,
+            DefaultLifecycles defaultLifecycles,
+            Map<String, LifecycleMapping> lifecycleMappings) {
+
+        super(projectBuilder, repositorySystem);
+        this.pluginManager = pluginManager;
+        this.mojoDescriptorCreator = mojoDescriptorCreator;
+        this.pluginVersionResolver = pluginVersionResolver;
+        this.defaultLifecycles = defaultLifecycles;
+        this.lifecycleMappings = lifecycleMappings;
+    }
 
     // ----------------------------------------------------------------------
     // Mojo parameters
