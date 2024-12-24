@@ -18,13 +18,17 @@
  */
 package org.apache.maven.plugins.help;
 
+import javax.inject.Inject;
+
 import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.project.ProjectBuilder;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.eclipse.aether.RepositorySystem;
 
 /**
  * Displays a list of the platform details like system properties and environment variables.
@@ -34,6 +38,12 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
  */
 @Mojo(name = "system", requiresProject = false)
 public class SystemMojo extends AbstractHelpMojo {
+
+    @Inject
+    public SystemMojo(ProjectBuilder projectBuilder, RepositorySystem repositorySystem) {
+        super(projectBuilder, repositorySystem);
+    }
+
     /** Magic number to beautify the output */
     private static final int REPEAT = 25;
 
@@ -42,6 +52,7 @@ public class SystemMojo extends AbstractHelpMojo {
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
+    @Override
     public void execute() throws MojoExecutionException {
         StringBuilder message = new StringBuilder();
 

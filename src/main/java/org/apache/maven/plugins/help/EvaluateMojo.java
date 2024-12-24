@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugins.help;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -44,16 +46,17 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.RepositoryException;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 
@@ -65,21 +68,6 @@ import org.eclipse.aether.artifact.DefaultArtifact;
  */
 @Mojo(name = "evaluate", requiresProject = false)
 public class EvaluateMojo extends AbstractHelpMojo {
-    // ----------------------------------------------------------------------
-    // Mojo components
-    // ----------------------------------------------------------------------
-
-    /**
-     * Input handler, needed for command line handling.
-     */
-    @Component
-    private InputHandler inputHandler;
-
-    /**
-     * Component used to get mojo descriptors.
-     */
-    @Component
-    private MojoDescriptorCreator mojoDescriptorCreator;
 
     // ----------------------------------------------------------------------
     // Mojo parameters
@@ -146,10 +134,36 @@ public class EvaluateMojo extends AbstractHelpMojo {
     private XStream xstream;
 
     // ----------------------------------------------------------------------
+    // Mojo components
+    // ----------------------------------------------------------------------
+
+    /**
+     * Input handler, needed for command line handling.
+     */
+    private InputHandler inputHandler;
+
+    /**
+     * Component used to get mojo descriptors.
+     */
+    private MojoDescriptorCreator mojoDescriptorCreator;
+
+    @Inject
+    public EvaluateMojo(
+            ProjectBuilder projectBuilder,
+            RepositorySystem repositorySystem,
+            InputHandler inputHandler,
+            MojoDescriptorCreator mojoDescriptorCreator) {
+        super(projectBuilder, repositorySystem);
+        this.inputHandler = inputHandler;
+        this.mojoDescriptorCreator = mojoDescriptorCreator;
+    }
+
+    // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
 
     /** {@inheritDoc} */
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (expression == null && !settings.isInteractiveMode()) {
 
