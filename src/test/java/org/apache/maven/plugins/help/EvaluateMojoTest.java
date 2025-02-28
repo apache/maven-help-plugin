@@ -33,15 +33,17 @@ import org.apache.maven.api.plugin.testing.stubs.SessionMock;
 import org.apache.maven.api.services.Prompter;
 import org.apache.maven.api.settings.Server;
 import org.apache.maven.api.settings.Settings;
-import org.apache.maven.internal.impl.InternalSession;
+import org.apache.maven.impl.InternalSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -52,13 +54,16 @@ import static org.mockito.Mockito.when;
  * Test class for the evaluate mojo of the Help Plugin.
  */
 @MojoTest
+@MockitoSettings(strictness = Strictness.WARN)
 class EvaluateMojoTest {
 
     static final String CONFIG_XML = "classpath:/unit/evaluate/plugin-config.xml";
 
-    final Prompter prompter = mock(Prompter.class);
+    @Mock
+    Prompter prompter;
 
-    final Log log = mock(Log.class);
+    @Mock
+    Log log;
 
     final ByteArrayOutputStream stdout = new ByteArrayOutputStream();
 
@@ -183,7 +188,7 @@ class EvaluateMojoTest {
     }
 
     @Provides
-    InternalSession createSession(Prompter prompter) {
+    InternalSession createSession() {
         InternalSession session = SessionMock.getMockSession("target/local-repo");
 
         when(session.getSettings())

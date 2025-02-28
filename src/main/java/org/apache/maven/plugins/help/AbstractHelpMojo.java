@@ -23,10 +23,9 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 
-import org.apache.maven.api.Artifact;
-import org.apache.maven.api.ArtifactCoordinate;
+import org.apache.maven.api.ArtifactCoordinates;
+import org.apache.maven.api.DownloadedArtifact;
 import org.apache.maven.api.Project;
 import org.apache.maven.api.Session;
 import org.apache.maven.api.di.Inject;
@@ -121,7 +120,7 @@ public abstract class AbstractHelpMojo implements Mojo {
      * @return the <code>Artifact</code> object for the <code>artifactString</code> parameter.
      * @throws MojoException if the <code>artifactString</code> doesn't respect the format.
      */
-    protected ArtifactCoordinate getArtifactCoordinate(String artifactString, String type) throws MojoException {
+    protected ArtifactCoordinates getArtifactCoordinates(String artifactString, String type) throws MojoException {
         if (artifactString == null || artifactString.isEmpty()) {
             throw new IllegalArgumentException("artifact parameter could not be empty");
         }
@@ -147,7 +146,7 @@ public abstract class AbstractHelpMojo implements Mojo {
                         + "'groupId:artifactId[:version]'.");
         }
 
-        return session.createArtifactCoordinate(groupId, artifactId, version, type);
+        return session.createArtifactCoordinates(groupId, artifactId, version, type);
     }
 
     /**
@@ -161,14 +160,13 @@ public abstract class AbstractHelpMojo implements Mojo {
      */
     protected Project getMavenProject(String artifactString) throws MojoException {
         try {
-            Path artifact = resolveArtifact(getArtifactCoordinate(artifactString, "pom"))
-                    .getValue();
+            DownloadedArtifact artifact = resolveArtifact(getArtifactCoordinates(artifactString, "pom"));
 
             ProjectBuilder projectBuilder = session.getService(ProjectBuilder.class);
             ProjectBuilderRequest request = ProjectBuilderRequest.builder()
                     .session(session.withRemoteRepositories(
                             session.getService(ProjectManager.class).getRemoteProjectRepositories(project)))
-                    .path(artifact)
+                    .path(artifact.getPath())
                     .processPlugins(false)
                     .build();
             return projectBuilder.build(request).getProject().orElseThrow();
@@ -179,7 +177,7 @@ public abstract class AbstractHelpMojo implements Mojo {
         }
     }
 
-    protected Map.Entry<Artifact, Path> resolveArtifact(ArtifactCoordinate artifact) throws ArtifactResolverException {
+    protected DownloadedArtifact resolveArtifact(ArtifactCoordinates artifact) throws ArtifactResolverException {
 
         // TODO: do we need an additional indirection to support relocation ?
         Session s = session.withRemoteRepositories(

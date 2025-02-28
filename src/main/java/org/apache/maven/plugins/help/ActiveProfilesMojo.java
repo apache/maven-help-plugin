@@ -18,15 +18,16 @@
  */
 package org.apache.maven.plugins.help;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.maven.api.Project;
+import org.apache.maven.api.model.InputLocation;
+import org.apache.maven.api.model.InputSource;
+import org.apache.maven.api.model.Profile;
 import org.apache.maven.api.plugin.MojoException;
 import org.apache.maven.api.plugin.annotations.Mojo;
 import org.apache.maven.api.plugin.annotations.Parameter;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
 
 /**
  * Displays a list of the profiles which are currently active for this build.
@@ -90,7 +91,7 @@ public class ActiveProfilesMojo extends AbstractHelpMojo {
      * @param message   the object where the information will be appended to
      */
     private void getActiveProfileStatement(Project project, StringBuilder message) {
-        Map<String, List<String>> activeProfileIds = project.getInjectedProfileIds();
+        List<Profile> activeProfileIds = project.getEffectiveActiveProfiles();
 
         message.append(LS);
         message.append("Active Profiles for Project '").append(project.getId()).append("':");
@@ -101,14 +102,19 @@ public class ActiveProfilesMojo extends AbstractHelpMojo {
         } else {
             message.append("The following profiles are active:").append(LS);
 
-            for (Map.Entry<String, List<String>> entry : activeProfileIds.entrySet()) {
-                for (String profileId : entry.getValue()) {
-                    message.append(LS).append(" - ").append(profileId);
-                    message.append(" (source: ").append(entry.getKey()).append(")");
-                }
+            for (Profile profile : activeProfileIds) {
+                message.append(LS).append(" - ").append(profile.getId());
+                message.append(" (source: ").append(getProfileSource(profile)).append(")");
             }
         }
 
         message.append(LS);
+    }
+
+    private static String getProfileSource(Profile profile) {
+        InputLocation location = profile.getLocation("");
+        InputSource src = location != null ? location.getSource() : null;
+        String loc = src != null ? src.getLocation() != null ? src.getLocation() : src.getModelId() : null;
+        return loc != null ? loc : profile.getSource();
     }
 }

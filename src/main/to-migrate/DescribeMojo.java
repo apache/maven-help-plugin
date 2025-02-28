@@ -18,13 +18,17 @@
  */
 package org.apache.maven.plugins.help;
 
+import org.apache.maven.api.Lifecycle;
 import org.apache.maven.api.Session;
+import org.apache.maven.api.model.Plugin;
 import org.apache.maven.api.di.Inject;
 import org.apache.maven.api.plugin.MojoException;
 import org.apache.maven.api.plugin.annotations.Mojo;
 import org.apache.maven.api.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.api.plugin.descriptor.Parameter;
 import org.apache.maven.api.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.api.services.MessageBuilder;
+import org.apache.maven.api.services.MessageBuilderFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,6 +81,9 @@ public class DescribeMojo extends AbstractHelpMojo {
     
     @Inject
     Session session;
+    
+    @Inject
+    MessageBuilderFactory messageBuilderFactory;
     
     // ----------------------------------------------------------------------
     // Mojo parameters
@@ -220,7 +227,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      * @throws MojoException if the plugin could not be verify
      * @throws MojoException   if groupId or artifactId is empty
      */
-    private PluginDescriptor lookupPluginDescriptor(PluginInfo pi) throws MojoException, MojoException {
+    private PluginDescriptor lookupPluginDescriptor(PluginInfo pi) throws MojoException {
         Plugin forLookup = null;
         if (pi.getPrefix() != null && !pi.getPrefix().isEmpty()) {
             try {
@@ -350,7 +357,7 @@ public class DescribeMojo extends AbstractHelpMojo {
                 name = pd.getId();
             }
         }
-        append(buffer, "Name", MessageUtils.buffer().strong(name).toString(), 0);
+        append(buffer, "Name", buffer().strong(name).toString(), 0);
         appendAsParagraph(buffer, "Description", toDescription(pd.getDescription()), 0);
         append(buffer, "Group Id", pd.getGroupId(), 0);
         append(buffer, "Artifact Id", pd.getArtifactId(), 0);
@@ -358,7 +365,7 @@ public class DescribeMojo extends AbstractHelpMojo {
         append(
                 buffer,
                 "Goal Prefix",
-                MessageUtils.buffer().strong(pd.getGoalPrefix()).toString(),
+                buffer().strong(pd.getGoalPrefix()).toString(),
                 0);
         buffer.append(LS);
 
@@ -422,7 +429,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      */
     private void describeMojoGuts(MojoDescriptor md, StringBuilder buffer, boolean fullDescription)
             throws MojoException, MojoException {
-        append(buffer, MessageUtils.buffer().strong(md.getFullGoalName()).toString(), 0);
+        append(buffer, buffer().strong(md.getFullGoalName()).toString(), 0);
 
         // indent 1
         appendAsParagraph(buffer, "Description", toDescription(md.getDescription()), 1);
@@ -435,7 +442,7 @@ public class DescribeMojo extends AbstractHelpMojo {
         if (deprecation != null && !deprecation.isEmpty()) {
             append(
                     buffer,
-                    MessageUtils.buffer().warning("Deprecated. " + deprecation).toString(),
+                    buffer().warning("Deprecated. " + deprecation).toString(),
                     1);
         }
 
@@ -522,11 +529,11 @@ public class DescribeMojo extends AbstractHelpMojo {
             }
 
             if (defaultVal != null && !defaultVal.isEmpty()) {
-                defaultVal = " (Default: " + MessageUtils.buffer().strong(defaultVal) + ")";
+                defaultVal = " (Default: " + buffer().strong(defaultVal) + ")";
             } else {
                 defaultVal = "";
             }
-            append(buffer, MessageUtils.buffer().strong(parameter.getName()) + defaultVal, 2);
+            append(buffer, buffer().strong(parameter.getName()) + defaultVal, 2);
 
             String alias = parameter.getAlias();
             if (!(alias == null || alias.isEmpty())) {
@@ -563,7 +570,7 @@ public class DescribeMojo extends AbstractHelpMojo {
             if (deprecation != null && !deprecation.isEmpty()) {
                 append(
                         buffer,
-                        MessageUtils.buffer()
+                        buffer()
                                 .warning("Deprecated. " + deprecation)
                                 .toString(),
                         3);
@@ -835,6 +842,10 @@ public class DescribeMojo extends AbstractHelpMojo {
             getLog().warn("Couldn't identify if this goal is a report goal: " + e.getMessage());
             return false;
         }
+    }
+
+    private MessageBuilder buffer() {
+        return messageBuilderFactory.builder();
     }
 
     /**

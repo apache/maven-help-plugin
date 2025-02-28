@@ -24,10 +24,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.api.Project;
-import org.apache.maven.api.plugin.MojoException;
+import org.apache.maven.api.model.InputLocation;
+import org.apache.maven.api.model.InputSource;
 import org.apache.maven.api.model.Profile;
+import org.apache.maven.api.plugin.MojoException;
 import org.apache.maven.api.plugin.annotations.Mojo;
 import org.apache.maven.api.plugin.annotations.Parameter;
+import org.apache.maven.impl.SettingsUtilsV4;
 
 /**
  * Displays a list of available profiles under the current project.
@@ -83,8 +86,12 @@ public class AllProfilesMojo extends AbstractHelpMojo {
                 // active Profiles will be a subset of *all* profiles
                 allProfilesByIds.keySet().removeAll(activeProfilesByIds.keySet());
 
-                writeProfilesDescription(descriptionBuffer, activeProfilesByIds, true);
-                writeProfilesDescription(descriptionBuffer, allProfilesByIds, false);
+                for (Profile profile : activeProfilesByIds.values()) {
+                    writeProfileDescription(descriptionBuffer, profile, true);
+                }
+                for (Profile profile : allProfilesByIds.values()) {
+                    writeProfileDescription(descriptionBuffer, profile, false);
+                }
             }
         }
 
@@ -105,16 +112,23 @@ public class AllProfilesMojo extends AbstractHelpMojo {
     // Private methods
     // ----------------------------------------------------------------------
 
-    private void writeProfilesDescription(StringBuilder sb, Map<String, Profile> profilesByIds, boolean active) {
-        for (Profile p : profilesByIds.values()) {
-            sb.append("  Profile Id: ").append(p.getId());
-            sb.append(" (Active: ")
-                    .append(active)
-                    .append(", Source: ")
-                    .append(p.getSource())
-                    .append(")");
-            sb.append(LS);
-        }
+    private void writeProfileDescription(StringBuilder sb, Profile profile, boolean active) {
+        String source = getProfileSource(profile);
+        sb.append("  Profile Id: ").append(profile.getId());
+        sb.append(" (Active: ")
+                .append(active)
+                .append(", Source: ")
+                .append(source)
+                .append(")");
+        sb.append(LS);
+    }
+
+    private static String getProfileSource(Profile profile) {
+        InputLocation location = profile.getLocation("");
+        InputSource src = location != null ? location.getSource() : null;
+        String loc = src != null ? src.getLocation() != null ? src.getLocation() : src.getModelId() : null;
+        String source = loc != null ? loc : profile.getSource();
+        return source;
     }
 
     /**
@@ -126,24 +140,11 @@ public class AllProfilesMojo extends AbstractHelpMojo {
      */
     private void addProjectPomProfiles(
             Project project, Map<String, Profile> allProfiles, Map<String, Profile> activeProfiles) {
-        if (project == null) {
-            // shouldn't happen as this mojo requires a project
-            getLog().debug("No pom.xml found to read Profiles from.");
-            return;
+        for (Profile profile : project.getEffectiveProfiles()) {
+            allProfiles.put(profile.getId(), profile);
         }
-
-        getLog().debug("Attempting to read profiles from pom.xml...");
-
-        while (project != null) {
-            for (Profile profile : project.getModel().getProfiles()) {
-                allProfiles.put(profile.getId(), profile);
-            }
-            if (project.getActiveProfiles() != null) {
-                for (Profile profile : project.getActiveProfiles()) {
-                    activeProfiles.put(profile.getId(), profile);
-                }
-            }
-            project = project.getParent();
+        for (Profile profile : project.getEffectiveActiveProfiles()) {
+            activeProfiles.put(profile.getId(), profile);
         }
     }
 
@@ -155,7 +156,7 @@ public class AllProfilesMojo extends AbstractHelpMojo {
     private void addSettingsProfiles(Map<String, Profile> allProfiles) {
         getLog().debug("Attempting to read profiles from settings.xml...");
         for (org.apache.maven.api.settings.Profile settingsProfile : settingsProfiles) {
-            Profile profile = SettingsUtils.convertFromSettingsProfile(settingsProfile);
+            Profile profile = SettingsUtilsV4.convertFromSettingsProfile(settingsProfile);
             allProfiles.put(profile.getId(), profile);
         }
     }

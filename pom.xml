@@ -65,7 +65,7 @@
 
   <properties>
     <javaVersion>17</javaVersion>
-    <mavenVersion>4.0.0-beta-3</mavenVersion>
+    <mavenVersion>4.0.0-rc-3-SNAPSHOT</mavenVersion>
 
     <guiceVersion>6.0.0</guiceVersion>
     <sisuVersion>0.9.0.M2</sisuVersion>
@@ -93,16 +93,6 @@
       <artifactId>maven-api-settings</artifactId>
       <version>${mavenVersion}</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-api-impl</artifactId>
-      <version>${mavenVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
-      <version>${mavenVersion}</version>
     </dependency>
 
     <!-- shared -->
@@ -165,7 +155,7 @@
     <dependency>
       <groupId>com.thoughtworks.xstream</groupId>
       <artifactId>xstream</artifactId>
-      <version>1.4.20</version>
+      <version>1.4.21</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -181,15 +171,20 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <!-- 5.x requires at least Java 11 -->
-      <version>4.11.0</version>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>5.15.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+      <version>2.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-testing</groupId>
       <artifactId>maven-plugin-testing-harness</artifactId>
-      <version>4.0.0-beta-1</version>
+      <version>4.0.0-beta-4-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -202,6 +197,12 @@
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <version>${guiceVersion}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${mavenVersion}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -217,6 +218,76 @@
         </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <!-- Extract sources from dependencies -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.8.1</version>
+        <executions>
+          <execution>
+            <id>unpack-maven-core-sources</id>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.apache.maven</groupId>
+                  <artifactId>maven-core</artifactId>
+                  <version>${mavenVersion}</version>
+                  <classifier>sources</classifier>
+                  <type>jar</type>
+                  <outputDirectory>${project.build.directory}/generated-sources/maven-dependencies</outputDirectory>
+                  <includes>**/PluginParameterExpressionEvaluatorV4.java</includes>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.apache.maven</groupId>
+                  <artifactId>maven-impl</artifactId>
+                  <version>${mavenVersion}</version>
+                  <classifier>sources</classifier>
+                  <type>jar</type>
+                  <outputDirectory>${project.build.directory}/generated-sources/maven-dependencies</outputDirectory>
+                  <includes>**/SettingsUtilsV4.java,
+                    org/apache/maven/impl/model/reflection/*.java</includes>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.apache.maven</groupId>
+                  <artifactId>maven-support</artifactId>
+                  <version>${mavenVersion}</version>
+                  <classifier>sources</classifier>
+                  <type>jar</type>
+                  <outputDirectory>${project.build.directory}/generated-sources/maven-dependencies</outputDirectory>
+                  <includes>**/SettingsTransformer.java,**/SettingsMerger.java</includes>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Add the extracted sources to build path -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/maven-dependencies</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 
   <profiles>

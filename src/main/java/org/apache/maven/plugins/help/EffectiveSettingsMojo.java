@@ -36,10 +36,8 @@ import org.apache.maven.api.settings.Proxy;
 import org.apache.maven.api.settings.Server;
 import org.apache.maven.api.settings.Settings;
 import org.apache.maven.settings.v4.SettingsTransformer;
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
-import org.codehaus.plexus.util.xml.XmlWriterUtil;
 
 /**
  * Displays the calculated settings as XML for this project, given any profile enhancement and the inheritance
@@ -80,8 +78,7 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
         String encoding = output != null && copySettings != null
                 ? copySettings.getModelEncoding()
                 : Charset.defaultCharset().displayName();
-        XMLWriter writer = new PrettyPrintXMLWriter(
-                w, StringUtils.repeat(" ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE), encoding, null);
+        XMLWriter writer = new PrettyPrintXMLWriter(w, "  ", encoding, null);
 
         writeHeader(writer);
 

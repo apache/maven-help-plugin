@@ -36,7 +36,7 @@ import org.apache.maven.api.plugin.testing.Basedir;
 import org.apache.maven.api.plugin.testing.InjectMojo;
 import org.apache.maven.api.plugin.testing.MojoParameter;
 import org.apache.maven.api.plugin.testing.MojoTest;
-import org.apache.maven.api.plugin.testing.stubs.ArtifactStub;
+import org.apache.maven.api.plugin.testing.stubs.ProducedArtifactStub;
 import org.apache.maven.api.plugin.testing.stubs.ProjectStub;
 import org.apache.maven.api.services.ArtifactManager;
 import org.apache.maven.model.v4.MavenStaxReader;
@@ -105,7 +105,7 @@ class EffectivePomMojoTest {
 
         ProjectStub stub = new ProjectStub();
         if (!"pom".equals(model.getPackaging())) {
-            ArtifactStub artifact = new ArtifactStub(
+            ProducedArtifactStub artifact = new ProducedArtifactStub(
                     model.getGroupId(), model.getArtifactId(), "", model.getVersion(), model.getPackaging());
             stub.setMainArtifact(artifact);
         }

@@ -50,7 +50,6 @@ import org.apache.maven.api.services.xml.XmlWriterException;
 import org.apache.maven.api.settings.Settings;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluatorV4;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Evaluates Maven expressions given by the user in an interactive mode.
@@ -290,7 +289,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
             if (!list.isEmpty()) {
                 Object elt = list.iterator().next();
 
-                String name = StringUtils.lowercaseFirstLetter(elt.getClass().getSimpleName());
+                String name = lowerCase(elt.getClass().getName());
                 currentXStream.alias(pluralize(name), List.class);
             } else {
                 // try to detect the alias from question
@@ -370,7 +369,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
                         .toList();
                 for (String c : classes) {
                     Class<?> cl = ClassUtils.getClass(c);
-                    String alias = StringUtils.lowercaseFirstLetter(cl.getSimpleName());
+                    String alias = lowerCase(cl.getSimpleName());
                     xstreamObject.alias(alias, cl);
                     if ("TrackableBase".equals(cl.getSimpleName())) {
                         xstreamObject.omitField(cl, "locations");
@@ -398,5 +397,9 @@ public class EvaluateMojo extends AbstractHelpMojo {
         } else {
             return name + "s";
         }
+    }
+
+    private static String lowerCase(String name) {
+        return name.substring(0, 1).toLowerCase() + name.substring(1);
     }
 }

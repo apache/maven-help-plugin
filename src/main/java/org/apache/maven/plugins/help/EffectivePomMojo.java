@@ -18,8 +18,6 @@
  */
 package org.apache.maven.plugins.help;
 
-import javax.xml.stream.XMLStreamException;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
@@ -37,11 +35,11 @@ import org.apache.maven.api.plugin.MojoException;
 import org.apache.maven.api.plugin.annotations.Mojo;
 import org.apache.maven.api.plugin.annotations.Parameter;
 import org.apache.maven.api.services.MessageBuilderFactory;
-import org.apache.maven.model.v4.MavenStaxWriter;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.maven.api.services.xml.ModelXmlFactory;
+import org.apache.maven.api.services.xml.XmlWriterException;
+import org.apache.maven.api.services.xml.XmlWriterRequest;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
-import org.codehaus.plexus.util.xml.XmlWriterUtil;
 
 /**
  * Displays the effective POM as an XML for this build, with the active profiles factored in, or a specified artifact.
@@ -102,8 +100,7 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
         String encoding = output != null
                 ? project.getModel().getModelEncoding()
                 : Charset.defaultCharset().displayName();
-        XMLWriter writer = new PrettyPrintXMLWriter(
-                w, StringUtils.repeat(" ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE), encoding, null);
+        XMLWriter writer = new PrettyPrintXMLWriter(w, "  ", encoding, null);
 
         writeHeader(writer);
 
@@ -181,11 +178,14 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
 
         StringWriter sWriter = new StringWriter();
         try {
-            MavenStaxWriter w = new MavenStaxWriter();
-            w.setAddLocationInformation(verbose);
-            w.setStringFormatter(EffectivePomMojo::toString);
-            w.write(sWriter, pom);
-        } catch (XMLStreamException | IOException e) {
+            ModelXmlFactory xmlFactory = session.getService(ModelXmlFactory.class);
+            XmlWriterRequest<Model> request = XmlWriterRequest.<Model>builder()
+                    .content(pom)
+                    .writer(sWriter)
+                    .inputLocationFormatter(o -> toString((InputLocation) o))
+                    .build();
+            xmlFactory.write(request);
+        } catch (XmlWriterException e) {
             throw new MojoException("Cannot serialize POM to XML.", e);
         }
 
@@ -211,7 +211,7 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
 
         String s = source.getModelId(); // by default, display modelId
 
-        if (StringUtils.isBlank(s) || s.contains("[unknown-version]")) {
+        if (s == null || s.isEmpty() || s.contains("[unknown-version]")) {
             // unless it is blank or does not provide version information
             s = source.toString();
         }
