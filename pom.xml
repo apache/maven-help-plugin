@@ -49,8 +49,8 @@
     <url>https://github.com/apache/maven-help-plugin/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
-    <system>JIRA</system>
-    <url>https://issues.apache.org/jira/browse/MPH</url>
+    <system>GitHub Issues</system>
+    <url>https://github.com/apache/maven-help-plugin/issues</url>
   </issueManagement>
   <ciManagement>
     <system>Jenkins</system>
