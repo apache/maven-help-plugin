@@ -110,6 +110,29 @@ public class EvaluateMojoTest extends AbstractMojoTestCase {
     }
 
     /**
+     * Tests evaluation of a complex expression.
+     * @throws Exception in case of errors.
+     */
+    public void testEvaluateForComplexExpression() throws Exception {
+        File testPom = new File(getBasedir(), "target/test-classes/unit/evaluate/plugin-config-complex.xml");
+
+        EvaluateMojo mojo = (EvaluateMojo) lookupMojo("evaluate", testPom);
+
+        ExpressionEvaluator expressionEvaluator = mock(PluginParameterExpressionEvaluator.class);
+        when(expressionEvaluator.evaluate("project_version=${project.version}"))
+                .thenReturn("project_version=1.0.0-SNAPSHOT");
+
+        setUpMojo(mojo, null, expressionEvaluator);
+
+        mojo.execute();
+
+        String ls = System.getProperty("line.separator");
+
+        assertTrue(interceptingLogger.infoLogs.contains(ls + "project_version=1.0.0-SNAPSHOT"));
+        verify(expressionEvaluator).evaluate("project_version=${project.version}");
+    }
+
+    /**
      * This test will check that only the <code>project.groupId</code> is printed to
      * stdout nothing else.
      *
