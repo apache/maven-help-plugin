@@ -115,6 +115,40 @@ class EvaluateMojoTest {
     }
 
     /**
+     * Tests evaluation of a complex expression.
+     *
+     * @throws Exception in case of errors.
+     */
+    @Test
+    @ResourceLock(Resources.SYSTEM_OUT)
+    @InjectMojo(goal = "evaluate")
+    @MojoParameter(name = "forceStdout", value = "true")
+    @MojoParameter(name = "expression", value = "project_groupId=${project.groupId}")
+    void testEvaluateForComplexExpression(EvaluateMojo mojo) throws Exception {
+        when(expressionEvaluator.evaluate(anyString())).thenReturn("project_groupId=org.apache.maven.its.help");
+
+        // Quiet mode given on command line.(simulation)
+        when(log.isInfoEnabled()).thenReturn(false);
+
+        setVariableValueToObject(mojo, "evaluator", expressionEvaluator);
+
+        PrintStream saveOut = System.out;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+
+        try {
+            mojo.execute();
+        } finally {
+            System.setOut(saveOut);
+            baos.close();
+        }
+
+        String stdResult = baos.toString();
+        assertEquals("project_groupId=org.apache.maven.its.help", stdResult);
+        verify(log, times(0)).warn(anyString());
+    }
+
+    /**
      * This test will check that only the <code>project.groupId</code> is printed to
      * stdout nothing else.
      *

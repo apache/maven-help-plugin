@@ -113,7 +113,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
     private String artifact;
 
     /**
-     * An expression to evaluate instead of prompting. Note that this <i>must not</i> include the surrounding ${...}.
+     * An expression to evaluate instead of prompting. Note that this <i>may not</i> include the surrounding ${...}.
      */
     @Parameter(property = "expression")
     private String expression;
@@ -200,7 +200,10 @@ public class EvaluateMojo extends AbstractHelpMojo {
                 }
             }
         } else {
-            handleResponse("${" + expression + "}", output);
+            if (!expression.contains("${")) {
+                expression = "${" + expression + "}";
+            }
+            handleResponse(expression, output);
         }
     }
 
