@@ -161,7 +161,7 @@ public class EvaluateMojoTest extends AbstractMojoTestCase {
 
         final List<String> warnLogs = new ArrayList<>();
 
-        public InterceptingLog(Logger logger) {
+        InterceptingLog(Logger logger) {
             super(logger);
             this.isInfoEnabled = true;
         }
