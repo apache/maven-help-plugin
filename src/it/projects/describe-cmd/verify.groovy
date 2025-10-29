@@ -21,8 +21,12 @@ def result = new File(basedir, 'result-deploy.txt').text;
 
 def ls = System.getProperty( "line.separator" );
 
-assert result.contains("'deploy' is a phase corresponding to this plugin:" + ls +
-                       "org.apache.maven.plugins:maven-deploy-plugin")
+if (mavenVersion.startsWith('4.')) {
+    assert result.contains("'deploy' is a phase within the 'default' lifecycle, which has the following phases:")
+} else {
+    assert result.contains("'deploy' is a phase corresponding to this plugin:" + ls +
+            "org.apache.maven.plugins:maven-deploy-plugin")
+}
 
 result = new File(basedir, 'result-site.txt').text;
 
