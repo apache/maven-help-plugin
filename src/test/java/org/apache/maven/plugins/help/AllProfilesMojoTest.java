@@ -18,36 +18,85 @@
  */
 package org.apache.maven.plugins.help;
 
-import java.io.File;
-import java.io.FileInputStream;
+import javax.inject.Inject;
+
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.maven.api.di.Provides;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoParameter;
+import org.apache.maven.api.plugin.testing.MojoTest;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
-import org.apache.maven.monitor.logging.DefaultLog;
-import org.apache.maven.plugin.Mojo;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.logging.LoggerManager;
-import org.codehaus.plexus.util.IOUtil;
+import org.apache.maven.settings.Settings;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for the all-profiles mojo of the Help Plugin.
  */
-public class AllProfilesMojoTest extends AbstractMojoTestCase {
+@ExtendWith(MockitoExtension.class)
+@MojoTest
+class AllProfilesMojoTest {
 
-    private InterceptingLog interceptingLogger;
+    @Inject
+    private MavenProject project;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        interceptingLogger =
-                new InterceptingLog(getContainer().lookup(LoggerManager.class).getLoggerForComponent(Mojo.ROLE));
+    @Inject
+    private MavenSession mavenSession;
+
+    @Mock
+    private Settings settings;
+
+    @Mock
+    private Model projectModel;
+
+    @Mock
+    private Log log;
+
+    @TempDir
+    private Path tempDir;
+
+    private Path outputPath;
+
+    @Provides
+    private Log provideLogger() {
+        return log;
+    }
+
+    private final List<Profile> projectProfiles = new ArrayList<>();
+    private final List<Profile> projectActiveProfiles = new ArrayList<>();
+    private final List<org.apache.maven.settings.Profile> settingsProfiles = new ArrayList<>();
+
+    @BeforeEach
+    void setup() throws IOException {
+        when(mavenSession.getProjects()).thenReturn(Collections.singletonList(project));
+        when(mavenSession.getSettings()).thenReturn(settings);
+        when(settings.getProfiles()).thenReturn(settingsProfiles);
+
+        when(project.getActiveProfiles()).thenReturn(projectActiveProfiles);
+        when(project.getModel()).thenReturn(projectModel);
+        when(projectModel.getProfiles()).thenReturn(projectProfiles);
+
+        outputPath = Files.createTempFile(tempDir, "maven-help-plugin-test-", ".txt");
+        mavenSession.getUserProperties().setProperty("outputPath", outputPath.toString());
     }
 
     /**
@@ -55,20 +104,12 @@ public class AllProfilesMojoTest extends AbstractMojoTestCase {
      *
      * @throws Exception in case of errors.
      */
-    public void testNoProfiles() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/all-profiles/plugin-config.xml");
-
-        AllProfilesMojo mojo = (AllProfilesMojo) lookupMojo("all-profiles", testPom);
-
-        setUpMojo(
-                mojo,
-                Arrays.<MavenProject>asList(new MavenProjectStub()),
-                Collections.<org.apache.maven.settings.Profile>emptyList(),
-                "empty.txt");
-
+    @Test
+    @InjectMojo(goal = "all-profiles")
+    void testNoProfiles(AllProfilesMojo mojo) throws Exception {
         mojo.execute();
 
-        assertTrue(interceptingLogger.warnLogs.contains("No profiles detected!"));
+        verify(log).warn("No profiles detected!");
     }
 
     /**
@@ -76,26 +117,24 @@ public class AllProfilesMojoTest extends AbstractMojoTestCase {
      *
      * @throws Exception in case of errors.
      */
-    public void testProfileFromPom() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/all-profiles/plugin-config.xml");
+    @Test
+    @InjectMojo(goal = "all-profiles")
+    @MojoParameter(name = "output", value = "${outputPath}")
+    void testProfileFromPom(AllProfilesMojo mojo) throws Exception {
+        projectProfiles.add(newPomProfile("pro-1", "pom"));
+        projectProfiles.add(newPomProfile("pro-2", "pom"));
 
-        AllProfilesMojo mojo = (AllProfilesMojo) lookupMojo("all-profiles", testPom);
+        Model parentModel = mock(Model.class);
+        when(parentModel.getProfiles()).thenReturn(Collections.singletonList(newPomProfile("pro-3", "pom")));
+        MavenProject parentProject = mock(MavenProject.class);
+        when(parentProject.getModel()).thenReturn(parentModel);
+        when(project.getParent()).thenReturn(parentProject);
 
-        MavenProjectStub project = new MavenProjectStub();
-        project.getModel().setProfiles(Arrays.asList(newPomProfile("pro-1", "pom"), newPomProfile("pro-2", "pom")));
-        project.setParent(new MavenProjectStub());
-        project.getParent().getModel().setProfiles(Arrays.asList(newPomProfile("pro-3", "pom")));
-        project.setActiveProfiles(Arrays.asList(newPomProfile("pro-1", "pom")));
-
-        setUpMojo(
-                mojo,
-                Arrays.<MavenProject>asList(project),
-                Collections.<org.apache.maven.settings.Profile>emptyList(),
-                "profiles-from-pom.txt");
+        projectActiveProfiles.add(newPomProfile("pro-1", "pom"));
 
         mojo.execute();
 
-        String file = readFile("profiles-from-pom.txt");
+        String file = readOutput();
         assertTrue(file.contains("Profile Id: pro-1 (Active: true, Source: pom)"));
         assertTrue(file.contains("Profile Id: pro-2 (Active: false, Source: pom)"));
         assertTrue(file.contains("Profile Id: pro-3 (Active: false, Source: pom)"));
@@ -106,25 +145,20 @@ public class AllProfilesMojoTest extends AbstractMojoTestCase {
      *
      * @throws Exception in case of errors.
      */
-    public void testProfileFromParentPom() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/all-profiles/plugin-config.xml");
-
-        AllProfilesMojo mojo = (AllProfilesMojo) lookupMojo("all-profiles", testPom);
-
-        MavenProjectStub project = new MavenProjectStub();
-        project.setParent(new MavenProjectStub());
-        project.getParent().getModel().setProfiles(Arrays.asList(newPomProfile("pro-1", "pom")));
-        project.getParent().setActiveProfiles(Arrays.asList(newPomProfile("pro-1", "pom")));
-
-        setUpMojo(
-                mojo,
-                Arrays.<MavenProject>asList(project),
-                Collections.<org.apache.maven.settings.Profile>emptyList(),
-                "profiles-from-parent-pom.txt");
+    @Test
+    @InjectMojo(goal = "all-profiles")
+    @MojoParameter(name = "output", value = "${outputPath}")
+    void testProfileFromParentPom(AllProfilesMojo mojo) throws Exception {
+        Model parentModel = mock(Model.class);
+        when(parentModel.getProfiles()).thenReturn(Collections.singletonList(newPomProfile("pro-1", "pom")));
+        MavenProject parentProject = mock(MavenProject.class);
+        when(parentProject.getModel()).thenReturn(parentModel);
+        when(parentProject.getActiveProfiles()).thenReturn(Collections.singletonList(newPomProfile("pro-1", "pom")));
+        when(project.getParent()).thenReturn(parentProject);
 
         mojo.execute();
 
-        String file = readFile("profiles-from-parent-pom.txt");
+        String file = readOutput();
         assertTrue(file.contains("Profile Id: pro-1 (Active: true, Source: pom)"));
     }
 
@@ -133,22 +167,18 @@ public class AllProfilesMojoTest extends AbstractMojoTestCase {
      *
      * @throws Exception in case of errors.
      */
-    public void testProfileFromSettings() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/all-profiles/plugin-config.xml");
+    @Test
+    @InjectMojo(goal = "all-profiles")
+    @MojoParameter(name = "output", value = "${outputPath}")
+    void testProfileFromSettings(AllProfilesMojo mojo) throws Exception {
+        projectActiveProfiles.add(newPomProfile("settings-1", "settings.xml"));
 
-        AllProfilesMojo mojo = (AllProfilesMojo) lookupMojo("all-profiles", testPom);
-
-        MavenProject project = new MavenProjectStub();
-        project.setActiveProfiles(Arrays.asList(newPomProfile("settings-1", "settings.xml")));
-
-        List<org.apache.maven.settings.Profile> settingsProfiles = new ArrayList<>();
         settingsProfiles.add(newSettingsProfile("settings-1"));
         settingsProfiles.add(newSettingsProfile("settings-2"));
-        setUpMojo(mojo, Arrays.asList(project), settingsProfiles, "profiles-from-settings.txt");
 
         mojo.execute();
 
-        String file = readFile("profiles-from-settings.txt");
+        String file = readOutput();
         assertTrue(file.contains("Profile Id: settings-1 (Active: true, Source: settings.xml)"));
         assertTrue(file.contains("Profile Id: settings-2 (Active: false, Source: settings.xml)"));
     }
@@ -166,37 +196,7 @@ public class AllProfilesMojoTest extends AbstractMojoTestCase {
         return profile;
     }
 
-    private void setUpMojo(
-            AllProfilesMojo mojo,
-            List<MavenProject> projects,
-            List<org.apache.maven.settings.Profile> settingsProfiles,
-            String output)
-            throws IllegalAccessException {
-        setVariableValueToObject(mojo, "projects", projects);
-        setVariableValueToObject(mojo, "settingsProfiles", settingsProfiles);
-        setVariableValueToObject(
-                mojo, "output", new File(getBasedir(), "target/test-classes/unit/active-profiles/" + output));
-        setVariableValueToObject(mojo, "log", interceptingLogger);
-    }
-
-    private String readFile(String path) throws IOException {
-        try (FileInputStream fis =
-                new FileInputStream(new File(getBasedir(), "target/test-classes/unit/active-profiles/" + path))) {
-            return IOUtil.toString(fis);
-        }
-    }
-
-    private static final class InterceptingLog extends DefaultLog {
-        final List<String> warnLogs = new ArrayList<>();
-
-        InterceptingLog(Logger logger) {
-            super(logger);
-        }
-
-        @Override
-        public void warn(CharSequence content) {
-            super.warn(content);
-            warnLogs.add(content.toString());
-        }
+    private String readOutput() throws IOException {
+        return new String(Files.readAllBytes(outputPath));
     }
 }

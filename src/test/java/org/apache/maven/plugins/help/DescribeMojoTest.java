@@ -36,13 +36,13 @@ import org.apache.maven.plugin.version.PluginVersionResult;
 import org.apache.maven.plugins.help.DescribeMojo.PluginInfo;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystemSession;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
@@ -53,10 +53,10 @@ import static org.mockito.Mockito.when;
 /**
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  */
-public class DescribeMojoTest {
+class DescribeMojoTest {
 
     @Test
-    public void testGetExpressionsRoot()
+    void testGetExpressionsRoot()
             throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
                     InvocationTargetException {
         DescribeMojo describeMojo = new DescribeMojo(null, null, null, null, null, null, null);
@@ -67,7 +67,7 @@ public class DescribeMojoTest {
     }
 
     @Test
-    public void testValidExpression() throws Exception {
+    void testValidExpression() throws Exception {
         StringBuilder sb = new StringBuilder();
         MojoDescriptor md = new MojoDescriptor();
         Parameter parameter = new Parameter();
@@ -89,7 +89,7 @@ public class DescribeMojoTest {
     }
 
     @Test
-    public void testInvalidExpression() throws Exception {
+    void testInvalidExpression() throws Exception {
         StringBuilder sb = new StringBuilder();
         MojoDescriptor md = new MojoDescriptor();
         Parameter parameter = new Parameter();
@@ -97,7 +97,7 @@ public class DescribeMojoTest {
         parameter.setExpression("${project.build.directory}/generated-sources/foobar"); // this is a defaultValue
         md.addParameter(parameter);
 
-        String ls = System.getProperty("line.separator");
+        String ls = System.lineSeparator();
 
         Method describeMojoParameters = DescribeMojo.class.getDeclaredMethod(
                 "describeMojoParameters", MojoDescriptor.class, StringBuilder.class);
@@ -114,7 +114,7 @@ public class DescribeMojoTest {
     }
 
     @Test
-    public void testParsePluginInfoGAV() throws Throwable {
+    void testParsePluginInfoGAV() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         setFieldWithReflection(mojo, "groupId", "org.test");
         setFieldWithReflection(mojo, "artifactId", "test");
@@ -130,7 +130,7 @@ public class DescribeMojoTest {
     }
 
     @Test
-    public void testParsePluginInfoPluginPrefix() throws Throwable {
+    void testParsePluginInfoPluginPrefix() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         setFieldWithReflection(mojo, "plugin", "help");
 
@@ -150,7 +150,7 @@ public class DescribeMojoTest {
     }
 
     @Test
-    public void testParsePluginInfoPluginGA() throws Throwable {
+    void testParsePluginInfoPluginGA() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         setFieldWithReflection(mojo, "plugin", "org.test:test");
 
@@ -164,7 +164,7 @@ public class DescribeMojoTest {
     }
 
     @Test
-    public void testParsePluginInfoPluginGAV() throws Throwable {
+    void testParsePluginInfoPluginGAV() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         setFieldWithReflection(mojo, "plugin", "org.test:test:1.0");
 
@@ -178,7 +178,7 @@ public class DescribeMojoTest {
     }
 
     @Test
-    public void testParsePluginInfoPluginIncorrect() throws Throwable {
+    void testParsePluginInfoPluginIncorrect() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         setFieldWithReflection(mojo, "plugin", "org.test:test:1.0:invalid");
         try {
@@ -191,7 +191,7 @@ public class DescribeMojoTest {
     }
 
     @Test
-    public void testLookupPluginDescriptorPrefixWithVersion() throws Throwable {
+    void testLookupPluginDescriptorPrefixWithVersion() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
 
         PluginInfo pi = new PluginInfo();
@@ -233,7 +233,7 @@ public class DescribeMojoTest {
     }
 
     @Test
-    public void testLookupPluginDescriptorPrefixWithoutVersion() throws Throwable {
+    void testLookupPluginDescriptorPrefixWithoutVersion() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
 
         PluginInfo pi = new PluginInfo();
@@ -279,7 +279,7 @@ public class DescribeMojoTest {
     }
 
     @Test
-    public void testLookupPluginDescriptorGAV() throws Throwable {
+    void testLookupPluginDescriptorGAV() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
 
         PluginInfo pi = new PluginInfo();
@@ -317,7 +317,7 @@ public class DescribeMojoTest {
     }
 
     @Test
-    public void testLookupPluginDescriptorGMissingA() {
+    void testLookupPluginDescriptorGMissingA() {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         PluginInfo pi = new PluginInfo();
         pi.setGroupId("org.test");
@@ -333,7 +333,7 @@ public class DescribeMojoTest {
     }
 
     @Test
-    public void testLookupPluginDescriptorAMissingG() {
+    void testLookupPluginDescriptorAMissingG() {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         PluginInfo pi = new PluginInfo();
         pi.setArtifactId("test");

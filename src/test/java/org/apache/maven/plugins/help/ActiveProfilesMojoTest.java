@@ -18,46 +18,67 @@
  */
 package org.apache.maven.plugins.help;
 
-import java.io.File;
-import java.io.FileInputStream;
+import javax.inject.Inject;
+
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoParameter;
+import org.apache.maven.api.plugin.testing.MojoTest;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.IOUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
  * Test class for the active-profiles mojo of the Help Plugin.
  */
-public class ActiveProfilesMojoTest extends AbstractMojoTestCase {
+@MojoTest
+class ActiveProfilesMojoTest {
 
+    @Inject
+    private MavenProject project;
+
+    @Inject
+    private MavenSession mavenSession;
+
+    @TempDir
+    private Path tempDir;
+
+    private Path outputPath;
+
+    @BeforeEach
+    void setup() throws IOException {
+        when(mavenSession.getProjects()).thenReturn(Collections.singletonList(project));
+
+        outputPath = Files.createTempFile(tempDir, "maven-help-plugin-test-", ".txt");
+        mavenSession.getUserProperties().setProperty("outputPath", outputPath.toString());
+    }
     /**
      * Tests that profiles activated in the settings are resolved.
      *
      * @throws Exception in case of errors.
      */
-    public void testActiveProfilesFromSettings() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/active-profiles/plugin-config.xml");
-
-        ActiveProfilesMojo mojo = (ActiveProfilesMojo) lookupMojo("active-profiles", testPom);
-
-        MavenProject project = mock(MavenProject.class);
+    @Test
+    @InjectMojo(goal = "active-profiles")
+    @MojoParameter(name = "output", value = "${outputPath}")
+    void testActiveProfilesFromSettings(ActiveProfilesMojo mojo) throws Exception {
         when(project.getInjectedProfileIds())
-                .thenReturn(getProfiles(Arrays.asList("from-settings"), Collections.<String>emptyList()));
-
-        setUpMojo(mojo, Arrays.asList(project), "from-settings.txt");
+                .thenReturn(getProfiles(Collections.singletonList("from-settings"), Collections.emptyList()));
 
         mojo.execute();
 
-        String file = readFile("from-settings.txt");
+        String file = readOutput();
         assertTrue(file.contains("from-settings (source: external)"));
     }
 
@@ -66,20 +87,16 @@ public class ActiveProfilesMojoTest extends AbstractMojoTestCase {
      *
      * @throws Exception in case of errors.
      */
-    public void testActiveProfilesFromPom() throws Exception {
-        File testPom = new File(getBasedir(), "target/test-classes/unit/active-profiles/plugin-config.xml");
-
-        ActiveProfilesMojo mojo = (ActiveProfilesMojo) lookupMojo("active-profiles", testPom);
-
-        MavenProject project = mock(MavenProject.class);
+    @Test
+    @InjectMojo(goal = "active-profiles")
+    @MojoParameter(name = "output", value = "${outputPath}")
+    void testActiveProfilesFromPom(ActiveProfilesMojo mojo) throws Exception {
         when(project.getInjectedProfileIds())
-                .thenReturn(getProfiles(Collections.<String>emptyList(), Arrays.asList("from-pom")));
-
-        setUpMojo(mojo, Arrays.asList(project), "from-pom.txt");
+                .thenReturn(getProfiles(Collections.emptyList(), Collections.singletonList("from-pom")));
 
         mojo.execute();
 
-        String file = readFile("from-pom.txt");
+        String file = readOutput();
         assertTrue(file.contains("from-pom (source: org.apache.maven.test:test:1.0)"));
     }
 
@@ -87,21 +104,11 @@ public class ActiveProfilesMojoTest extends AbstractMojoTestCase {
         Map<String, List<String>> profiles = new HashMap<>();
         profiles.put("external", externals); // from settings
         profiles.put("org.apache.maven.test:test:1.0", pom); // from POM
-        profiles.put("", Collections.<String>emptyList()); // from super POM
+        profiles.put("", Collections.emptyList()); // from super POM
         return profiles;
     }
 
-    private void setUpMojo(ActiveProfilesMojo mojo, List<MavenProject> projects, String output)
-            throws IllegalAccessException {
-        setVariableValueToObject(mojo, "projects", projects);
-        setVariableValueToObject(
-                mojo, "output", new File(getBasedir(), "target/test-classes/unit/active-profiles/" + output));
-    }
-
-    private String readFile(String path) throws IOException {
-        try (FileInputStream fis =
-                new FileInputStream(new File(getBasedir(), "target/test-classes/unit/active-profiles/" + path))) {
-            return IOUtil.toString(fis);
-        }
+    private String readOutput() throws IOException {
+        return new String(Files.readAllBytes(outputPath));
     }
 }
