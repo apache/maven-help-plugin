@@ -37,6 +37,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.collections.PropertiesConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
@@ -140,7 +141,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
     /**
      * Input handler, needed for command line handling.
      */
-    private InputHandler inputHandler;
+    private final InputHandler inputHandler;
 
     /**
      * Component used to get mojo descriptors.
@@ -231,14 +232,11 @@ public class EvaluateMojo extends AbstractHelpMojo {
             }
             MojoExecution mojoExecution = new MojoExecution(mojoDescriptor);
 
-            MavenProject currentProject = session.getCurrentProject();
             // Maven 3: PluginParameterExpressionEvaluator gets the current project from the session:
-            // synchronize in case another thread wants to fetch the real current project in between
-            synchronized (session) {
-                session.setCurrentProject(project);
-                evaluator = new PluginParameterExpressionEvaluator(session, mojoExecution);
-                session.setCurrentProject(currentProject);
-            }
+            // so we need to clone the session to set the right project
+            MavenSession clonedSession = session.clone();
+            clonedSession.setCurrentProject(project);
+            evaluator = new PluginParameterExpressionEvaluator(clonedSession, mojoExecution);
         }
 
         return evaluator;
