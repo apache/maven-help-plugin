@@ -297,9 +297,6 @@
                 </goals>
                 <configuration>
                   <repositories>
-                    <mockRepo>
-                      <source>src/it/mrm/repository</source>
-                    </mockRepo>
                     <proxyRepo />
                   </repositories>
                 </configuration>
