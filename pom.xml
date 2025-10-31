@@ -287,7 +287,7 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>mrm-maven-plugin</artifactId>
-            <version>1.6.0</version>
+            <version>1.7.0</version>
             <executions>
               <execution>
                 <id>repository</id>
@@ -297,9 +297,6 @@
                 </goals>
                 <configuration>
                   <repositories>
-                    <mockRepo>
-                      <source>src/it/mrm/repository</source>
-                    </mockRepo>
                     <proxyRepo />
                   </repositories>
                 </configuration>
