@@ -189,7 +189,7 @@ public class AllProfilesMojoTest extends AbstractMojoTestCase {
     private static final class InterceptingLog extends DefaultLog {
         final List<String> warnLogs = new ArrayList<>();
 
-        public InterceptingLog(Logger logger) {
+        InterceptingLog(Logger logger) {
             super(logger);
         }
 
