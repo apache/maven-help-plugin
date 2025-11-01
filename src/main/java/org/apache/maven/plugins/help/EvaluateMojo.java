@@ -200,7 +200,10 @@ public class EvaluateMojo extends AbstractHelpMojo {
                 }
             }
         } else {
-            handleResponse("${" + expression + "}", output);
+            if (!expression.contains("${")) {
+                expression = "${" + expression + "}";
+            }
+            handleResponse(expression, output);
         }
     }
 
