@@ -74,7 +74,7 @@ class EvaluateMojoTest {
      */
     @Test
     @InjectMojo(goal = "evaluate")
-    void testEvaluateWithoutExpression(EvaluateMojo mojo) throws Exception {
+    void evaluateWithoutExpression(EvaluateMojo mojo) throws Exception {
         when(inputHandler.readLine()).thenReturn("${project.groupId}", "0");
         when(expressionEvaluator.evaluate(anyString())).thenReturn("My result");
         when(log.isInfoEnabled()).thenReturn(true);
@@ -98,7 +98,7 @@ class EvaluateMojoTest {
     @Test
     @InjectMojo(goal = "evaluate")
     @MojoParameter(name = "output", value = "result.txt")
-    void testEvaluateWithoutExpressionWithOutput(EvaluateMojo mojo) throws Exception {
+    void evaluateWithoutExpressionWithOutput(EvaluateMojo mojo) throws Exception {
         when(inputHandler.readLine()).thenReturn("${project.artifactId}", "0");
         when(expressionEvaluator.evaluate(anyString())).thenReturn("My result");
         when(log.isInfoEnabled()).thenReturn(true);
@@ -126,7 +126,7 @@ class EvaluateMojoTest {
     @InjectMojo(goal = "evaluate")
     @MojoParameter(name = "forceStdout", value = "true")
     @MojoParameter(name = "expression", value = "project.groupId")
-    void testEvaluateQuiteModeWithOutputOnStdout(EvaluateMojo mojo) throws Exception {
+    void evaluateQuiteModeWithOutputOnStdout(EvaluateMojo mojo) throws Exception {
         when(expressionEvaluator.evaluate(anyString())).thenReturn("org.apache.maven.its.help");
 
         // Quiet mode given on command line.(simulation)

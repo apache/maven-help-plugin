@@ -106,7 +106,7 @@ class AllProfilesMojoTest {
      */
     @Test
     @InjectMojo(goal = "all-profiles")
-    void testNoProfiles(AllProfilesMojo mojo) throws Exception {
+    void noProfiles(AllProfilesMojo mojo) throws Exception {
         mojo.execute();
 
         verify(log).warn("No profiles detected!");
@@ -120,7 +120,7 @@ class AllProfilesMojoTest {
     @Test
     @InjectMojo(goal = "all-profiles")
     @MojoParameter(name = "output", value = "${outputPath}")
-    void testProfileFromPom(AllProfilesMojo mojo) throws Exception {
+    void profileFromPom(AllProfilesMojo mojo) throws Exception {
         projectProfiles.add(newPomProfile("pro-1", "pom"));
         projectProfiles.add(newPomProfile("pro-2", "pom"));
 
@@ -148,7 +148,7 @@ class AllProfilesMojoTest {
     @Test
     @InjectMojo(goal = "all-profiles")
     @MojoParameter(name = "output", value = "${outputPath}")
-    void testProfileFromParentPom(AllProfilesMojo mojo) throws Exception {
+    void profileFromParentPom(AllProfilesMojo mojo) throws Exception {
         Model parentModel = mock(Model.class);
         when(parentModel.getProfiles()).thenReturn(Collections.singletonList(newPomProfile("pro-1", "pom")));
         MavenProject parentProject = mock(MavenProject.class);
@@ -170,7 +170,7 @@ class AllProfilesMojoTest {
     @Test
     @InjectMojo(goal = "all-profiles")
     @MojoParameter(name = "output", value = "${outputPath}")
-    void testProfileFromSettings(AllProfilesMojo mojo) throws Exception {
+    void profileFromSettings(AllProfilesMojo mojo) throws Exception {
         projectActiveProfiles.add(newPomProfile("settings-1", "settings.xml"));
 
         settingsProfiles.add(newSettingsProfile("settings-1"));

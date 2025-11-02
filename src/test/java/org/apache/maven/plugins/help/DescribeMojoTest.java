@@ -56,9 +56,8 @@ import static org.mockito.Mockito.when;
 class DescribeMojoTest {
 
     @Test
-    void testGetExpressionsRoot()
-            throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
-                    InvocationTargetException {
+    void getExpressionsRoot()
+            throws Exception {
         DescribeMojo describeMojo = new DescribeMojo(null, null, null, null, null, null, null);
         Method toLines =
                 describeMojo.getClass().getDeclaredMethod("toLines", String.class, int.class, int.class, int.class);
@@ -67,7 +66,7 @@ class DescribeMojoTest {
     }
 
     @Test
-    void testValidExpression() throws Exception {
+    void validExpression() throws Exception {
         StringBuilder sb = new StringBuilder();
         MojoDescriptor md = new MojoDescriptor();
         Parameter parameter = new Parameter();
@@ -89,7 +88,7 @@ class DescribeMojoTest {
     }
 
     @Test
-    void testInvalidExpression() throws Exception {
+    void invalidExpression() throws Exception {
         StringBuilder sb = new StringBuilder();
         MojoDescriptor md = new MojoDescriptor();
         Parameter parameter = new Parameter();
@@ -114,7 +113,7 @@ class DescribeMojoTest {
     }
 
     @Test
-    void testParsePluginInfoGAV() throws Throwable {
+    void parsePluginInfoGAV() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         setFieldWithReflection(mojo, "groupId", "org.test");
         setFieldWithReflection(mojo, "artifactId", "test");
@@ -130,7 +129,7 @@ class DescribeMojoTest {
     }
 
     @Test
-    void testParsePluginInfoPluginPrefix() throws Throwable {
+    void parsePluginInfoPluginPrefix() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         setFieldWithReflection(mojo, "plugin", "help");
 
@@ -150,7 +149,7 @@ class DescribeMojoTest {
     }
 
     @Test
-    void testParsePluginInfoPluginGA() throws Throwable {
+    void parsePluginInfoPluginGA() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         setFieldWithReflection(mojo, "plugin", "org.test:test");
 
@@ -164,7 +163,7 @@ class DescribeMojoTest {
     }
 
     @Test
-    void testParsePluginInfoPluginGAV() throws Throwable {
+    void parsePluginInfoPluginGAV() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         setFieldWithReflection(mojo, "plugin", "org.test:test:1.0");
 
@@ -178,7 +177,7 @@ class DescribeMojoTest {
     }
 
     @Test
-    void testParsePluginInfoPluginIncorrect() throws Throwable {
+    void parsePluginInfoPluginIncorrect() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         setFieldWithReflection(mojo, "plugin", "org.test:test:1.0:invalid");
         try {
@@ -191,7 +190,7 @@ class DescribeMojoTest {
     }
 
     @Test
-    void testLookupPluginDescriptorPrefixWithVersion() throws Throwable {
+    void lookupPluginDescriptorPrefixWithVersion() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
 
         PluginInfo pi = new PluginInfo();
@@ -233,7 +232,7 @@ class DescribeMojoTest {
     }
 
     @Test
-    void testLookupPluginDescriptorPrefixWithoutVersion() throws Throwable {
+    void lookupPluginDescriptorPrefixWithoutVersion() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
 
         PluginInfo pi = new PluginInfo();
@@ -279,7 +278,7 @@ class DescribeMojoTest {
     }
 
     @Test
-    void testLookupPluginDescriptorGAV() throws Throwable {
+    void lookupPluginDescriptorGAV() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
 
         PluginInfo pi = new PluginInfo();
@@ -317,7 +316,7 @@ class DescribeMojoTest {
     }
 
     @Test
-    void testLookupPluginDescriptorGMissingA() {
+    void lookupPluginDescriptorGMissingA() {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         PluginInfo pi = new PluginInfo();
         pi.setGroupId("org.test");
@@ -333,7 +332,7 @@ class DescribeMojoTest {
     }
 
     @Test
-    void testLookupPluginDescriptorAMissingG() {
+    void lookupPluginDescriptorAMissingG() {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
         PluginInfo pi = new PluginInfo();
         pi.setArtifactId("test");

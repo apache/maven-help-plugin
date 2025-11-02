@@ -72,7 +72,7 @@ class ActiveProfilesMojoTest {
     @Test
     @InjectMojo(goal = "active-profiles")
     @MojoParameter(name = "output", value = "${outputPath}")
-    void testActiveProfilesFromSettings(ActiveProfilesMojo mojo) throws Exception {
+    void activeProfilesFromSettings(ActiveProfilesMojo mojo) throws Exception {
         when(project.getInjectedProfileIds())
                 .thenReturn(getProfiles(Collections.singletonList("from-settings"), Collections.emptyList()));
 
@@ -90,7 +90,7 @@ class ActiveProfilesMojoTest {
     @Test
     @InjectMojo(goal = "active-profiles")
     @MojoParameter(name = "output", value = "${outputPath}")
-    void testActiveProfilesFromPom(ActiveProfilesMojo mojo) throws Exception {
+    void activeProfilesFromPom(ActiveProfilesMojo mojo) throws Exception {
         when(project.getInjectedProfileIds())
                 .thenReturn(getProfiles(Collections.emptyList(), Collections.singletonList("from-pom")));
 
