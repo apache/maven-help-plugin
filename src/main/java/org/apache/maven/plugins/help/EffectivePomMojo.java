@@ -45,9 +45,10 @@ import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
 import org.eclipse.aether.RepositorySystem;
 
-import static org.apache.maven.plugins.help.EffectiveMojoWriter.prettyFormat;
-import static org.apache.maven.plugins.help.EffectiveMojoWriter.writeComment;
-import static org.apache.maven.plugins.help.EffectiveMojoWriter.writeHeader;
+import static org.apache.maven.plugins.help.EffectiveMojoUtils.prettyFormat;
+import static org.apache.maven.plugins.help.EffectiveMojoUtils.sortProperties;
+import static org.apache.maven.plugins.help.EffectiveMojoUtils.writeComment;
+import static org.apache.maven.plugins.help.EffectiveMojoUtils.writeHeader;
 
 /**
  * Displays the effective POM as an XML for this build, with the active profiles factored in, or a specified artifact.
@@ -212,9 +213,8 @@ public class EffectivePomMojo extends AbstractHelpMojo {
      * @param pom not null
      */
     private static void cleanModel(Model pom) {
-        Properties properties = new EffectiveMojoWriter.SortedProperties();
-        properties.putAll(pom.getProperties());
-        pom.setProperties(properties);
+        Properties sortedProperties = sortProperties(pom.getProperties());
+        pom.setProperties(sortedProperties);
     }
 
     private static class InputLocationStringFormatter extends InputLocation.StringFormatter {

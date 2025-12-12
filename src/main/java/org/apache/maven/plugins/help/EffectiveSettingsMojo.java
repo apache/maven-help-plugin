@@ -44,9 +44,10 @@ import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
 import org.eclipse.aether.RepositorySystem;
 
-import static org.apache.maven.plugins.help.EffectiveMojoWriter.prettyFormat;
-import static org.apache.maven.plugins.help.EffectiveMojoWriter.writeComment;
-import static org.apache.maven.plugins.help.EffectiveMojoWriter.writeHeader;
+import static org.apache.maven.plugins.help.EffectiveMojoUtils.prettyFormat;
+import static org.apache.maven.plugins.help.EffectiveMojoUtils.sortProperties;
+import static org.apache.maven.plugins.help.EffectiveMojoUtils.writeComment;
+import static org.apache.maven.plugins.help.EffectiveMojoUtils.writeHeader;
 
 /**
  * Displays the calculated settings as XML for this project, given any profile enhancement and the inheritance
@@ -236,8 +237,7 @@ public class EffectiveSettingsMojo extends AbstractHelpMojo {
     private static void cleanSettings(Settings settings) {
         List<Profile> profiles = settings.getProfiles();
         for (Profile profile : profiles) {
-            Properties properties = new EffectiveMojoWriter.SortedProperties();
-            properties.putAll(profile.getProperties());
+            Properties properties = sortProperties(profile.getProperties());
             profile.setProperties(properties);
         }
     }

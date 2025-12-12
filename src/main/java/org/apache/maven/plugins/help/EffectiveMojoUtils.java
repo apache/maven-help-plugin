@@ -44,7 +44,9 @@ import org.jdom2.output.XMLOutputter;
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @since 2.1
  */
-public final class EffectiveMojoWriter {
+public final class EffectiveMojoUtils {
+
+    private EffectiveMojoUtils() {}
 
     /**
      * Write comments in the Effective POM/settings header.
@@ -104,10 +106,18 @@ public final class EffectiveMojoWriter {
         }
     }
 
+    public static Properties sortProperties(Properties properties) {
+        Properties sortedProperties = new SortedProperties();
+        for (Object key : properties.keySet()) {
+            sortedProperties.put(key, properties.get(key));
+        }
+        return sortedProperties;
+    }
+
     /**
      * Properties which provides a sorted keySet().
      */
-    public static class SortedProperties extends Properties {
+    private static class SortedProperties extends Properties {
         /**
          * serialVersionUID
          */
