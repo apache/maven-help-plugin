@@ -20,12 +20,9 @@ package org.apache.maven.plugins.help;
 
 import javax.xml.XMLConstants;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.Writer;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -42,31 +39,12 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 /**
- * Base class with common utilities to write effective Pom/settings.
+ * Utility class with common utilities to write effective Pom/settings.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
  * @since 2.1
  */
 public final class EffectiveMojoWriter {
-
-    /**
-     * Utility method to write an XML content to a given file.
-     *
-     * @param output  is the wanted output file.
-     * @param content contains the XML content to be written to the file.
-     * @throws IOException if any
-     * @see AbstractHelpMojo#writeFile(File, String) if encoding is null.
-     */
-    public static void writeXmlFile(File output, String content) throws IOException {
-        if (output == null) {
-            return;
-        }
-
-        output.getParentFile().mkdirs();
-        try (Writer out = Files.newBufferedWriter(output.toPath())) {
-            out.write(content);
-        }
-    }
 
     /**
      * Write comments in the Effective POM/settings header.

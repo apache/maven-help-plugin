@@ -48,7 +48,6 @@ import org.eclipse.aether.RepositorySystem;
 import static org.apache.maven.plugins.help.EffectiveMojoWriter.prettyFormat;
 import static org.apache.maven.plugins.help.EffectiveMojoWriter.writeComment;
 import static org.apache.maven.plugins.help.EffectiveMojoWriter.writeHeader;
-import static org.apache.maven.plugins.help.EffectiveMojoWriter.writeXmlFile;
 
 /**
  * Displays the effective POM as an XML for this build, with the active profiles factored in, or a specified artifact.
@@ -137,7 +136,7 @@ public class EffectivePomMojo extends AbstractHelpMojo {
 
         if (output != null) {
             try {
-                writeXmlFile(output, effectivePom);
+                writeFile(output, effectivePom);
             } catch (IOException e) {
                 throw new MojoExecutionException("Cannot write effective-POM to output: " + output, e);
             }

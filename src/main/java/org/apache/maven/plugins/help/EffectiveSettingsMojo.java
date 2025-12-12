@@ -47,7 +47,6 @@ import org.eclipse.aether.RepositorySystem;
 import static org.apache.maven.plugins.help.EffectiveMojoWriter.prettyFormat;
 import static org.apache.maven.plugins.help.EffectiveMojoWriter.writeComment;
 import static org.apache.maven.plugins.help.EffectiveMojoWriter.writeHeader;
-import static org.apache.maven.plugins.help.EffectiveMojoWriter.writeXmlFile;
 
 /**
  * Displays the calculated settings as XML for this project, given any profile enhancement and the inheritance
@@ -113,7 +112,7 @@ public class EffectiveSettingsMojo extends AbstractHelpMojo {
 
         if (output != null) {
             try {
-                writeXmlFile(output, effectiveSettings);
+                writeFile(output, effectiveSettings);
             } catch (IOException e) {
                 throw new MojoExecutionException("Cannot write effective-settings to output: " + output, e);
             }
