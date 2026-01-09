@@ -20,7 +20,7 @@ class EffectiveMojoUtilsTest {
 
 
     @Test
-    void writeHeader_shouldWriteHeaderComments() {
+    void writeHeaderShouldWriteHeaderComments() {
         EffectiveMojoUtils.writeHeader(writer);
 
         assertEquals(String.format("<?xml version=\"1.0\" encoding=\"%s\"?>\n", encoding) +
@@ -34,7 +34,7 @@ class EffectiveMojoUtilsTest {
     }
 
     @Test
-    void writeComment_shouldWriteGivenComment() {
+    void writeCommentShouldWriteGivenComment() {
         EffectiveMojoUtils.writeComment(writer, "This is a comment");
 
         assertEquals(String.format("<?xml version=\"1.0\" encoding=\"%s\"?>\n", encoding) +
@@ -47,7 +47,7 @@ class EffectiveMojoUtilsTest {
     }
 
     @Test
-    void sortProperties_shouldSortProperties() {
+    void sortPropertiesShouldSortProperties() {
         final Properties props = new Properties();
         props.setProperty("z", "last");
         props.setProperty("a", "first");
@@ -67,7 +67,7 @@ class EffectiveMojoUtilsTest {
     }
 
     @Test
-    void prettyFormat_shouldFormatXmlString() throws Exception {
+    void prettyFormatShouldFormatXmlString() {
         final String xml = "<root><child><subchild>value</subchild></child></root>";
 
         final String prettyXml = EffectiveMojoUtils.prettyFormat(xml, encoding, false);
@@ -81,7 +81,7 @@ class EffectiveMojoUtilsTest {
     }
 
     @Test
-    void prettyFormat_shouldOmitDeclarationWhenSpecified() throws Exception {
+    void prettyFormatShouldOmitDeclarationWhenSpecified() {
         final String xml = "<root><child><subchild>value</subchild></child></root>";
 
         final String prettyXml = EffectiveMojoUtils.prettyFormat(xml, encoding, true);
