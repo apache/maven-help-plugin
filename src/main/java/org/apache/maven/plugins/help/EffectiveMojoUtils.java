@@ -40,9 +40,6 @@ import org.jdom2.output.XMLOutputter;
 
 /**
  * Utility class with common utilities to write effective Pom/settings.
- *
- * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @since 2.1
  */
 public final class EffectiveMojoUtils {
 

@@ -1,0 +1,112 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.maven.plugins.help;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.maven.project.ProjectBuilder;
+import org.codehaus.plexus.util.xml.XMLWriter;
+import org.eclipse.aether.RepositorySystem;
+
+/**
+ * Base class with common utilities to write effective Pom/settings.
+ *
+ * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
+ * @since 2.1
+ *
+ * @deprecated use {@link EffectiveMojoUtils} instead
+ */
+@Deprecated
+public abstract class AbstractEffectiveMojo extends AbstractHelpMojo {
+
+    protected AbstractEffectiveMojo(ProjectBuilder projectBuilder, RepositorySystem repositorySystem) {
+        super(projectBuilder, repositorySystem);
+    }
+
+    /**
+     * Utility method to write an XML content to a given file.
+     *
+     * @param output is the wanted output file.
+     * @param content contains the XML content to be written to the file.
+     * @throws IOException if any
+     * @see AbstractHelpMojo#writeFile(File, String) if encoding is null.
+     */
+    protected static void writeXmlFile(File output, String content) throws IOException {
+        writeFile(output, content);
+    }
+
+    /**
+     * Write comments in the Effective POM/settings header.
+     *
+     * @param writer not null
+     */
+    protected static void writeHeader(XMLWriter writer) {
+        EffectiveMojoUtils.writeHeader(writer);
+    }
+
+    /**
+     * Write comments in a normalize way.
+     *
+     * @param writer not null
+     * @param comment not null
+     */
+    protected static void writeComment(XMLWriter writer, String comment) {
+        EffectiveMojoUtils.writeComment(writer, comment);
+    }
+
+    /**
+     * @param effectiveModel not null
+     * @param encoding not null
+     * @param omitDeclaration whether the XML declaration should be omitted from the effective pom
+     * @return pretty format of the xml or the original {@code effectiveModel} if an error occurred.
+     */
+    protected static String prettyFormat(String effectiveModel, String encoding, boolean omitDeclaration) {
+        return EffectiveMojoUtils.prettyFormat(effectiveModel, encoding, omitDeclaration);
+    }
+
+    /**
+     * Properties which provides a sorted keySet().
+     */
+    protected static class SortedProperties extends Properties {
+        /** serialVersionUID */
+        static final long serialVersionUID = -8985316072702233744L;
+
+        /** {@inheritDoc} */
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        @Override
+        public Set<Object> keySet() {
+            Set<Object> keynames = super.keySet();
+            List list = new ArrayList(keynames);
+            Collections.sort(list);
+
+            return new LinkedHashSet<>(list);
+        }
+
+        protected static Properties sortProperties(Properties properties) {
+            return EffectiveMojoUtils.sortProperties(properties);
+        }
+    }
+}

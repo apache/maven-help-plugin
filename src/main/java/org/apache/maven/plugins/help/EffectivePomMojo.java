@@ -45,11 +45,6 @@ import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
 import org.eclipse.aether.RepositorySystem;
 
-import static org.apache.maven.plugins.help.EffectiveMojoUtils.prettyFormat;
-import static org.apache.maven.plugins.help.EffectiveMojoUtils.sortProperties;
-import static org.apache.maven.plugins.help.EffectiveMojoUtils.writeComment;
-import static org.apache.maven.plugins.help.EffectiveMojoUtils.writeHeader;
-
 /**
  * Displays the effective POM as an XML for this build, with the active profiles factored in, or a specified artifact.
  * If <code>verbose</code>, a comment is added to each XML element describing the origin of the line.
@@ -57,7 +52,7 @@ import static org.apache.maven.plugins.help.EffectiveMojoUtils.writeHeader;
  * @since 2.0
  */
 @Mojo(name = "effective-pom", aggregator = true)
-public class EffectivePomMojo extends AbstractHelpMojo {
+public class EffectivePomMojo extends AbstractEffectiveMojo {
     // ----------------------------------------------------------------------
     // Mojo parameters
     // ----------------------------------------------------------------------
@@ -213,7 +208,7 @@ public class EffectivePomMojo extends AbstractHelpMojo {
      * @param pom not null
      */
     private static void cleanModel(Model pom) {
-        Properties sortedProperties = sortProperties(pom.getProperties());
+        Properties sortedProperties = SortedProperties.sortProperties(pom.getProperties());
         pom.setProperties(sortedProperties);
     }
 
