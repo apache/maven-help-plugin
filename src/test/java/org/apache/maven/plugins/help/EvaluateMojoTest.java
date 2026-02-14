@@ -38,6 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -86,7 +87,7 @@ class EvaluateMojoTest {
         String ls = System.lineSeparator();
 
         verify(log).info(ls + "My result");
-        verify(log, times(0)).warn(anyString());
+        verify(log, never()).warn(anyString());
         verify(expressionEvaluator).evaluate("${project.groupId}");
         verify(inputHandler, times(2)).readLine();
     }
@@ -145,7 +146,7 @@ class EvaluateMojoTest {
 
         String stdResult = baos.toString();
         assertEquals("project_groupId=org.apache.maven.its.help", stdResult);
-        verify(log, times(0)).warn(anyString());
+        verify(log, never()).warn(anyString());
     }
 
     /**
@@ -181,6 +182,6 @@ class EvaluateMojoTest {
 
         String stdResult = baos.toString();
         assertEquals("org.apache.maven.its.help", stdResult);
-        verify(log, times(0)).warn(anyString());
+        verify(log, never()).warn(anyString());
     }
 }
