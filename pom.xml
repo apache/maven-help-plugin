@@ -65,8 +65,8 @@
 
   <properties>
     <javaVersion>8</javaVersion>
-    <mavenVersion>3.9.11</mavenVersion>
-    <resolverVersion>1.9.24</resolverVersion>
+    <mavenVersion>3.9.16</mavenVersion>
+    <resolverVersion>1.9.27</resolverVersion>
     <project.build.outputTimestamp>2024-10-18T10:10:51Z</project.build.outputTimestamp>
   </properties>
 
@@ -276,7 +276,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-invoker-plugin</artifactId>
-            <version>3.9.1</version>
             <configuration>
               <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
               <projectsDirectory>src/it/projects</projectsDirectory>
