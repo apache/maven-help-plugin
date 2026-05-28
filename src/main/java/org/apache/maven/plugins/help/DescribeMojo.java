@@ -650,6 +650,7 @@ public class DescribeMojo extends AbstractHelpMojo {
                 throw new MojoExecutionException("The given phase '" + cmd + "' is an unknown phase.");
             }
 
+            // FIXME don't use a deprecated methods
             Map<String, String> defaultLifecyclePhases = lifecycleMappings
                     .get(project.getPackaging())
                     .getLifecycles()

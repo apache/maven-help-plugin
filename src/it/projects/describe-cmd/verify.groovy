@@ -21,7 +21,8 @@ def result = new File(basedir, 'result-deploy.txt').text;
 
 def ls = System.getProperty( "line.separator" );
 
-if (mavenVersion.startsWith('4.')) {
+// used deprecated methods - FIXME in DescribeMojo
+if (mavenVersion.startsWith('4.') || mavenVersion.startsWith('3.10.')) {
     assert result.contains("'deploy' is a phase within the 'default' lifecycle, which has the following phases:")
 } else {
     assert result.contains("'deploy' is a phase corresponding to this plugin:" + ls +
