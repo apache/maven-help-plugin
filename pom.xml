@@ -280,6 +280,9 @@
               <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
               <projectsDirectory>src/it/projects</projectsDirectory>
               <settingsFile>src/it/mrm/settings.xml</settingsFile>
+              <scriptVariables>
+                <surefireversion>${version.maven-surefire}</surefireversion>
+              </scriptVariables>
             </configuration>
           </plugin>
           <plugin>

@@ -23,7 +23,7 @@ def ls = System.getProperty( "line.separator" );
 assert result.contains(
   "Group Id: org.apache.maven.plugins" + ls + 
   "Artifact Id: maven-surefire-plugin" + ls + 
-  "Version: 2.4.3" + ls +
+  "Version: " + surefireversion + ls +
   "Goal Prefix: surefire"
 )
 
