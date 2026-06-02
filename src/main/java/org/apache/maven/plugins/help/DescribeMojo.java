@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -39,6 +40,7 @@ import org.apache.maven.lifecycle.DefaultLifecycles;
 import org.apache.maven.lifecycle.Lifecycle;
 import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
 import org.apache.maven.lifecycle.mapping.LifecycleMapping;
+import org.apache.maven.lifecycle.mapping.LifecyclePhase;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.plugin.MavenPluginManager;
@@ -650,15 +652,16 @@ public class DescribeMojo extends AbstractHelpMojo {
                 throw new MojoExecutionException("The given phase '" + cmd + "' is an unknown phase.");
             }
 
-            // FIXME don't use a deprecated methods
-            Map<String, String> defaultLifecyclePhases = lifecycleMappings
-                    .get(project.getPackaging())
-                    .getLifecycles()
-                    .get("default")
-                    .getPhases();
+            LifecycleMapping packagingMapping = lifecycleMappings.get(project.getPackaging());
+            org.apache.maven.lifecycle.mapping.Lifecycle packagingLifecycle =
+                    packagingMapping != null ? packagingMapping.getLifecycles().get(lifecycle.getId()) : null;
+            Map<String, LifecyclePhase> rawPhases =
+                    packagingLifecycle != null ? packagingLifecycle.getLifecyclePhases() : null;
+            Map<String, LifecyclePhase> packagingPhases = rawPhases != null ? rawPhases : Collections.emptyMap();
             List<String> phases = lifecycle.getPhases();
 
-            if (lifecycle.getDefaultPhases() == null) {
+            Map<String, LifecyclePhase> builtinPhases = lifecycle.getDefaultLifecyclePhases();
+            if (builtinPhases == null || builtinPhases.isEmpty()) {
                 descriptionBuffer.append("'").append(cmd);
                 descriptionBuffer
                         .append("' is a phase corresponding to this plugin:")
@@ -667,8 +670,8 @@ public class DescribeMojo extends AbstractHelpMojo {
                     if (!key.equals(cmd)) {
                         continue;
                     }
-                    if (defaultLifecyclePhases.get(key) != null) {
-                        descriptionBuffer.append(defaultLifecyclePhases.get(key));
+                    if (packagingPhases.get(key) != null) {
+                        descriptionBuffer.append(packagingPhases.get(key));
                         descriptionBuffer.append(LS);
                     }
                 }
@@ -680,7 +683,8 @@ public class DescribeMojo extends AbstractHelpMojo {
                 descriptionBuffer.append(LS);
                 for (String key : phases) {
                     descriptionBuffer.append("* ").append(key).append(": ");
-                    String value = defaultLifecyclePhases.get(key);
+                    LifecyclePhase phase = packagingPhases.get(key);
+                    String value = phase != null ? phase.toString() : null;
                     if (value != null && !value.isEmpty()) {
                         for (StringTokenizer tok = new StringTokenizer(value, ","); tok.hasMoreTokens(); ) {
                             descriptionBuffer.append(tok.nextToken().trim());
@@ -703,10 +707,9 @@ public class DescribeMojo extends AbstractHelpMojo {
 
                 for (String key : phases) {
                     descriptionBuffer.append("* ").append(key).append(": ");
-                    if (lifecycle.getDefaultPhases().get(key) != null) {
-                        descriptionBuffer
-                                .append(lifecycle.getDefaultPhases().get(key))
-                                .append(LS);
+                    LifecyclePhase phase = builtinPhases.get(key);
+                    if (phase != null) {
+                        descriptionBuffer.append(phase).append(LS);
                     } else {
                         descriptionBuffer.append(NOT_DEFINED).append(LS);
                     }

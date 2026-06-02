@@ -21,12 +21,21 @@ package org.apache.maven.plugins.help;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.lifecycle.DefaultLifecycles;
+import org.apache.maven.lifecycle.Lifecycle;
 import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
+import org.apache.maven.lifecycle.mapping.LifecycleMapping;
+import org.apache.maven.lifecycle.mapping.LifecyclePhase;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MavenPluginManager;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.Parameter;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
@@ -40,6 +49,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -389,5 +399,122 @@ class DescribeMojoTest {
         Method parsePluginLookupInfo = DescribeMojo.class.getDeclaredMethod("parsePluginLookupInfo");
         parsePluginLookupInfo.setAccessible(true);
         return parsePluginLookupInfo;
+    }
+
+    /**
+     * Regression test for Maven 3.10.0 behavior where {@code Lifecycle.getDefaultLifecyclePhases()}
+     * returns an empty map (not null) for the "default" lifecycle.
+     * The mojo must fall through to the packaging-specific lifecycle mapping in that case.
+     */
+    @Test
+    void testDescribeCommandPackagingSpecificPhaseShowsBindings() throws Exception {
+        // default lifecycle: built-in phases are empty (3.10.0 behavior)
+        Lifecycle lifecycle = mock(Lifecycle.class);
+        when(lifecycle.getId()).thenReturn("default");
+        when(lifecycle.getPhases()).thenReturn(Arrays.asList("validate", "compile", "test", "package"));
+        when(lifecycle.getDefaultLifecyclePhases()).thenReturn(Collections.emptyMap());
+
+        Map<String, Lifecycle> phaseMap = new HashMap<>();
+        for (String p : Arrays.asList("validate", "compile", "test", "package")) {
+            phaseMap.put(p, lifecycle);
+        }
+        DefaultLifecycles defaultLifecycles = mock(DefaultLifecycles.class);
+        when(defaultLifecycles.getPhaseToLifecycleMap()).thenReturn(phaseMap);
+
+        // packaging-specific bindings: only "compile" phase is bound
+        Map<String, LifecyclePhase> lifecyclePhases = new LinkedHashMap<>();
+        lifecyclePhases.put(
+                "compile", new LifecyclePhase("org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile"));
+        org.apache.maven.lifecycle.mapping.Lifecycle mappingLifecycle =
+                new org.apache.maven.lifecycle.mapping.Lifecycle();
+        mappingLifecycle.setLifecyclePhases(lifecyclePhases);
+
+        LifecycleMapping lifecycleMapping = mock(LifecycleMapping.class);
+        when(lifecycleMapping.getLifecycles()).thenReturn(Collections.singletonMap("default", mappingLifecycle));
+
+        MavenProject project = mock(MavenProject.class);
+        when(project.getPackaging()).thenReturn("jar");
+
+        DescribeMojo mojo = new DescribeMojo(
+                null, null, null, null, null, defaultLifecycles, Collections.singletonMap("jar", lifecycleMapping));
+        setFieldWithReflection(mojo, "cmd", "compile");
+        setParentFieldWithReflection(mojo, "project", project);
+
+        StringBuilder sb = new StringBuilder();
+        Method describeCommand = DescribeMojo.class.getDeclaredMethod("describeCommand", StringBuilder.class);
+        describeCommand.setAccessible(true);
+        boolean result = (boolean) describeCommand.invoke(mojo, sb);
+
+        String output = sb.toString();
+        assertFalse(result);
+        assertTrue(output.contains("maven-compiler-plugin"), "Should show compiler plugin: " + output);
+        assertFalse(output.contains("* compile: Not defined"), "compile should not be 'Not defined': " + output);
+        assertTrue(output.contains("* validate: Not defined"), "validate has no binding: " + output);
+        assertTrue(output.contains("It is a part of the lifecycle for the POM packaging 'jar'"), output);
+    }
+
+    /**
+     * Built-in lifecycle (e.g. "clean") has non-empty {@code getDefaultLifecyclePhases()} —
+     * the mojo should use those directly without consulting lifecycle mappings.
+     */
+    @Test
+    void testDescribeCommandBuiltinLifecyclePhaseShowsBindings() throws Exception {
+        Map<String, LifecyclePhase> builtinPhases = new LinkedHashMap<>();
+        builtinPhases.put("pre-clean", null);
+        builtinPhases.put("clean", new LifecyclePhase("org.apache.maven.plugins:maven-clean-plugin:3.2.0:clean"));
+        builtinPhases.put("post-clean", null);
+
+        Lifecycle lifecycle = mock(Lifecycle.class);
+        when(lifecycle.getId()).thenReturn("clean");
+        when(lifecycle.getPhases()).thenReturn(Arrays.asList("pre-clean", "clean", "post-clean"));
+        when(lifecycle.getDefaultLifecyclePhases()).thenReturn(builtinPhases);
+
+        Map<String, Lifecycle> phaseMap = new HashMap<>();
+        for (String p : Arrays.asList("pre-clean", "clean", "post-clean")) {
+            phaseMap.put(p, lifecycle);
+        }
+        DefaultLifecycles defaultLifecycles = mock(DefaultLifecycles.class);
+        when(defaultLifecycles.getPhaseToLifecycleMap()).thenReturn(phaseMap);
+
+        MavenProject project = mock(MavenProject.class);
+        when(project.getPackaging()).thenReturn("jar");
+
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, defaultLifecycles, Collections.emptyMap());
+        setFieldWithReflection(mojo, "cmd", "clean");
+        setParentFieldWithReflection(mojo, "project", project);
+
+        StringBuilder sb = new StringBuilder();
+        Method describeCommand = DescribeMojo.class.getDeclaredMethod("describeCommand", StringBuilder.class);
+        describeCommand.setAccessible(true);
+        boolean result = (boolean) describeCommand.invoke(mojo, sb);
+
+        String output = sb.toString();
+        assertFalse(result);
+        assertTrue(output.contains("'clean' is a phase within the 'clean' lifecycle"), output);
+        assertTrue(output.contains("maven-clean-plugin"), output);
+        assertTrue(output.contains("* pre-clean: Not defined"), output);
+        assertTrue(output.contains("* post-clean: Not defined"), output);
+    }
+
+    @Test
+    void testDescribeCommandUnknownPhaseThrows() throws Exception {
+        DefaultLifecycles defaultLifecycles = mock(DefaultLifecycles.class);
+        when(defaultLifecycles.getPhaseToLifecycleMap()).thenReturn(Collections.emptyMap());
+
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, defaultLifecycles, Collections.emptyMap());
+        setFieldWithReflection(mojo, "cmd", "nonexistent-phase");
+        setParentFieldWithReflection(mojo, "project", mock(MavenProject.class));
+
+        Method describeCommand = DescribeMojo.class.getDeclaredMethod("describeCommand", StringBuilder.class);
+        describeCommand.setAccessible(true);
+        try {
+            describeCommand.invoke(mojo, new StringBuilder());
+            fail("Expected MojoExecutionException");
+        } catch (InvocationTargetException e) {
+            assertTrue(
+                    e.getTargetException() instanceof MojoExecutionException,
+                    "Expected MojoExecutionException, got: " + e.getTargetException());
+            assertTrue(e.getTargetException().getMessage().contains("nonexistent-phase"));
+        }
     }
 }
