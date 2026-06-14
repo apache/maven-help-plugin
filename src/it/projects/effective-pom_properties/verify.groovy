@@ -16,22 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-def buildLog = new File(basedir, 'build.log'); 
+def buildLog = new File(basedir, 'build.log');
 assert buildLog.exists()
 
 def LS = System.getProperty("line.separator")
 if (mavenVersion.startsWith('4.')) {
-    // we have defined properties maven.compiler.source/target to 8 as user properties for execution
-    // Maven 4 take precedence over the pom properties
-    // also order of properties is changed in Maven 4
+    // with Maven 4, order of properties is reversed from original pom.xml
     assert buildLog.text.find(
             '(?s)' +
                     '  <properties>' + LS +
-                    '    <maven\\.compiler\\.target>8</maven\\.compiler\\.target>' + LS +
-                    '    <maven\\.compiler\\.source>8</maven\\.compiler\\.source>' + LS +
+                    '    <maven\\.compiler\\.target>1\\.6</maven\\.compiler\\.target>' + LS +
+                    '    <maven\\.compiler\\.source>1\\.6</maven\\.compiler\\.source>' + LS +
                     '.*' +
                     '  </properties>') != null
-
 } else {
     assert buildLog.text.find(
             '(?s)' +
