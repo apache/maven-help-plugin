@@ -22,8 +22,10 @@ import javax.inject.Inject;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
+import org.apache.maven.lifecycle.DefaultLifecycles;
 import org.apache.maven.lifecycle.mapping.Lifecycle;
 import org.apache.maven.lifecycle.mapping.LifecycleMapping;
 import org.apache.maven.lifecycle.mapping.LifecycleMojo;
@@ -44,14 +46,21 @@ public class ListPackagingMojo extends AbstractHelpMojo {
     /**
      * The Maven default built-in lifecycles.
      */
+    private final DefaultLifecycles defaultLifecycles;
+
+    /**
+     * The Maven default built-in lifecycles.
+     */
     private final Map<String, LifecycleMapping> lifecycleMapping;
 
     @Inject
     public ListPackagingMojo(
             ProjectBuilder projectBuilder,
             RepositorySystem repositorySystem,
+            DefaultLifecycles defaultLifecycles,
             Map<String, LifecycleMapping> lifecycleMapping) {
         super(projectBuilder, repositorySystem);
+        this.defaultLifecycles = defaultLifecycles;
         this.lifecycleMapping = lifecycleMapping;
     }
 
@@ -70,25 +79,29 @@ public class ListPackagingMojo extends AbstractHelpMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             StringBuilder descriptionBuffer = new StringBuilder();
-            for (Map.Entry<String, LifecycleMapping> mappingEntry : new TreeMap<>(lifecycleMapping).entrySet()) {
-                LifecycleMapping mapping = mappingEntry.getValue();
+            for (Map.Entry<String, LifecycleMapping> lifecycleMappingEntry :
+                    new TreeMap<>(lifecycleMapping).entrySet()) {
+                LifecycleMapping lifecycleMapping = lifecycleMappingEntry.getValue();
                 for (Map.Entry<String, Lifecycle> phaseEntry :
-                        mapping.getLifecycles().entrySet()) {
-                    Lifecycle lifecycle = phaseEntry.getValue();
+                        lifecycleMapping.getLifecycles().entrySet()) {
+                    Lifecycle mapping = phaseEntry.getValue();
                     descriptionBuffer
-                            .append(mappingEntry.getKey())
+                            .append(lifecycleMappingEntry.getKey())
                             .append(" (lifecycle: ")
-                            .append(lifecycle.getId())
+                            .append(mapping.getId())
                             .append(")")
                             .append(LS);
-                    for (Map.Entry<String, LifecyclePhase> phaseE :
-                            lifecycle.getLifecyclePhases().entrySet()) {
-                        descriptionBuffer.append("  - ").append(phaseE.getKey()).append(LS);
-                        for (LifecycleMojo mojo : phaseE.getValue().getMojos()) {
-                            descriptionBuffer
-                                    .append("    - ")
-                                    .append(mojo.getGoal())
-                                    .append(LS);
+                    org.apache.maven.lifecycle.Lifecycle lifecycle = getLifecycle(mapping.getId());
+                    for (String phase : lifecycle.getPhases()) {
+                        LifecyclePhase lphase = mapping.getLifecyclePhases().get(phase);
+                        if (lphase != null) {
+                            descriptionBuffer.append("  - ").append(phase).append(LS);
+                            for (LifecycleMojo mojo : lphase.getMojos()) {
+                                descriptionBuffer
+                                        .append("    - ")
+                                        .append(mojo.getGoal())
+                                        .append(LS);
+                            }
                         }
                     }
                 }
@@ -99,5 +112,12 @@ public class ListPackagingMojo extends AbstractHelpMojo {
         } catch (IOException e) {
             throw new MojoFailureException(e);
         }
+    }
+
+    private org.apache.maven.lifecycle.Lifecycle getLifecycle(String name) {
+        return defaultLifecycles.getLifeCycles().stream()
+                .filter(l -> Objects.equals(name, l.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No such lifecycle"));
     }
 }
