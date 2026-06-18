@@ -36,20 +36,15 @@ import org.eclipse.aether.RepositorySystem;
  *
  * @since 3.5.2
  */
-@Mojo(name = "describe-dependency-type", requiresProject = false, aggregator = true)
-public class DescribeDependencyTypeMojo extends AbstractHelpMojo {
-    /**
-     * The default indent size when writing description's Mojo.
-     */
-    private static final int INDENT_SIZE = 2;
-
+@Mojo(name = "list-dependency-types", requiresProject = false, aggregator = true)
+public class ListDependencyTypesMojo extends AbstractHelpMojo {
     /**
      * The Maven default built-in lifecycles.
      */
     private final Map<String, ArtifactHandler> artifactHandlers;
 
     @Inject
-    public DescribeDependencyTypeMojo(
+    public ListDependencyTypesMojo(
             ProjectBuilder projectBuilder,
             RepositorySystem repositorySystem,
             Map<String, ArtifactHandler> artifactHandlers) {

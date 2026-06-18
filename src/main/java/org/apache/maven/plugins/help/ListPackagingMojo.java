@@ -39,15 +39,15 @@ import org.eclipse.aether.RepositorySystem;
  *
  * @since 3.5.2
  */
-@Mojo(name = "describe-packaging", requiresProject = false, aggregator = true)
-public class DescribePackagingMojo extends AbstractHelpMojo {
+@Mojo(name = "list-packaging", requiresProject = false, aggregator = true)
+public class ListPackagingMojo extends AbstractHelpMojo {
     /**
      * The Maven default built-in lifecycles.
      */
     private final Map<String, LifecycleMapping> lifecycleMapping;
 
     @Inject
-    public DescribePackagingMojo(
+    public ListPackagingMojo(
             ProjectBuilder projectBuilder,
             RepositorySystem repositorySystem,
             Map<String, LifecycleMapping> lifecycleMapping) {

@@ -36,15 +36,15 @@ import org.eclipse.aether.RepositorySystem;
  *
  * @since 3.5.2
  */
-@Mojo(name = "describe-lifecycle-phase", requiresProject = false, aggregator = true)
-public class DescribeLifecyclePhaseMojo extends AbstractHelpMojo {
+@Mojo(name = "list-lifecycle-phases", requiresProject = false, aggregator = true)
+public class ListLifecyclePhasesMojo extends AbstractHelpMojo {
     /**
      * The Maven default built-in lifecycles.
      */
     private final DefaultLifecycles defaultLifecycles;
 
     @Inject
-    public DescribeLifecyclePhaseMojo(
+    public ListLifecyclePhasesMojo(
             ProjectBuilder projectBuilder, RepositorySystem repositorySystem, DefaultLifecycles defaultLifecycles) {
         super(projectBuilder, repositorySystem);
         this.defaultLifecycles = defaultLifecycles;
