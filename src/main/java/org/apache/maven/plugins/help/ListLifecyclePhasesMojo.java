@@ -32,7 +32,7 @@ import org.apache.maven.project.ProjectBuilder;
 import org.eclipse.aether.RepositorySystem;
 
 /**
- * Displays a list of lifecycle phases that are defined in Maven.
+ * Displays the list of all lifecycle phases that are defined in Maven.
  *
  * @since 3.5.2
  */

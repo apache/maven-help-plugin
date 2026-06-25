@@ -37,7 +37,7 @@ import org.apache.maven.project.ProjectBuilder;
 import org.eclipse.aether.RepositorySystem;
 
 /**
- * Displays a list of packaging that are defined in Maven.
+ * Displays the list of packaging that are supported by Maven.
  *
  * @since 3.5.2
  */
@@ -95,7 +95,7 @@ public class ListPackagingMojo extends AbstractHelpMojo {
                     for (String phase : lifecycle.getPhases()) {
                         LifecyclePhase lphase = mapping.getLifecyclePhases().get(phase);
                         if (lphase != null) {
-                            descriptionBuffer.append("  - ").append(phase).append(LS);
+                            descriptionBuffer.append("  * ").append(phase).append(LS);
                             for (LifecycleMojo mojo : lphase.getMojos()) {
                                 descriptionBuffer
                                         .append("    - ")

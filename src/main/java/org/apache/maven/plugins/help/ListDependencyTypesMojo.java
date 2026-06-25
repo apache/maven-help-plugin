@@ -32,7 +32,7 @@ import org.apache.maven.project.ProjectBuilder;
 import org.eclipse.aether.RepositorySystem;
 
 /**
- * Displays a list of artifact handlers that are defined in Maven.
+ * Displays the list of dependency types that are defined in Maven.
  *
  * @since 3.5.2
  */
@@ -85,7 +85,7 @@ public class ListDependencyTypesMojo extends AbstractHelpMojo {
                             .append(LS);
                 }
                 if (handler.isAddedToClasspath()) {
-                    descriptionBuffer.append(" - Added to Classpath").append(LS);
+                    descriptionBuffer.append(" - Added to classpath").append(LS);
                 }
                 if (handler.isIncludesDependencies()) {
                     descriptionBuffer.append(" - Includes dependencies").append(LS);
