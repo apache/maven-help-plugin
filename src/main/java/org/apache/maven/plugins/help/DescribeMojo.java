@@ -651,15 +651,16 @@ public class DescribeMojo extends AbstractHelpMojo {
                 throw new MojoExecutionException("The given phase '" + cmd + "' is an unknown phase.");
             }
 
-            Map<String, LifecyclePhase> defaultLifecyclePhases = lifecycleMappings
-                    .get(project.getPackaging())
-                    .getLifecycles()
-                    .get("default")
-                    .getLifecyclePhases();
             List<String> phases = lifecycle.getPhases();
 
             if (lifecycle.getDefaultLifecyclePhases() == null
                     || lifecycle.getDefaultLifecyclePhases().isEmpty()) {
+                Map<String, LifecyclePhase> defaultLifecyclePhases = lifecycleMappings
+                        .get(project.getPackaging())
+                        .getLifecycles()
+                        .get("default")
+                        .getLifecyclePhases();
+
                 descriptionBuffer.append("'").append(cmd);
                 descriptionBuffer
                         .append("' is a phase corresponding to this plugin:")
