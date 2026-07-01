@@ -140,11 +140,13 @@ public abstract class AbstractEffectiveMojo extends AbstractHelpMojo {
         static final long serialVersionUID = -8985316072702233744L;
 
         /** {@inheritDoc} */
-        @SuppressWarnings({"rawtypes", "unchecked"})
         @Override
         public Set<Object> keySet() {
             Set<Object> keynames = super.keySet();
-            List list = new ArrayList(keynames);
+            List<String> list = new ArrayList<>();
+            for (Object key : keynames) {
+                list.add((String) key);
+            }
             Collections.sort(list);
 
             return new LinkedHashSet<>(list);
