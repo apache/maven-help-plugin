@@ -61,5 +61,6 @@ project:
       - Java
   policy:
     github_repository_name: maven-help-plugin
+    download_path_suffix: plugins
   features:
     atr_sync: true
