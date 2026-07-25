@@ -38,7 +38,6 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.collections.PropertiesConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
@@ -46,7 +45,6 @@ import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
-import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -124,6 +122,12 @@ public class EvaluateMojo extends AbstractHelpMojo {
     @Parameter(defaultValue = "${settings}", readonly = true, required = true)
     private Settings settings;
 
+    /**
+     * The current mojo execution, used to create the expression evaluator.
+     */
+    @Parameter(defaultValue = "${mojoExecution}", readonly = true, required = true)
+    private MojoExecution mojoExecution;
+
     // ----------------------------------------------------------------------
     // Instance variables
     // ----------------------------------------------------------------------
@@ -143,20 +147,10 @@ public class EvaluateMojo extends AbstractHelpMojo {
      */
     private final InputHandler inputHandler;
 
-    /**
-     * Component used to get mojo descriptors.
-     */
-    private MojoDescriptorCreator mojoDescriptorCreator;
-
     @Inject
-    public EvaluateMojo(
-            ProjectBuilder projectBuilder,
-            RepositorySystem repositorySystem,
-            InputHandler inputHandler,
-            MojoDescriptorCreator mojoDescriptorCreator) {
+    public EvaluateMojo(ProjectBuilder projectBuilder, RepositorySystem repositorySystem, InputHandler inputHandler) {
         super(projectBuilder, repositorySystem);
         this.inputHandler = inputHandler;
-        this.mojoDescriptorCreator = mojoDescriptorCreator;
     }
 
     // ----------------------------------------------------------------------
@@ -223,20 +217,12 @@ public class EvaluateMojo extends AbstractHelpMojo {
 
     /**
      * @return a lazy loading evaluator object.
-     * @throws MojoFailureException if any reflection exceptions occur or missing components.
      */
-    private PluginParameterExpressionEvaluator getEvaluator() throws MojoFailureException {
+    private PluginParameterExpressionEvaluator getEvaluator() {
         if (evaluator == null) {
-            MojoDescriptor mojoDescriptor;
-            try {
-                mojoDescriptor = mojoDescriptorCreator.getMojoDescriptor("help:evaluate", session, project);
-            } catch (Exception e) {
-                throw new MojoFailureException("Failure while evaluating.", e);
-            }
-            MojoExecution mojoExecution = new MojoExecution(mojoDescriptor);
-
-            // Maven 3: PluginParameterExpressionEvaluator gets the current project from the session:
-            // so we need to clone the session to set the right project
+            // PluginParameterExpressionEvaluator gets the current project from the session,
+            // so we need to clone the session to set the right project (which may have been
+            // changed by the "artifact" parameter).
             MavenSession clonedSession = session.clone();
             clonedSession.setCurrentProject(project);
             evaluator = new PluginParameterExpressionEvaluator(clonedSession, mojoExecution);
