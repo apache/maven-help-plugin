@@ -30,16 +30,16 @@
 
 Usage
 
- Below are the different goals and the basic configuration of the Help Plugin.
+ Below are the different goals and the minimal configuration of the Help Plugin.
 
 * The <<<help:active-profiles>>> Goal
 
-  The <<<{{{./active-profiles-mojo.html}active-profiles}}>>> goal is used to discover which profiles have been
-  applied to the projects currently being built. For each project in the build session, it will output a list of
-  profiles which have been applied to that project, along with the source of the profile (POM, <<<settings.xml>>>
+  The <<<{{{./active-profiles-mojo.html}active-profiles}}>>> goal lists the profiles that have been
+  applied to the projects currently being built. For each project in the build session, it outputs a list of
+  profiles that have been applied to that project, along with the source of the profile (POM, <<<settings.xml>>>
   or <<<profiles.xml>>>).
 
-  You can execute this goal using the following command:
+  You can execute this goal with the following command:
 
 +-----+
 # mvn help:active-profiles
