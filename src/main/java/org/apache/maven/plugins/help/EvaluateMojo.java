@@ -385,7 +385,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
                 /** {@inheritDoc} */
                 @Override
                 public boolean canConvert(Class type) {
-                    return Properties.class == type;
+                    return Properties.class.isAssignableFrom(type);
                 }
 
                 /** {@inheritDoc} */
