@@ -29,10 +29,9 @@
 
 ${project.name}
 
- The Maven Help Plugin is used to get information about a project or the system. It can be used to get a
- description of a particular plugin, including the plugin's goals with their parameters and component requirements,
- the effective POM and effective settings of the current build, and the profiles applied to the current project being
- built.
+ The Maven Help Plugin provides information about a project or the system. It can be used to 
+ describe a particular plugin, including the plugin's goals with their parameters and component requirements,
+ the effective POM and effective settings of the current build, and the profiles applied to the current project.
 
 * Goals Overview
 
