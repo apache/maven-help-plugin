@@ -29,7 +29,7 @@ under the License.
       <question>What is a Mojo</question>
       <answer>
         <p>
-          See the Maven FAQ: <a href="http://maven.apache.org/general.html#What_is_a_Mojo">What is a Mojo</a>.
+          See the Maven FAQ: <a href="https://maven.apache.org/general.html#What_is_a_Mojo">What is a Mojo</a>.
         </p>
       </answer>
     </faq>
@@ -37,7 +37,7 @@ under the License.
       <question>Why <code>mvn help:active-profiles</code> won't show the active profiles under Maven 2.1?</question>
       <answer>
         <p>
-          See <a href="https://issues.apache.org/jira/browse/MPH-38">MPH-38</a> for more info.
+          See <a href="https://github.com/apache/maven-help-plugin/issues/38">MPH-38</a> for more info.
         </p>
       </answer>
     </faq>

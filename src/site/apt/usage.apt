@@ -30,7 +30,7 @@
 
 Usage
 
- Below are the different goals and the minimalist configurations of the Help Plugin.
+ Below are the different goals and the basic configuration of the Help Plugin.
 
 * The <<<help:active-profiles>>> Goal
 
@@ -129,20 +129,20 @@ Usage
 # mvn help:evaluate -Dartifact=org.apache.maven.plugins:maven-help-plugin
 ...
 [INFO] [help:evaluate]
-[INFO] Enter the Maven expression i.e. ${project.groupId} or 0 to exit?:
+[INFO] Enter the Maven expression e.g. ${project.groupId} or 0 to exit?:
 ${project.artifactId}
 [INFO]
 maven-help-plugin
-[INFO] Enter the Maven expression i.e. ${project.groupId} or 0 to exit?:
+[INFO] Enter the Maven expression e.g. ${project.groupId} or 0 to exit?:
 ${project.none}
 [INFO]
 null object or invalid expression
 ...
 +-----+
 
- The <<<artifact>>> parameter refers to ask expressions on the artifact POM. If omitted, the evaluate goal uses the current
- pom.
+ The <<<artifact>>> parameter is used to evaluate expressions on the specified artifact's POM. If omitted, the evaluate goal uses the current
+ project's POM.
 
- You could ask for all Maven expressions listed in the Javadoc of the
+ You can ask for all Maven expressions listed in the Javadoc of the
  {{{/ref/current/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html}
  <<<PluginParameterExpressionEvaluator>>>}} class.

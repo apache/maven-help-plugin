@@ -29,7 +29,7 @@
 
 ${project.name}
 
- The Maven Help Plugin is used to get relative information about a project or the system. It can be used to get a
+ The Maven Help Plugin is used to get information about a project or the system. It can be used to get a
  description of a particular plugin, including the plugin's goals with their parameters and component requirements,
  the effective POM and effective settings of the current build, and the profiles applied to the current project being
  built.
@@ -42,13 +42,13 @@ ${project.name}
 
   * {{{./all-profiles-mojo.html}help:all-profiles}} lists the available profiles under the current project.
 
-  * {{{./describe-mojo.html}help:describe}} describes the attributes of a Plugin and/or a Mojo (Maven plain Old Java
+  * {{{./describe-mojo.html}help:describe}} describes the attributes of a plugin and/or a Mojo (Maven plain Old Java
   Object).
 
-  * {{{./effective-pom-mojo.html}help:effective-pom}} displays the effective POM as an XML for the current build, with
+  * {{{./effective-pom-mojo.html}help:effective-pom}} displays the effective POM as XML for the current build, with
   the active profiles factored in. If <<<verbose>>>, a comment is added to each XML element describing the origin of the line.
 
-  * {{{./effective-settings-mojo.html}help:effective-settings}} displays the calculated settings as an XML for the
+  * {{{./effective-settings-mojo.html}help:effective-settings}} displays the calculated settings as XML for the
   project, given any profile enhancement and the inheritance of the global settings into the user-level settings.
 
   * {{{./evaluate-mojo.html}help:evaluate}} evaluates Maven expressions given by the user in an interactive mode.

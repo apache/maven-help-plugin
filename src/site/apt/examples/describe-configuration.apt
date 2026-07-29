@@ -78,8 +78,7 @@ Configuring Describe Goal
 
 * The <<<cmd>>> Parameter
 
- You could also ask for a single Maven command, i.e. a goal or a phase or a lifecycle. It is the command when you call
- Maven, i.e.:
+ You can also ask for a single Maven command, e.g. a goal, a phase, or a lifecycle:
 
 +-----+
 # mvn -help
@@ -173,7 +172,7 @@ For more information, run 'mvn help:describe [...] -Ddetail'
 ...
 +-----+
 
- If you don't provide a paremeter a list is added with the mojos of the plugin and their
+ If you don't provide a parameter a list is added with the mojos of the plugin and their
  descriptions:
 
 +-----+
