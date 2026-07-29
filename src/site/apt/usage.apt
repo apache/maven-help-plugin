@@ -140,7 +140,7 @@ null object or invalid expression
 ...
 +-----+
 
- The <<<artifact>>> parameter is used to evaluate expressions on the specified artifact's POM. If omitted, the evaluate goal uses the current
+ The <<<artifact>>> parameter evaluates expressions on the specified artifact's POM. If omitted, the evaluate goal uses the current
  project's POM.
 
  You can ask for all Maven expressions listed in the Javadoc of the
