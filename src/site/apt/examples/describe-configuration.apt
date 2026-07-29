@@ -172,7 +172,7 @@ For more information, run 'mvn help:describe [...] -Ddetail'
 ...
 +-----+
 
- If you don't provide a parameter a list is added with the mojos of the plugin and their
+ If you don't provide a parameter, a list is added with the mojos of the plugin and their
  descriptions:
 
 +-----+
