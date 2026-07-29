@@ -33,13 +33,5 @@ under the License.
         </p>
       </answer>
     </faq>
-    <faq id="Why mvn help:active-profiles won't show the active profiles under Maven 2.1">
-      <question>Why <code>mvn help:active-profiles</code> won't show the active profiles under Maven 2.1?</question>
-      <answer>
-        <p>
-          See <a href="https://github.com/apache/maven-help-plugin/issues/38">MPH-38</a> for more info.
-        </p>
-      </answer>
-    </faq>
   </part>
 </faqs>
