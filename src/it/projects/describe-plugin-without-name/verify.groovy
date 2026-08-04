@@ -19,7 +19,7 @@
 
 def result = new File(basedir, 'result.txt').text;
 
-def ls = System.getProperty( "line.separator" );
+def ls = System.lineSeparator();
 
 assert result.contains( "Name: Maven Help Plugin" )
 

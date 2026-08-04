@@ -52,7 +52,7 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
     protected static final int LINE_LENGTH = 79;
 
     /** The line separator for the current OS. */
-    protected static final String LS = System.getProperty("line.separator");
+    protected static final String LS = System.lineSeparator();
 
     /**
      * Current Maven project.
