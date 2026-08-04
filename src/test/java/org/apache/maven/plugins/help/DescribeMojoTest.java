@@ -85,7 +85,7 @@ class DescribeMojoTest {
         parameter.setExpression("${valid.expression}");
         md.addParameter(parameter);
 
-        String ls = System.getProperty("line.separator");
+        String ls = System.lineSeparator();
 
         Method describeMojoParameters = DescribeMojo.class.getDeclaredMethod(
                 "describeMojoParameters", MojoDescriptor.class, StringBuilder.class);

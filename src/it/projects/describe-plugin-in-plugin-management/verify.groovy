@@ -18,7 +18,7 @@
  */
 
 def result = new File(basedir, 'result.txt').text;
-def ls = System.getProperty( "line.separator" );
+def ls = System.lineSeparator();
 
 assert result.contains(
   "Group Id: org.apache.maven.plugins" + ls + 
