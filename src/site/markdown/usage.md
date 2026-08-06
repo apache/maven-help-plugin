@@ -1,131 +1,105 @@
- ------
- Usage
- ------
- John Casey
- Maria Odea Ching
- Vincent Siveton
- ------
- 2010-01-21
- ------
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
- ~~ Licensed to the Apache Software Foundation (ASF) under one
- ~~ or more contributor license agreements.  See the NOTICE file
- ~~ distributed with this work for additional information
- ~~ regarding copyright ownership.  The ASF licenses this file
- ~~ to you under the Apache License, Version 2.0 (the
- ~~ "License"); you may not use this file except in compliance
- ~~ with the License.  You may obtain a copy of the License at
- ~~
- ~~   http://www.apache.org/licenses/LICENSE-2.0
- ~~
- ~~ Unless required by applicable law or agreed to in writing,
- ~~ software distributed under the License is distributed on an
- ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- ~~ KIND, either express or implied.  See the License for the
- ~~ specific language governing permissions and limitations
- ~~ under the License.
+http://www.apache.org/licenses/LICENSE-2.0
 
-~~ NOTE: For help with the syntax of this file, see:
-~~ http://maven.apache.org/doxia/references/apt-format.html
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-Usage
+# Usage
 
- Below are the different goals and the minimalist configurations of the Help Plugin.
+Below are the different goals and the minimalist configurations of the Help Plugin.
 
-* The <<<help:active-profiles>>> Goal
+## The `help:active-profiles` Goal
 
-  The <<<{{{./active-profiles-mojo.html}active-profiles}}>>> goal is used to discover which profiles have been
-  applied to the projects currently being built. For each project in the build session, it will output a list of
-  profiles which have been applied to that project, along with the source of the profile (POM, <<<settings.xml>>>
-  or <<<profiles.xml>>>).
+The [`active-profiles`](./active-profiles-mojo.html) goal is used to discover which profiles have been applied to the projects currently being built. For each project in the build session, it will output a list of profiles which have been applied to that project, along with the source of the profile (POM, `settings.xml` or `profiles.xml`).
 
-  You can execute this goal using the following command:
+You can execute this goal using the following command:
 
-+-----+
+```unknown
 # mvn help:active-profiles
-+-----+
+```
 
- <<Note>>: you could also use the <<<output>>> parameter to redirect output to a file.
+**Note**: you could also use the `output` parameter to redirect output to a file.
 
-* The <<<help:all-profiles>>> Goal
+## The `help:all-profiles` Goal
 
- The <<<{{{./all-profiles-mojo.html}all-profiles}}>>> goal is used to discover all available profiles under the
- current project.
+The [`all-profiles`](./all-profiles-mojo.html) goal is used to discover all available profiles under the current project.
 
-  You can execute this goal using the following command:
+You can execute this goal using the following command:
 
-+-----+
+```unknown
 # mvn help:all-profiles
-+-----+
+```
 
- <<Note>>: you could also use the <<<output>>> parameter to redirect output to a file.
+**Note**: you could also use the `output` parameter to redirect output to a file.
 
-* The <<<help:describe>>> Goal
+## The `help:describe` Goal
 
-  The <<<{{{./describe-mojo.html}describe}}>>> goal is used to discover information about Maven plugins. Given either
-  a <<<plugin>>> or a <<<groupId>>>, an <<<artifactId>>> and optionally a <<<version>>>, the goal will lookup that
-  plugin and output details about it. If the user also specifies which <<<goal>>> to describe, the <<<describe>>>
-  goal will limit output to the details of that goal, including parameters.
+The [`describe`](./describe-mojo.html) goal is used to discover information about Maven plugins. Given either a `plugin` or a `groupId`, an `artifactId` and optionally a `version`, the goal will lookup that plugin and output details about it. If the user also specifies which `goal` to describe, the `describe` goal will limit output to the details of that goal, including parameters.
 
-  You can execute this goal using the following command:
+You can execute this goal using the following command:
 
-+-----+
+```unknown
 # mvn help:describe -DgroupId=org.somewhere -DartifactId=some-plugin -Dversion=0.0.0
-+-----+
+```
 
- <<Note>>: you could also use the <<<output>>> parameter to redirect output to a file.
+**Note**: you could also use the `output` parameter to redirect output to a file.
 
-  Refer to {{{./examples/describe-configuration.html}Configuring Describe Goal}} for more information about its
-  configuration.
+Refer to [Configuring Describe Goal](./examples/describe-configuration.html) for more information about its configuration.
 
-* The <<<help:effective-pom>>> Goal
+## The `help:effective-pom` Goal
 
-  The <<<{{{./effective-pom-mojo.html}effective-pom}}>>> goal is used to make visible the POM that results from the
-  application of interpolation, inheritance and active profiles. It provides a useful way of removing the guesswork
-  about just what ends up in the POM that Maven uses to build your project. It will iterate over all projects in the
-  current build session, printing the effective POM for each.
+The [`effective-pom`](./effective-pom-mojo.html) goal is used to make visible the POM that results from the application of interpolation, inheritance and active profiles. It provides a useful way of removing the guesswork about just what ends up in the POM that Maven uses to build your project. It will iterate over all projects in the current build session, printing the effective POM for each.
 
-  You can execute this goal using the following command:
+You can execute this goal using the following command:
 
-+-----+
+```unknown
 # mvn help:effective-pom
-+-----+
+```
 
- <<Note>>: you could also use the <<<output>>> parameter to redirect output to a file.
+**Note**: you could also use the `output` parameter to redirect output to a file.
 
-* The <<<help:effective-settings>>> Goal
+## The `help:effective-settings` Goal
 
-  The <<<{{{./effective-settings-mojo.html}effective-settings}}>>> goal is used to view the settings that Maven
-  actually uses to run the build. These settings are a result of merging the global file with the user's file,
-  with the user's file taking precedence.
+The [`effective-settings`](./effective-settings-mojo.html) goal is used to view the settings that Maven actually uses to run the build. These settings are a result of merging the global file with the user's file, with the user's file taking precedence.
 
-  You can execute this goal using the following command:
+You can execute this goal using the following command:
 
-+-----+
+```unknown
 # mvn help:effective-settings
-+-----+
+```
 
- <<Note>>: you could also use the <<<output>>> parameter to redirect output to a file.
+**Note**: you could also use the `output` parameter to redirect output to a file.
 
-* The <<<help:system>>> Goal
+## The `help:system` Goal
 
-  The <<<{{{./system-mojo.html}system}}>>> goal is used to view the system information like system properties and
-  environment variables.
+The [`system`](./system-mojo.html) goal is used to view the system information like system properties and environment variables.
 
-  You can execute this goal using the following command:
+You can execute this goal using the following command:
 
-+-----+
+```unknown
 # mvn help:system
-+-----+
+```
 
- <<Note>>: you could also use the <<<output>>> parameter to redirect output to a file.
+**Note**: you could also use the `output` parameter to redirect output to a file.
 
-* The <<<help:evaluate>>> Goal
+## The `help:evaluate` Goal
 
-  You could use this interactive goal to evaluate some Maven expressions. To do it, just call the
-  {{{./evaluate-mojo.html}help:evaluate}} goal:
+You could use this interactive goal to evaluate some Maven expressions. To do it, just call the [help:evaluate](./evaluate-mojo.html) goal:
 
-+-----+
+```unknown
 # mvn help:evaluate -Dartifact=org.apache.maven.plugins:maven-help-plugin
 ...
 [INFO] [help:evaluate]
@@ -138,11 +112,8 @@ ${project.none}
 [INFO]
 null object or invalid expression
 ...
-+-----+
+```
 
- The <<<artifact>>> parameter refers to ask expressions on the artifact POM. If omitted, the evaluate goal uses the current
- pom.
+The `artifact` parameter refers to ask expressions on the artifact POM. If omitted, the evaluate goal uses the current pom.
 
- You could ask for all Maven expressions listed in the Javadoc of the
- {{{/ref/current/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html}
- <<<PluginParameterExpressionEvaluator>>>}} class.
+You could ask for all Maven expressions listed in the Javadoc of the [`PluginParameterExpressionEvaluator`](/ref/current/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html) class.
