@@ -1,96 +1,82 @@
- ------
- Configuring Describe Goal
- ------
- John Casey
- Maria Odea Ching
- Vincent Siveton
- ------
- 2010-01-21
- ------
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
- ~~ Licensed to the Apache Software Foundation (ASF) under one
- ~~ or more contributor license agreements.  See the NOTICE file
- ~~ distributed with this work for additional information
- ~~ regarding copyright ownership.  The ASF licenses this file
- ~~ to you under the Apache License, Version 2.0 (the
- ~~ "License"); you may not use this file except in compliance
- ~~ with the License.  You may obtain a copy of the License at
- ~~
- ~~   http://www.apache.org/licenses/LICENSE-2.0
- ~~
- ~~ Unless required by applicable law or agreed to in writing,
- ~~ software distributed under the License is distributed on an
- ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- ~~ KIND, either express or implied.  See the License for the
- ~~ specific language governing permissions and limitations
- ~~ under the License.
+http://www.apache.org/licenses/LICENSE-2.0
 
-~~ NOTE: For help with the syntax of this file, see:
-~~ http://maven.apache.org/doxia/references/apt-format.html
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-Configuring Describe Goal
+# Configuring Describe Goal
 
-  Below are other configuration examples for the <<<{{{../describe-mojo.html}help:describe}}>>> goal.
+Below are other configuration examples for the [`help:describe`](../describe-mojo.html) goal.
 
-* The <<<plugin>>> Parameter
+## The `plugin` Parameter
 
-  The <<<plugin>>> parameter is meant to provide two things: convenience and prefix-based access.
+The `plugin` parameter is meant to provide two things: convenience and prefix-based access.
 
-  The convenience comes when specifying a plugin by <<<groupId:artifactId>>>, or by <<<groupId:artifactId:version>>>.
-  Where the more traditional specification of separate fields would mean specifying this:
+The convenience comes when specifying a plugin by `groupId:artifactId`, or by `groupId:artifactId:version`. Where the more traditional specification of separate fields would mean specifying this:
 
-+---+
+```unknown
 # mvn help:describe -DgroupId=org.somewhere -DartifactId=some-plugin -Dversion=0.0.0
-+---+
+```
 
-  the use of the plugin parameter allows this:
+the use of the plugin parameter allows this:
 
-+---+
+```unknown
 # mvn help:describe -Dplugin=org.somewhere:some-plugin:0.0.0
-+---+
+```
 
- Here is an example to describe the Help plugin:
+Here is an example to describe the Help plugin:
 
-+-----+
+```unknown
 # mvn help:describe -Dplugin=org.apache.maven.plugins:maven-help-plugin
-+-----+
+```
 
- <<Note>>: <<<version>>> is always optional here.
+**Note**: `version` is always optional here.
 
-  On the other hand, the plugin parameter also offers the option to specify a plugin by its prefix, like this:
+On the other hand, the plugin parameter also offers the option to specify a plugin by its prefix, like this:
 
-+---+
+```unknown
 # mvn help:describe -Dplugin=help
-+---+
+```
 
-* The <<<goal>>> Parameter
+## The `goal` Parameter
 
- You can use the <<<goal>>> parameter of the <<<describe>>> goal to show or display relative information about a
- particular goal of the plugin you specified.
+You can use the `goal` parameter of the `describe` goal to show or display relative information about a particular goal of the plugin you specified.
 
- For example, when you execute the following command:
+For example, when you execute the following command:
 
-+-----+
+```unknown
 # mvn help:describe -Dgoal=describe -DgroupId=org.apache.maven.plugins -DartifactId=maven-help-plugin
-+-----+
+```
 
- This would display brief information about the <<<describe>>> goal only.
+This would display brief information about the `describe` goal only.
 
-* The <<<cmd>>> Parameter
+## The `cmd` Parameter
 
- You could also ask for a single Maven command, i.e. a goal or a phase or a lifecycle. It is the command when you call
- Maven, i.e.:
+You could also ask for a single Maven command, i.e. a goal or a phase or a lifecycle. It is the command when you call Maven, i.e.:
 
-+-----+
+```unknown
 # mvn -help
 
 usage: mvn [options] [<goal(s)>] [<phase(s)>]
 ...
-+-----+
+```
 
- The following are some examples:
+The following are some examples:
 
-+-----+
+```unknown
 # mvn help:describe -Dcmd=clean
 ...
 [INFO] [help:describe]
@@ -99,9 +85,9 @@ usage: mvn [options] [<goal(s)>] [<phase(s)>]
 * clean: org.apache.maven.plugins:maven-clean-plugin:clean
 * post-clean: NOT DEFINED
 ...
-+-----+
+```
 
-+-----+
+```unknown
 # mvn help:describe -Dcmd=compile
 ...
 [INFO] [help:describe]
@@ -132,9 +118,9 @@ It is a part of the lifecycle for the POM packaging 'jar'. This lifecycle includ
 * install: org.apache.maven.plugins:maven-install-plugin:install
 * deploy: org.apache.maven.plugins:maven-deploy-plugin:deploy
 ...
-+-----+
+```
 
-+-----+
+```unknown
 # mvn help:describe -Dcmd=compiler:compile
 ...
 [INFO] 'compiler:compile' is a plugin goal (aka mojo).
@@ -145,16 +131,15 @@ compiler:compile
 
 For more information, run 'mvn help:describe [...] -Ddetail'
 ...
-+-----+
+```
 
-* The <<<minimal>>>, and <<<detail>>> Parameters
+## The `minimal`, and `detail` Parameters
 
- If you want to display less or more detailed information, you can use the <<<minimal>>>, or <<<detail>>>
- parameters.
+If you want to display less or more detailed information, you can use the `minimal`, or `detail` parameters.
 
- The <<<minimal>>> parameter adds a minimal list of information:
+The `minimal` parameter adds a minimal list of information:
 
-+-----+
+```unknown
 # mvn help:describe -Dplugin=help -Dminimal=true
 ...
 [INFO] [help:describe]
@@ -171,12 +156,11 @@ Description: The Maven Help plugin provides goals aimed at helping to make
 
 For more information, run 'mvn help:describe [...] -Ddetail'
 ...
-+-----+
+```
 
- If you don't provide a paremeter a list is added with the mojos of the plugin and their
- descriptions:
+If you don't provide a paremeter a list is added with the mojos of the plugin and their descriptions:
 
-+-----+
+```unknown
 # mvn help:describe -Dplugin=help
 ...
 [INFO] org.apache.maven.plugins:maven-help-plugin:2.1-SNAPSHOT
@@ -240,20 +224,18 @@ help:system
 
 For more information, run 'mvn help:describe [...] -Ddetail'
 ...
-+-----+
+```
 
- The <<<detail>>> parameter also displays information about the goal's implementation, their parameters and component
- requirements, among others.
+The `detail` parameter also displays information about the goal's implementation, their parameters and component requirements, among others.
 
-+-----+
+```unknown
 # mvn help:describe -Dplugin=help -Ddetail=true
-+-----+
+```
 
-* The <<<output>>> Parameter
+## The `output` Parameter
 
-  This <<<describe>>> goal can use the optional <<<output>>> parameter to
-  redirect the output to a file. Here is an example of that:
+This `describe` goal can use the optional `output` parameter to redirect the output to a file. Here is an example of that:
 
-+-----+
+```unknown
 # mvn help:describe -Dplugin=help -Ddetail=true -Doutput=/path/to/file
-+-----+
+```
