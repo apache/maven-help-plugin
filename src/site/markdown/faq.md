@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+---
+title: Frequently Asked Questions
+---
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -19,27 +21,19 @@ specific language governing permissions and limitations
 under the License.
 -->
 
+<a name="top"></a>
 
-<faqs xmlns="http://maven.apache.org/FML/1.0.1"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
-  id="FAQ" title="Frequently Asked Questions">
-  <part id="General">
-    <faq id="What is a Mojo">
-      <question>What is a Mojo</question>
-      <answer>
-        <p>
-          See the Maven FAQ: <a href="http://maven.apache.org/general.html#What_is_a_Mojo">What is a Mojo</a>.
-        </p>
-      </answer>
-    </faq>
-    <faq id="Why mvn help:active-profiles won't show the active profiles under Maven 2.1">
-      <question>Why <code>mvn help:active-profiles</code> won't show the active profiles under Maven 2.1?</question>
-      <answer>
-        <p>
-          See <a href="https://issues.apache.org/jira/browse/MPH-38">MPH-38</a> for more info.
-        </p>
-      </answer>
-    </faq>
-  </part>
-</faqs>
+# Frequently Asked Questions
+
+1. [What is a Mojo](#What_is_a_Mojo)
+2. [Why `mvn help:active-profiles` won't show the active profiles under Maven 2.1?](#Why_mvn_help.3Aactive-profiles_won.27t_show_the_active_profiles_under_Maven_2.1)
+
+### What is a Mojo
+
+See the Maven FAQ: [What is a Mojo](http://maven.apache.org/general.html#What_is_a_Mojo).
+
+<a name="Why_mvn_help.3Aactive-profiles_won.27t_show_the_active_profiles_under_Maven_2.1"></a>
+
+### Why `mvn help:active-profiles` won't show the active profiles under Maven 2.1?
+
+See [MPH-38](https://issues.apache.org/jira/browse/MPH-38) for more info.
