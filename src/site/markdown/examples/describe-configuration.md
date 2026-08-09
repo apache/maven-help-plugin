@@ -167,14 +167,10 @@ For more information, run 'mvn help:describe [...] -Ddetail'
 ...
 ```
 
-<<<<<<< HEAD:src/site/apt/examples/describe-configuration.apt
  If you don't provide a parameter, a list is added with the mojos of the plugin and their
  descriptions:
-=======
-If you don't provide a paremeter a list is added with the mojos of the plugin and their descriptions:
->>>>>>> master:src/site/markdown/examples/describe-configuration.md
 
-```unknown
+```sh
 # mvn help:describe -Dplugin=help
 ...
 [INFO] org.apache.maven.plugins:maven-help-plugin:2.1-SNAPSHOT
@@ -242,7 +238,7 @@ For more information, run 'mvn help:describe [...] -Ddetail'
 
 The `detail` parameter also displays information about the goal's implementation, their parameters and component requirements, among others.
 
-```unknown
+```sh
 # mvn help:describe -Dplugin=help -Ddetail=true
 ```
 
@@ -250,6 +246,6 @@ The `detail` parameter also displays information about the goal's implementation
 
 This `describe` goal can use the optional `output` parameter to redirect the output to a file. Here is an example of that:
 
-```unknown
+```sh
 # mvn help:describe -Dplugin=help -Ddetail=true -Doutput=/path/to/file
 ```
