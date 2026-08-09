@@ -29,7 +29,7 @@
 
 ${project.name}
 
- The Maven Help Plugin provides information about a project or the system. It can be used to 
+ The Maven Help Plugin provides information about a project or the system. It can
  describe a particular plugin, including the plugin's goals with their parameters and component requirements,
  the effective POM and effective settings of the current build, and the profiles applied to the current project.
 
