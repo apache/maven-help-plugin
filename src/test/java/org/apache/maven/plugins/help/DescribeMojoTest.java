@@ -370,7 +370,6 @@ public class DescribeMojoTest {
         Lifecycle lifecycle = mock(Lifecycle.class);
         when(lifecycle.getId()).thenReturn("default");
         when(lifecycle.getPhases()).thenReturn(Arrays.asList("validate", "compile", "test", "package"));
-        when(lifecycle.getDefaultPhases()).thenReturn(Collections.emptyMap());
         when(lifecycle.getDefaultLifecyclePhases()).thenReturn(Collections.emptyMap());
 
         Map<String, Lifecycle> phaseMap = new HashMap<>();
@@ -380,15 +379,12 @@ public class DescribeMojoTest {
         DefaultLifecycles defaultLifecycles = mock(DefaultLifecycles.class);
         when(defaultLifecycles.getPhaseToLifecycleMap()).thenReturn(phaseMap);
 
-        Map<String, String> legacyPhases = new LinkedHashMap<>();
-        legacyPhases.put("compile", "org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile");
         Map<String, LifecyclePhase> lifecyclePhases = new LinkedHashMap<>();
         lifecyclePhases.put(
                 "compile", new LifecyclePhase("org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile"));
 
         org.apache.maven.lifecycle.mapping.Lifecycle mappingLifecycle =
                 mock(org.apache.maven.lifecycle.mapping.Lifecycle.class);
-        when(mappingLifecycle.getPhases()).thenReturn(legacyPhases);
         when(mappingLifecycle.getLifecyclePhases()).thenReturn(lifecyclePhases);
         LifecycleMapping lifecycleMapping = mock(LifecycleMapping.class);
         when(lifecycleMapping.getLifecycles()).thenReturn(Collections.singletonMap("default", mappingLifecycle));
@@ -417,8 +413,6 @@ public class DescribeMojoTest {
 
     @Test
     public void testDescribeCommandBuiltinLifecyclePhaseShowsBindings() throws Exception {
-        Map<String, String> legacyPhases = new LinkedHashMap<>();
-        legacyPhases.put("clean", "org.apache.maven.plugins:maven-clean-plugin:3.2.0:clean");
         Map<String, LifecyclePhase> lifecyclePhases = new LinkedHashMap<>();
         lifecyclePhases.put("pre-clean", null);
         lifecyclePhases.put("clean", new LifecyclePhase("org.apache.maven.plugins:maven-clean-plugin:3.2.0:clean"));
@@ -427,7 +421,6 @@ public class DescribeMojoTest {
         Lifecycle lifecycle = mock(Lifecycle.class);
         when(lifecycle.getId()).thenReturn("clean");
         when(lifecycle.getPhases()).thenReturn(Arrays.asList("pre-clean", "clean", "post-clean"));
-        when(lifecycle.getDefaultPhases()).thenReturn(legacyPhases);
         when(lifecycle.getDefaultLifecyclePhases()).thenReturn(lifecyclePhases);
 
         Map<String, Lifecycle> phaseMap = new HashMap<>();

@@ -27,7 +27,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -37,6 +36,8 @@ import org.apache.maven.lifecycle.DefaultLifecycles;
 import org.apache.maven.lifecycle.Lifecycle;
 import org.apache.maven.lifecycle.internal.MojoDescriptorCreator;
 import org.apache.maven.lifecycle.mapping.LifecycleMapping;
+import org.apache.maven.lifecycle.mapping.LifecycleMojo;
+import org.apache.maven.lifecycle.mapping.LifecyclePhase;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.plugin.MavenPluginManager;
@@ -633,14 +634,16 @@ public class DescribeMojo extends AbstractHelpMojo {
                 throw new MojoExecutionException("The given phase '" + cmd + "' is an unknown phase.");
             }
 
-            Map<String, String> defaultLifecyclePhases = lifecycleMappings
-                    .get(project.getPackaging())
-                    .getLifecycles()
-                    .get("default")
-                    .getPhases();
             List<String> phases = lifecycle.getPhases();
 
-            if (lifecycle.getDefaultPhases() == null) {
+            if (lifecycle.getDefaultLifecyclePhases() == null
+                    || lifecycle.getDefaultLifecyclePhases().isEmpty()) {
+                Map<String, LifecyclePhase> defaultLifecyclePhases = lifecycleMappings
+                        .get(project.getPackaging())
+                        .getLifecycles()
+                        .get("default")
+                        .getLifecyclePhases();
+
                 descriptionBuffer.append("'").append(cmd);
                 descriptionBuffer
                         .append("' is a phase corresponding to this plugin:")
@@ -662,17 +665,13 @@ public class DescribeMojo extends AbstractHelpMojo {
                 descriptionBuffer.append(LS);
                 for (String key : phases) {
                     descriptionBuffer.append("* ").append(key).append(": ");
-                    String value = defaultLifecyclePhases.get(key);
-                    if (value != null && !value.isEmpty()) {
-                        for (StringTokenizer tok = new StringTokenizer(value, ","); tok.hasMoreTokens(); ) {
-                            descriptionBuffer.append(tok.nextToken().trim());
-
-                            if (!tok.hasMoreTokens()) {
-                                descriptionBuffer.append(LS);
-                            } else {
-                                descriptionBuffer.append(", ");
-                            }
-                        }
+                    LifecyclePhase phase = defaultLifecyclePhases.get(key);
+                    if (phase != null && !phase.getMojos().isEmpty()) {
+                        descriptionBuffer
+                                .append(phase.getMojos().stream()
+                                        .map(LifecycleMojo::getGoal)
+                                        .collect(Collectors.joining(", ")))
+                                .append(LS);
                     } else {
                         descriptionBuffer.append(NOT_DEFINED).append(LS);
                     }
@@ -685,9 +684,9 @@ public class DescribeMojo extends AbstractHelpMojo {
 
                 for (String key : phases) {
                     descriptionBuffer.append("* ").append(key).append(": ");
-                    if (lifecycle.getDefaultPhases().get(key) != null) {
+                    if (lifecycle.getDefaultLifecyclePhases().get(key) != null) {
                         descriptionBuffer
-                                .append(lifecycle.getDefaultPhases().get(key))
+                                .append(lifecycle.getDefaultLifecyclePhases().get(key))
                                 .append(LS);
                     } else {
                         descriptionBuffer.append(NOT_DEFINED).append(LS);
