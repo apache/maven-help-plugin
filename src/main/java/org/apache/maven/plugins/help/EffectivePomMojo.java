@@ -22,6 +22,7 @@ import javax.inject.Inject;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -107,7 +108,8 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
         }
 
         StringWriter w = new StringWriter();
-        String encoding = output != null ? project.getModel().getModelEncoding() : System.getProperty("file.encoding");
+        String encoding = encodingOrDefault(
+                output != null ? project.getModel().getModelEncoding() : System.getProperty("file.encoding"));
         XMLWriter writer = new PrettyPrintXMLWriter(
                 w, StringUtils.repeat(" ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE), encoding, null);
 
@@ -211,6 +213,13 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
         Properties properties = new SortedProperties();
         properties.putAll(pom.getProperties());
         pom.setProperties(properties);
+    }
+
+    static String encodingOrDefault(String encoding) {
+        if (encoding == null || encoding.isEmpty()) {
+            return Charset.defaultCharset().name();
+        }
+        return encoding;
     }
 
     private static class InputLocationStringFormatter extends InputLocation.StringFormatter {
