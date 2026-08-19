@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.plugin.AbstractMojo;
@@ -48,6 +47,14 @@ import org.eclipse.aether.resolution.ArtifactRequest;
  * @since 2.1
  */
 public abstract class AbstractHelpMojo extends AbstractMojo {
+
+    /**
+     * The metaversion Aether resolves to the newest available version, used when the caller gives
+     * coordinates without one. Spelled out here rather than read from
+     * {@code org.apache.maven.artifact.Artifact#LATEST_VERSION}, which Maven 4 deprecates.
+     */
+    private static final String LATEST_VERSION = "LATEST";
+
     /** The maximum length of a display line. */
     protected static final int LINE_LENGTH = 79;
 
@@ -144,7 +151,7 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
             case 2:
                 groupId = artifactParts[0];
                 artifactId = artifactParts[1];
-                version = Artifact.LATEST_VERSION;
+                version = LATEST_VERSION;
                 break;
             case 3:
                 groupId = artifactParts[0];
