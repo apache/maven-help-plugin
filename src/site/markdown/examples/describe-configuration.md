@@ -166,9 +166,8 @@ Description: The Maven Help plugin provides goals aimed at helping to make
 For more information, run 'mvn help:describe [...] -Ddetail'
 ...
 ```
-
- If you don't provide a parameter, a list is added with the mojos of the plugin and their
- descriptions:
+If you don't provide a parameter, a list is added with the mojos of the plugin and their
+descriptions:
 
 ```sh
 # mvn help:describe -Dplugin=help
