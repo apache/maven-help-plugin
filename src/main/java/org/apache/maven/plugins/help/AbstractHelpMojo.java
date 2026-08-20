@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.plugin.AbstractMojo;
@@ -48,6 +47,7 @@ import org.eclipse.aether.resolution.ArtifactRequest;
  * @since 2.1
  */
 public abstract class AbstractHelpMojo extends AbstractMojo {
+
     /** The maximum length of a display line. */
     protected static final int LINE_LENGTH = 79;
 
@@ -144,7 +144,8 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
             case 2:
                 groupId = artifactParts[0];
                 artifactId = artifactParts[1];
-                version = Artifact.LATEST_VERSION;
+                // Not null: Aether normalises a null version to "", not to a metaversion.
+                version = "LATEST";
                 break;
             case 3:
                 groupId = artifactParts[0];
