@@ -40,7 +40,7 @@ under the License.
       <item name="Download" href="download.html"/>
     </menu>
     <menu name="Examples">
-      <item name="Configuring Describe Goal" href="/examples/describe-configuration.html"/>
+      <item name="Configuring Describe Goal" href="examples/describe-configuration.html"/>
     </menu>
   </body>
 </site>
