@@ -27,4 +27,16 @@ under the License.
   <version>1.0-SNAPSHOT</version>
   <description>https://issues.apache.org/jira/browse/MPH-106</description>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-help-plugin</artifactId>
+        <version>@project.version@</version>
+        <configuration>
+          <artifact>org.apache.maven.plugins:maven-help-plugin:@project.version@</artifact>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
