@@ -32,7 +32,6 @@ import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Model;
 import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,34 +59,25 @@ class EffectivePomMojoTest {
     private MavenSession mavenSession;
 
     @Mock
-    private Log log;
-
-    @Mock
     private MojoExecution mojoExecution;
 
     @TempDir
     private Path tempDir;
 
-    private Path outputPath;
+    private final Model model = new Model();
 
-    private Model model;
-
-    private Properties originalProperties;
-
-    private Properties expectedProperties;
+    private final Properties originalProperties = new Properties();
 
     @BeforeEach
     void setup() throws IOException {
-        originalProperties = new Properties();
         originalProperties.setProperty("b.property", "b-value");
         originalProperties.setProperty("a.property", "a-value");
 
-        model = new Model();
         model.setProperties(originalProperties);
 
         when(project.getModel()).thenReturn(model);
 
-        outputPath = Files.createTempFile(tempDir, "maven-help-plugin-test-", ".xml");
+        Path outputPath = Files.createTempFile(tempDir, "maven-help-plugin-test-", ".xml");
         mavenSession.getUserProperties().setProperty("outputPath", outputPath.toString());
     }
 
@@ -101,7 +91,7 @@ class EffectivePomMojoTest {
     @MojoParameter(name = "output", value = "${outputPath}")
     void testExecuteDoesNotModifyProjectModel(EffectivePomMojo mojo) throws Exception {
         // snapshot of the contents before the mojo runs, to detect in-place modification
-        expectedProperties = new Properties();
+        Properties expectedProperties = new Properties();
         expectedProperties.putAll(originalProperties);
 
         setVariableValueToObject(mojo, "projects", Collections.singletonList(project));
