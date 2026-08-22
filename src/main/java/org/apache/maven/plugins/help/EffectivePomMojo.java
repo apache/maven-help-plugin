@@ -178,7 +178,7 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
      * @throws MojoExecutionException if any
      */
     private void writeEffectivePom(MavenProject project, XMLWriter writer) throws MojoExecutionException {
-        Model pom = project.getModel();
+        Model pom = project.getModel().clone();
         cleanModel(pom);
 
         StringWriter sWriter = new StringWriter();
