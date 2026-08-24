@@ -34,6 +34,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
@@ -80,6 +81,7 @@ class EffectivePomMojoTest {
         mavenSession.getUserProperties().setProperty("outputPath", outputPath.toString());
     }
 
+    @Test
     @InjectMojo(goal = "effective-pom")
     @MojoParameter(name = "output", value = "${outputPath}")
     void testExecuteDoesNotModifyProjectModel(EffectivePomMojo mojo) throws Exception {
