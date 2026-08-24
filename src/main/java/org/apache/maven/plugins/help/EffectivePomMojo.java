@@ -107,7 +107,13 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
         }
 
         StringWriter w = new StringWriter();
-        String encoding = output != null ? project.getModel().getModelEncoding() : System.getProperty("file.encoding");
+        String rawEncoding;
+        if (output != null) {
+            rawEncoding = project.getModel().getModelEncoding();
+        } else {
+            rawEncoding = System.getProperty("file.encoding");
+        }
+        String encoding = encodingOrDefault(rawEncoding);
         XMLWriter writer = new PrettyPrintXMLWriter(
                 w, StringUtils.repeat(" ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE), encoding, null);
 
@@ -211,6 +217,13 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
         Properties properties = new SortedProperties();
         properties.putAll(pom.getProperties());
         pom.setProperties(properties);
+    }
+
+    static String encodingOrDefault(String encoding) {
+        if (encoding == null || encoding.isEmpty()) {
+            return "UTF-8";
+        }
+        return encoding;
     }
 
     private static class InputLocationStringFormatter extends InputLocation.StringFormatter {
