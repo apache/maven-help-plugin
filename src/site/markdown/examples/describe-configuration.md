@@ -1,3 +1,12 @@
+---
+title: Configuring Describe Goal
+author: 
+  - John Casey
+  - Maria Odea Ching
+  - Vincent Siveton
+date: 2010-01-21
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -57,7 +66,7 @@ You can use the `goal` parameter of the `describe` goal to show or display relat
 
 For example, when you execute the following command:
 
-```unknown
+```sh
 # mvn help:describe -Dgoal=describe -DgroupId=org.apache.maven.plugins -DartifactId=maven-help-plugin
 ```
 
@@ -65,9 +74,9 @@ This would display brief information about the `describe` goal only.
 
 ## The `cmd` Parameter
 
-You could also ask for a single Maven command, i.e. a goal or a phase or a lifecycle. It is the command when you call Maven, i.e.:
+You can also ask for a single Maven goal, phase, or lifecycle:
 
-```unknown
+```sh
 # mvn -help
 
 usage: mvn [options] [<goal(s)>] [<phase(s)>]
@@ -76,7 +85,7 @@ usage: mvn [options] [<goal(s)>] [<phase(s)>]
 
 The following are some examples:
 
-```unknown
+```sh
 # mvn help:describe -Dcmd=clean
 ...
 [INFO] [help:describe]
@@ -157,10 +166,10 @@ Description: The Maven Help plugin provides goals aimed at helping to make
 For more information, run 'mvn help:describe [...] -Ddetail'
 ...
 ```
+If you don't provide a parameter, a list is added with the mojos of the plugin and their
+descriptions:
 
-If you don't provide a paremeter a list is added with the mojos of the plugin and their descriptions:
-
-```unknown
+```sh
 # mvn help:describe -Dplugin=help
 ...
 [INFO] org.apache.maven.plugins:maven-help-plugin:2.1-SNAPSHOT
@@ -228,7 +237,7 @@ For more information, run 'mvn help:describe [...] -Ddetail'
 
 The `detail` parameter also displays information about the goal's implementation, their parameters and component requirements, among others.
 
-```unknown
+```sh
 # mvn help:describe -Dplugin=help -Ddetail=true
 ```
 
@@ -236,6 +245,6 @@ The `detail` parameter also displays information about the goal's implementation
 
 This `describe` goal can use the optional `output` parameter to redirect the output to a file. Here is an example of that:
 
-```unknown
+```sh
 # mvn help:describe -Dplugin=help -Ddetail=true -Doutput=/path/to/file
 ```

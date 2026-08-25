@@ -17,14 +17,7 @@
  * under the License.
  */
 
-String content = new File( basedir, "build.log" ).text
-assert content.indexOf( "<projects>" ) == -1
+def result = new File(basedir, 'build.log').text
 
-def result = new File(basedir, 'result.txt');
-assert result.exists()
-
-def LS = System.lineSeparator()
-assert result.text.find('(?s)' +
-        '  <groupId>org.apache.maven.plugins</groupId>' + LS +
-        '  <artifactId>maven-help-plugin</artifactId>'
-) != null
+assert result.contains('<resources>')
+assert result.contains('<directory>' + new File(basedir, 'src/main/resources').absolutePath + '</directory>')

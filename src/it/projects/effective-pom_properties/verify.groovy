@@ -19,7 +19,7 @@
 def buildLog = new File(basedir, 'build.log');
 assert buildLog.exists()
 
-def LS = System.getProperty("line.separator")
+def LS = System.lineSeparator()
 if (mavenVersion.startsWith('4.')) {
     // with Maven 4, order of properties is reversed from original pom.xml
     assert buildLog.text.find(
