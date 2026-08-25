@@ -36,6 +36,14 @@ under the License.
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-help-plugin</artifactId>
+        <version>@project.version@</version>
+        <configuration>
+          <artifact>org.apache.maven.plugins:maven-help-plugin:@project.version@</artifact>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>

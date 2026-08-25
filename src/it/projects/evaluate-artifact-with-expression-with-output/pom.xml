@@ -41,6 +41,9 @@ under the License.
               <goal>evaluate</goal>
             </goals>
             <phase>package</phase>
+            <configuration>
+              <artifact>org.apache.maven.plugins:maven-help-plugin:@project.version@</artifact>
+            </configuration>
           </execution>
         </executions>
       </plugin>
