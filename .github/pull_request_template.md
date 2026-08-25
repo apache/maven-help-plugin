@@ -12,12 +12,12 @@ contribution quickly and easily:
 - [ ] You have run the integration tests successfully (`mvn -Prun-its verify`).
 
 If your pull request is about ~20 lines of code you don't need to sign an
-[Individual Contributor License Agreement](https://www.apache.org/licenses/icla.pdf) if you are unsure
+[Individual Contributor License Agreement](https://www.apache.org/licenses/icla.pdf). If you are unsure,
 please ask on the developers list.
 
 To make clear that you license your contribution under
 the [Apache License Version 2.0, January 2004](http://www.apache.org/licenses/LICENSE-2.0)
 you have to acknowledge this by using the following check-box.
 
-- [ ] I hereby declare this contribution to be licenced under the [Apache License Version 2.0, January 2004](http://www.apache.org/licenses/LICENSE-2.0)
+- [ ] I hereby declare this contribution to be licensed under the [Apache License Version 2.0, January 2004](https://www.apache.org/licenses/LICENSE-2.0)
 - [ ] In any other case, please file an [Apache Individual Contributor License Agreement](https://www.apache.org/licenses/icla.pdf).
