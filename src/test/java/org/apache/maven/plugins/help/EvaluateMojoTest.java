@@ -20,6 +20,7 @@ package org.apache.maven.plugins.help;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.Properties;
 
 import org.apache.maven.api.di.Provides;
 import org.apache.maven.api.plugin.testing.InjectMojo;
@@ -37,6 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -182,6 +184,47 @@ class EvaluateMojoTest {
 
         String stdResult = baos.toString();
         assertEquals("org.apache.maven.its.help", stdResult);
+        verify(log, never()).warn(anyString());
+    }
+
+    /**
+     * Tests that a {@code Properties} subclass (like {@code SortedProperties}) is correctly serialized
+     * by XStream without falling through to {@code SerializableConverter} which would attempt
+     * reflective access to {@code java.util.Hashtable.table} (forbidden on Java 18+).
+     * @throws Exception in case of errors.
+     */
+    @Test
+    @ResourceLock(Resources.SYSTEM_OUT)
+    @InjectMojo(goal = "evaluate")
+    @MojoParameter(name = "forceStdout", value = "true")
+    @MojoParameter(name = "expression", value = "project.properties")
+    void testEvaluateWithPropertiesSubclass(EvaluateMojo mojo) throws Exception {
+        Properties sortedProperties = new AbstractEffectiveMojo.SortedProperties();
+        sortedProperties.setProperty("key1", "value1");
+        sortedProperties.setProperty("key2", "value2");
+
+        when(expressionEvaluator.evaluate(anyString())).thenReturn(sortedProperties);
+        when(log.isInfoEnabled()).thenReturn(false);
+
+        setVariableValueToObject(mojo, "evaluator", expressionEvaluator);
+
+        PrintStream saveOut = System.out;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+
+        try {
+            mojo.execute();
+        } finally {
+            System.setOut(saveOut);
+            baos.close();
+        }
+
+        String stdResult = baos.toString();
+        // Verify serialization succeeded without falling through to SerializableConverter
+        assertTrue(stdResult.contains("key1"));
+        assertTrue(stdResult.contains("value1"));
+        assertTrue(stdResult.contains("key2"));
+        assertTrue(stdResult.contains("value2"));
         verify(log, never()).warn(anyString());
     }
 }
