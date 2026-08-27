@@ -107,8 +107,7 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
         }
 
         StringWriter w = new StringWriter();
-        String rawEncoding = output != null ? project.getModel().getModelEncoding() : "UTF-8";
-        String encoding = encodingOrDefault(rawEncoding);
+        String encoding = encodingOrDefault(project.getModel().getModelEncoding());
         XMLWriter writer = new PrettyPrintXMLWriter(
                 w, StringUtils.repeat(" ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE), encoding, null);
 
