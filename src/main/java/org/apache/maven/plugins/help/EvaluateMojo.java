@@ -37,6 +37,7 @@ import java.util.jar.JarInputStream;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
+import com.thoughtworks.xstream.converters.collections.MapConverter;
 import com.thoughtworks.xstream.converters.collections.PropertiesConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import org.apache.maven.execution.MavenSession;
@@ -370,6 +371,12 @@ public class EvaluateMojo extends AbstractHelpMojo {
                 @Override
                 public boolean canConvert(Class type) {
                     return Collection.class.isAssignableFrom(type);
+                }
+            });
+            xstream.registerConverter(new MapConverter(xstream.getMapper()) {
+                @Override
+                public boolean canConvert(Class type) {
+                    return Map.class.isAssignableFrom(type);
                 }
             });
             addAlias(xstream);
