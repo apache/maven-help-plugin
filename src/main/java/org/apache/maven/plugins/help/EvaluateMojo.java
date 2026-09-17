@@ -87,7 +87,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
     private File output;
 
     /**
-     * This options gives the option to output information in cases where the output has been suppressed by using
+     * This option outputs information in cases where the output has been suppressed by using
      * <code>-q</code> (quiet option) in Maven. This is useful if you like to use
      * <code>maven-help-plugin:evaluate</code> in a script call (for example in bash) like this:
      *
@@ -96,7 +96,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
      * echo $RESULT
      * </pre>
      *
-     * This will only printout the information which has been requested by <code>expression</code> to
+     * This will only print the information which has been requested by <code>expression</code> to
      * <code>stdout</code>.
      *
      * @since 3.1.0
