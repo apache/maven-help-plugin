@@ -23,6 +23,9 @@ updates:
   ignore:
     # ignore Maven APIs/SPIs
     - dependency-name: org.apache.maven:*
+    # mrm-maven-plugin 2.x requires Java 17
+    - dependency-name: org.codehaus.mojo:mrm-maven-plugin
+      versions: [">= 2.0.0"]
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
