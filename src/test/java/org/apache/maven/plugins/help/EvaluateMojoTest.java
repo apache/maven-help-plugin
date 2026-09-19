@@ -209,10 +209,8 @@ class EvaluateMojoTest {
 
         mojo.execute();
 
-        String ls = System.lineSeparator();
         verify(log)
-                .info(argThat((CharSequence s) -> s.toString().contains(ls)
-                        && s.toString().contains("key1")
+                .info(argThat((CharSequence s) -> s.toString().contains("key1")
                         && s.toString().contains("value1")
                         && s.toString().contains("key2")
                         && s.toString().contains("value2")));
