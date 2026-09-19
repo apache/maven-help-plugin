@@ -191,8 +191,6 @@ class EvaluateMojoTest {
      * Tests that a {@code Properties} subclass (like {@code SortedProperties}) is correctly serialized
      * by XStream without falling through to {@code SerializableConverter} which would attempt
      * reflective access to {@code java.util.Hashtable.table} (forbidden on Java 18+).
-     *
-     * @throws Exception in case of errors.
      */
     @Test
     @InjectMojo(goal = "evaluate")
