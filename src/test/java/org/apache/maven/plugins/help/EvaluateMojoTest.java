@@ -192,10 +192,6 @@ class EvaluateMojoTest {
      * by XStream without falling through to {@code SerializableConverter} which would attempt
      * reflective access to {@code java.util.Hashtable.table} (forbidden on Java 18+).
      *
-     * <p>The result is asserted through the mojo {@link Log} instead of inspecting or redirecting
-     * {@code System.out}, so the test does not install or restore {@code System.out} and relies on
-     * no {@code PrintStream}/{@code ByteArrayOutputStream} capture.</p>
-     *
      * @throws Exception in case of errors.
      */
     @Test
