@@ -45,7 +45,7 @@ project:
   metadata:
     key: maven-help-plugin
     committee: maven
-    name: Maven Help Plugin
+    name: Apache Maven Help Plugin
     description: The Maven Help Plugin is used to get relative information about a project or the system.
     short_description: The Maven Help Plugin is used to get relative information about a project or the system.
     homepage: https://maven.apache.org/plugins/maven-help-plugin/
