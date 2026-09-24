@@ -44,6 +44,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -153,13 +154,13 @@ class AllProfilesMojoTest {
         when(parentModel.getProfiles()).thenReturn(Collections.singletonList(newPomProfile("pro-1", "pom")));
         MavenProject parentProject = mock(MavenProject.class);
         when(parentProject.getModel()).thenReturn(parentModel);
-        when(parentProject.getActiveProfiles()).thenReturn(Collections.singletonList(newPomProfile("pro-1", "pom")));
         when(project.getParent()).thenReturn(parentProject);
 
         mojo.execute();
 
         String file = readOutput();
-        assertTrue(file.contains("Profile Id: pro-1 (Active: true, Source: pom)"));
+        assertTrue(file.contains("Profile Id: pro-1 (Active: false, Source: pom)"));
+        assertFalse(file.contains("Profile Id: pro-1 (Active: true, Source: pom)"));
     }
 
     /**

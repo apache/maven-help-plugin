@@ -146,16 +146,18 @@ public class AllProfilesMojo extends AbstractHelpMojo {
 
         getLog().debug("Attempting to read profiles from pom.xml...");
 
+        boolean currentProject = true;
         while (project != null) {
             for (Profile profile : project.getModel().getProfiles()) {
                 allProfiles.put(profile.getId(), profile);
             }
-            if (project.getActiveProfiles() != null) {
+            if (currentProject && project.getActiveProfiles() != null) {
                 for (Profile profile : project.getActiveProfiles()) {
                     activeProfiles.put(profile.getId(), profile);
                 }
             }
             project = project.getParent();
+            currentProject = false;
         }
     }
 
