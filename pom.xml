@@ -281,7 +281,7 @@
               <projectsDirectory>src/it/projects</projectsDirectory>
               <settingsFile>src/it/mrm/settings.xml</settingsFile>
               <scriptVariables>
-                <surefireversion>${version.maven-surefire}</surefireversion>
+                <surefireversion>${version.maven-surefire-plugin}</surefireversion>
               </scriptVariables>
             </configuration>
           </plugin>
