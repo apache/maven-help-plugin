@@ -36,6 +36,7 @@ import org.apache.maven.lifecycle.mapping.LifecyclePhase;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MavenPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.Parameter;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
@@ -50,6 +51,7 @@ import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -74,6 +76,17 @@ class DescribeMojoTest {
                 describeMojo.getClass().getDeclaredMethod("toLines", String.class, int.class, int.class, int.class);
         toLines.setAccessible(true);
         toLines.invoke(null, "", 2, 2, 80);
+    }
+
+    @Test
+    void testToLinesRejectsOverflowingIndentation() throws Exception {
+        Method toLines = DescribeMojo.class.getDeclaredMethod("toLines", String.class, int.class, int.class, int.class);
+        toLines.setAccessible(true);
+
+        InvocationTargetException exception = assertThrows(
+                InvocationTargetException.class, () -> toLines.invoke(null, "text", Integer.MAX_VALUE, 2, 80));
+
+        assertTrue(exception.getCause() instanceof MojoFailureException);
     }
 
     @Test
