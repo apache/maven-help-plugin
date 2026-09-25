@@ -32,6 +32,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.maven.project.ProjectBuilder;
 import org.codehaus.plexus.util.xml.XMLWriter;
@@ -50,6 +52,10 @@ import org.jdom2.output.XMLOutputter;
  * @since 2.1
  */
 public abstract class AbstractEffectiveMojo extends AbstractHelpMojo {
+    private static final String COLON_PLACEHOLDER = "__MAVEN_HELP_PLUGIN_COLON__";
+
+    private static final Pattern NAMESPACE_UNSAFE_ELEMENT =
+            Pattern.compile("(<\\/?)([A-Za-z_][A-Za-z0-9_.-]*(?::[A-Za-z0-9_.-]+)+)(\\s*/?>)");
 
     protected AbstractEffectiveMojo(ProjectBuilder projectBuilder, RepositorySystem repositorySystem) {
         super(projectBuilder, repositorySystem);
@@ -110,10 +116,10 @@ public abstract class AbstractEffectiveMojo extends AbstractHelpMojo {
      */
     protected static String prettyFormat(String effectiveModel, String encoding, boolean omitDeclaration) {
         SAXBuilder builder = new SAXBuilder();
-        builder.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        builder.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         try {
-            Document effectiveDocument = builder.build(new StringReader(effectiveModel));
+            builder.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            builder.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+            Document effectiveDocument = builder.build(new StringReader(escapeNamespaceUnsafeElements(effectiveModel)));
 
             StringWriter w = new StringWriter();
             Format format = Format.getPrettyFormat();
@@ -126,10 +132,22 @@ public abstract class AbstractEffectiveMojo extends AbstractHelpMojo {
             XMLOutputter out = new XMLOutputter(format);
             out.output(effectiveDocument, w);
 
-            return w.toString();
+            return w.toString().replace(COLON_PLACEHOLDER, ":");
         } catch (JDOMException | IOException e) {
             return effectiveModel;
         }
+    }
+
+    private static String escapeNamespaceUnsafeElements(String xml) {
+        Matcher matcher = NAMESPACE_UNSAFE_ELEMENT.matcher(xml);
+        StringBuffer escaped = new StringBuffer();
+        while (matcher.find()) {
+            String elementName = matcher.group(2).replace(":", COLON_PLACEHOLDER);
+            matcher.appendReplacement(
+                    escaped, Matcher.quoteReplacement(matcher.group(1) + elementName + matcher.group(3)));
+        }
+        matcher.appendTail(escaped);
+        return escaped.toString();
     }
 
     /**
