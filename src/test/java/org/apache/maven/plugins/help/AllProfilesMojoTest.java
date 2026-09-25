@@ -84,12 +84,14 @@ class AllProfilesMojoTest {
     private final List<Profile> projectProfiles = new ArrayList<>();
     private final List<Profile> projectActiveProfiles = new ArrayList<>();
     private final List<org.apache.maven.settings.Profile> settingsProfiles = new ArrayList<>();
+    private final List<String> activeSettingsProfiles = new ArrayList<>();
 
     @BeforeEach
     void setup() throws IOException {
         when(mavenSession.getProjects()).thenReturn(Collections.singletonList(project));
         when(mavenSession.getSettings()).thenReturn(settings);
         when(settings.getProfiles()).thenReturn(settingsProfiles);
+        when(settings.getActiveProfiles()).thenReturn(activeSettingsProfiles);
 
         when(project.getActiveProfiles()).thenReturn(projectActiveProfiles);
         when(project.getModel()).thenReturn(projectModel);
@@ -171,16 +173,16 @@ class AllProfilesMojoTest {
     @InjectMojo(goal = "all-profiles")
     @MojoParameter(name = "output", value = "${outputPath}")
     void testProfileFromSettings(AllProfilesMojo mojo) throws Exception {
-        projectActiveProfiles.add(newPomProfile("settings-1", "settings.xml"));
-
         settingsProfiles.add(newSettingsProfile("settings-1"));
         settingsProfiles.add(newSettingsProfile("settings-2"));
+        activeSettingsProfiles.add("settings-1");
 
         mojo.execute();
 
         String file = readOutput();
         assertTrue(file.contains("Profile Id: settings-1 (Active: true, Source: settings.xml)"));
         assertTrue(file.contains("Profile Id: settings-2 (Active: false, Source: settings.xml)"));
+        verify(settings).getActiveProfiles();
     }
 
     private Profile newPomProfile(String id, String source) {
