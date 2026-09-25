@@ -63,6 +63,12 @@ public class AllProfilesMojo extends AbstractHelpMojo {
     @Parameter(defaultValue = "${settings.profiles}", readonly = true, required = true)
     private List<org.apache.maven.settings.Profile> settingsProfiles;
 
+    /**
+     * The identifiers of profiles active in the current Maven settings.
+     */
+    @Parameter(defaultValue = "${settings.activeProfiles}", readonly = true, required = true)
+    private List<String> activeSettingsProfiles;
+
     @Inject
     public AllProfilesMojo(ProjectBuilder projectBuilder, RepositorySystem repositorySystem) {
         super(projectBuilder, repositorySystem);
@@ -85,7 +91,7 @@ public class AllProfilesMojo extends AbstractHelpMojo {
 
             Map<String, Profile> allProfilesByIds = new HashMap<>();
             Map<String, Profile> activeProfilesByIds = new HashMap<>();
-            addSettingsProfiles(allProfilesByIds);
+            addSettingsProfiles(allProfilesByIds, activeProfilesByIds);
             addProjectPomProfiles(project, allProfilesByIds, activeProfilesByIds);
 
             // now display
@@ -163,12 +169,16 @@ public class AllProfilesMojo extends AbstractHelpMojo {
      * Adds the profiles from <code>settings.xml</code>.
      *
      * @param allProfiles Map to add the profiles to.
+     * @param activeProfiles Map to add the active profiles to.
      */
-    private void addSettingsProfiles(Map<String, Profile> allProfiles) {
+    private void addSettingsProfiles(Map<String, Profile> allProfiles, Map<String, Profile> activeProfiles) {
         getLog().debug("Attempting to read profiles from settings.xml...");
         for (org.apache.maven.settings.Profile settingsProfile : settingsProfiles) {
             Profile profile = SettingsUtils.convertFromSettingsProfile(settingsProfile);
             allProfiles.put(profile.getId(), profile);
+            if (activeSettingsProfiles.contains(profile.getId())) {
+                activeProfiles.put(profile.getId(), profile);
+            }
         }
     }
 }
