@@ -83,14 +83,9 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
     /** {@inheritDoc} */
     @Override
     public void execute() throws MojoExecutionException {
-        Settings copySettings;
-        if (showPasswords) {
-            copySettings = settings;
-        } else {
-            copySettings = copySettings(settings);
-            if (copySettings != null) {
-                hidePasswords(copySettings);
-            }
+        Settings copySettings = copySettings(settings);
+        if (copySettings != null && !showPasswords) {
+            hidePasswords(copySettings);
         }
 
         StringWriter w = new StringWriter();
@@ -194,6 +189,16 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
             clonedProxies.add(clonedProxy);
         }
         clone.setProxies(clonedProxies);
+
+        List<Profile> clonedProfiles = new ArrayList<>(settings.getProfiles().size());
+        for (Profile profile : settings.getProfiles()) {
+            Profile clonedProfile = profile.clone();
+            Properties clonedProperties = new Properties();
+            clonedProperties.putAll(profile.getProperties());
+            clonedProfile.setProperties(clonedProperties);
+            clonedProfiles.add(clonedProfile);
+        }
+        clone.setProfiles(clonedProfiles);
 
         return clone;
     }
