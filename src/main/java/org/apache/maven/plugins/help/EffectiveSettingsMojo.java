@@ -195,6 +195,23 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
         }
         clone.setProxies(clonedProxies);
 
+        List<Profile> clonedProfiles = new ArrayList<>(settings.getProfiles().size());
+        for (Profile profile : settings.getProfiles()) {
+            Profile clonedProfile = new Profile();
+            clonedProfile.setActivation(profile.getActivation());
+            clonedProfile.setId(profile.getId());
+            clonedProfile.setPluginRepositories(new ArrayList<>(profile.getPluginRepositories()));
+            clonedProfile.setRepositories(new ArrayList<>(profile.getRepositories()));
+            clonedProfile.setSourceLevel(profile.getSourceLevel());
+
+            Properties properties = new Properties();
+            properties.putAll(profile.getProperties());
+            clonedProfile.setProperties(properties);
+
+            clonedProfiles.add(clonedProfile);
+        }
+        clone.setProfiles(clonedProfiles);
+
         return clone;
     }
 
