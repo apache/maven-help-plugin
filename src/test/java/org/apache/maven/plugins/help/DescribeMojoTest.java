@@ -243,6 +243,43 @@ class DescribeMojoTest {
     }
 
     @Test
+    void testLookupPluginDescriptorErrorUsesResolvedPluginCoordinates() throws Exception {
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
+
+        PluginInfo pi = new PluginInfo();
+        pi.setPrefix("help");
+        pi.setVersion("1.0");
+
+        Plugin plugin = new Plugin();
+        plugin.setGroupId("org.test");
+        plugin.setArtifactId("test");
+
+        MojoDescriptorCreator mojoDescriptorCreator = mock(MojoDescriptorCreator.class);
+        MavenPluginManager pluginManager = mock(MavenPluginManager.class);
+        MavenSession session = mock(MavenSession.class);
+        when(session.getRepositorySession()).thenReturn(mock(RepositorySystemSession.class));
+        setFieldsOnMojo(mojo, mojoDescriptorCreator, mock(PluginVersionResolver.class), pluginManager, session);
+        MavenProject mavenProject = new MavenProject();
+        mavenProject.setPluginArtifactRepositories(Collections.emptyList());
+        setParentFieldWithReflection(mojo, "project", mavenProject);
+        when(mojoDescriptorCreator.findPluginForPrefix("help", session)).thenReturn(plugin);
+        when(pluginManager.getPluginDescriptor(any(Plugin.class), anyList(), any()))
+                .thenThrow(new RuntimeException("descriptor failure"));
+
+        Method lookupPluginDescriptor = setLookupPluginDescriptorAccessibility();
+        try {
+            lookupPluginDescriptor.invoke(mojo, pi);
+            fail("Expected plugin descriptor lookup to fail");
+        } catch (InvocationTargetException e) {
+            String message = e.getTargetException().getMessage();
+            assertTrue(message.contains("groupId: 'org.test'"));
+            assertTrue(message.contains("artifactId: 'test'"));
+            assertTrue(message.contains("version: '1.0'"));
+            assertFalse(message.contains("groupId: 'null'"));
+        }
+    }
+
+    @Test
     void testLookupPluginDescriptorPrefixWithoutVersion() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
 
