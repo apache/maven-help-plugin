@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.ProjectBuilder;
@@ -87,7 +88,7 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
         if (showPasswords) {
             copySettings = settings;
         } else {
-            copySettings = copySettings(settings);
+            copySettings = copySettings(settings, getLog());
             if (copySettings != null) {
                 hidePasswords(copySettings);
             }
@@ -153,7 +154,7 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
      * @param settings could be {@code null}
      * @return a new instance of settings or {@code null} if settings was {@code null}.
      */
-    private static Settings copySettings(Settings settings) {
+    private static Settings copySettings(Settings settings, Log log) {
         if (settings == null) {
             return null;
         }
@@ -162,6 +163,7 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
         Settings clone = SettingsUtils.copySettings(settings);
 
         List<Server> clonedServers = new ArrayList<>(settings.getServers().size());
+
         for (Server server : settings.getServers()) {
             Server clonedServer = new Server();
             clonedServer.setConfiguration(server.getConfiguration());
@@ -173,6 +175,12 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
             clonedServer.setPrivateKey(server.getPrivateKey());
             clonedServer.setSourceLevel(server.getSourceLevel());
             clonedServer.setUsername(server.getUsername());
+
+            try {
+                clonedServer.setRepositoryOrigins(server.getRepositoryOrigins());
+            } catch (NoSuchMethodError ignored) {
+                log.warn(String.format("Old Maven, no data about repositoryOrigin for server: %s.", server.getId()));
+            }
 
             clonedServers.add(clonedServer);
         }

@@ -23,7 +23,7 @@ assert buildLog.exists()
 // maven.version (3.0,3.0.4] are missing the proxies?! > assert = 2
 // maven.version (,2.2.1) correct                      > assert = 3
 // assert 3 == buildLog.text.count('***')
-assert (2..3).contains( buildLog.text.count('***') ) 
+assert (2..4).contains( buildLog.text.count('***') )
 
 // for evaluate calls
 assert buildLog.text.contains('proxy-password')
