@@ -44,7 +44,9 @@ class EffectiveSettingsMojoTest {
         Settings copy = (Settings) copySettings.invoke(null, settings);
 
         assertNotSame(settings.getProfiles().get(0), copy.getProfiles().get(0));
-        assertNotSame(settings.getProfiles().get(0).getProperties(), copy.getProfiles().get(0).getProperties());
+        assertNotSame(
+                settings.getProfiles().get(0).getProperties(),
+                copy.getProfiles().get(0).getProperties());
 
         copy.getProfiles().get(0).getProperties().setProperty("password", "***");
 
