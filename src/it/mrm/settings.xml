@@ -19,7 +19,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+<settings xmlns="http://maven.apache.org/SETTINGS/1.3.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.3.0 http://maven.apache.org/xsd/settings-1.3.0.xsd">
   <mirrors>
     <mirror>
       <id>mrm-maven-plugin</id>
@@ -43,6 +43,15 @@ under the License.
       <id>deep-clone</id>
       <password>server-password</password>
       <passphrase>server-passphrase</passphrase>
+    </server>
+    <server>
+      <id>deep-clone-with-origins</id>
+      <password>server-password-X</password>
+      <passphrase>server-passphrase-X</passphrase>
+      <repositoryOrigins>
+        <repositoryOrigin>https://clone1.maven.apache.org/repository/</repositoryOrigin>
+        <repositoryOrigin>https://clone2.maven.apache.org/repository/</repositoryOrigin>
+      </repositoryOrigins>
     </server>
   </servers>
   

@@ -27,6 +27,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -161,22 +162,7 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
         // Not a deep copy in M2.2.1 !!!
         Settings clone = SettingsUtils.copySettings(settings);
 
-        List<Server> clonedServers = new ArrayList<>(settings.getServers().size());
-        for (Server server : settings.getServers()) {
-            Server clonedServer = new Server();
-            clonedServer.setConfiguration(server.getConfiguration());
-            clonedServer.setDirectoryPermissions(server.getDirectoryPermissions());
-            clonedServer.setFilePermissions(server.getFilePermissions());
-            clonedServer.setId(server.getId());
-            clonedServer.setPassphrase(server.getPassphrase());
-            clonedServer.setPassword(server.getPassword());
-            clonedServer.setPrivateKey(server.getPrivateKey());
-            clonedServer.setSourceLevel(server.getSourceLevel());
-            clonedServer.setUsername(server.getUsername());
-
-            clonedServers.add(clonedServer);
-        }
-        clone.setServers(clonedServers);
+        clone.setServers(settings.getServers().stream().map(Server::clone).collect(Collectors.toList()));
 
         List<Proxy> clonedProxies = new ArrayList<>(settings.getProxies().size());
         for (Proxy proxy : settings.getProxies()) {
