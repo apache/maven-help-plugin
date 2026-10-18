@@ -333,7 +333,8 @@ public class DescribeMojo extends AbstractHelpMojo {
         } catch (Exception e) {
             throw new MojoExecutionException(
                     "Error retrieving plugin descriptor for:" + LS + LS + "groupId: '"
-                            + groupId + "'" + LS + "artifactId: '" + artifactId + "'" + LS + "version: '" + version
+                            + forLookup.getGroupId() + "'" + LS + "artifactId: '" + forLookup.getArtifactId()
+                            + "'" + LS + "version: '" + forLookup.getVersion()
                             + "'" + LS
                             + LS,
                     e);
