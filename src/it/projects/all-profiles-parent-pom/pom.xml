@@ -25,7 +25,7 @@ under the License.
   <artifactId>all-profiles-parent-pom</artifactId>
   <version>1.0</version>
   <packaging>pom</packaging>
-  <description>Tests that profiles active in a parent POM are shown as active in all-profiles goal</description>
+  <description>Tests that parent POM profiles are inactive in child project reports</description>
   <modules>
     <module>child</module>
   </modules>

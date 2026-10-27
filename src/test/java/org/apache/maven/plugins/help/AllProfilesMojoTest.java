@@ -164,6 +164,31 @@ class AllProfilesMojoTest {
     }
 
     /**
+     * Tests that an inherited active parent profile is inactive for the current project.
+     *
+     * @throws Exception in case of errors.
+     */
+    @Test
+    @InjectMojo(goal = "all-profiles")
+    @MojoParameter(name = "output", value = "${outputPath}")
+    void testInheritedActiveProfileFromParentPom(AllProfilesMojo mojo) throws Exception {
+        String profileId = "pro-1";
+        projectActiveProfiles.add(newPomProfile(profileId, "pom"));
+
+        Model parentModel = mock(Model.class);
+        when(parentModel.getProfiles()).thenReturn(Collections.singletonList(newPomProfile(profileId, "pom")));
+        MavenProject parentProject = mock(MavenProject.class);
+        when(parentProject.getModel()).thenReturn(parentModel);
+        when(project.getParent()).thenReturn(parentProject);
+
+        mojo.execute();
+
+        String file = readOutput();
+        assertTrue(file.contains("Profile Id: pro-1 (Active: false, Source: pom)"));
+        assertFalse(file.contains("Profile Id: pro-1 (Active: true, Source: pom)"));
+    }
+
+    /**
      * Tests the case when profiles are present in the settings.
      *
      * @throws Exception in case of errors.
