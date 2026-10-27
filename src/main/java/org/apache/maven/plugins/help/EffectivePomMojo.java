@@ -197,6 +197,16 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
         // This removes the XML declaration written by MavenXpp3Writer
         String effectivePom = prettyFormat(sWriter.toString(), null, true);
 
+        // MavenXpp3Writer omits packaging when it is null or "jar" (the default).
+        // Ensure it is always present so users can see the effective packaging value.
+        if (pom.getPackaging() == null || "jar".equals(pom.getPackaging())) {
+            String packaging = pom.getPackaging() != null ? pom.getPackaging() : project.getPackaging();
+            String packagingTag = "  <packaging>" + packaging + "</packaging>";
+            if (!effectivePom.contains(packagingTag)) {
+                effectivePom = effectivePom.replace("</version>" + LS, "</version>" + LS + packagingTag + LS);
+            }
+        }
+
         writeComment(writer, "Effective POM for project '" + project.getId() + "'");
 
         writer.writeMarkup(effectivePom);
