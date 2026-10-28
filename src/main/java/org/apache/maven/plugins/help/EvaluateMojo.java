@@ -37,8 +37,10 @@ import java.util.jar.JarInputStream;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
+import com.thoughtworks.xstream.converters.collections.MapConverter;
 import com.thoughtworks.xstream.converters.collections.PropertiesConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.mapper.MapperWrapper;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
@@ -365,11 +367,24 @@ public class EvaluateMojo extends AbstractHelpMojo {
      */
     private XStream getXStream() {
         if (xstream == null) {
-            xstream = new XStream();
+            xstream = new XStream() {
+                @Override
+                protected MapperWrapper wrapMapper(MapperWrapper next) {
+                    return MavenModelConverter.createMapper(next);
+                }
+            };
+            MavenModelConverter.register(xstream, Model.class);
+            MavenModelConverter.register(xstream, Settings.class);
             xstream.registerConverter(new CollectionConverter(xstream.getMapper()) {
                 @Override
                 public boolean canConvert(Class type) {
                     return Collection.class.isAssignableFrom(type);
+                }
+            });
+            xstream.registerConverter(new MapConverter(xstream.getMapper()) {
+                @Override
+                public boolean canConvert(Class type) {
+                    return Map.class.isAssignableFrom(type);
                 }
             });
             addAlias(xstream);
@@ -429,9 +444,9 @@ public class EvaluateMojo extends AbstractHelpMojo {
                 if (jarEntry.getName().toLowerCase(Locale.ENGLISH).endsWith(".class")) {
                     String name =
                             jarEntry.getName().substring(0, jarEntry.getName().indexOf("."));
-                    name = name.replace("/", "\\.");
+                    name = name.replace('/', '.');
 
-                    if (name.contains(packageFilter) && !name.contains("$")) {
+                    if (name.contains(packageFilter) && !name.contains("$") && !name.endsWith(".package-info")) {
                         try {
                             Class<?> clazz = Class.forName(name);
                             String alias = StringUtils.lowercaseFirstLetter(clazz.getSimpleName());
