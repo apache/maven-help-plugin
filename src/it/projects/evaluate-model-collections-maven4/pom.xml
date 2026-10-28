@@ -40,6 +40,9 @@ under the License.
           <exclude>**/private.properties</exclude>
         </excludes>
       </resource>
+      <resource>
+        <directory>src/extra/resources</directory>
+      </resource>
     </resources>
   </build>
 </project>

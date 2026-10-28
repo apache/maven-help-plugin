@@ -17,19 +17,43 @@
  * under the License.
  */
 
-def result = new groovy.xml.XmlSlurper().parse(new File(basedir, 'resources.xml'))
+def parse = { name -> new groovy.xml.XmlSlurper().parse(new File(basedir, name)) }
+def checkResource = { resource ->
+    assert resource.name() == 'org.apache.maven.model.Resource'
+    assert resource.directory.text() == new File(basedir, 'src/main/resources').absolutePath
+    assert resource.targetPath.text() == 'config'
+    assert resource.filtering.text() == 'true'
+    assert resource.includes.children()*.text() == ['**/*.properties', '**/*.xml']
+    assert resource.excludes.children()*.text() == ['**/private.properties']
+}
+def checkResources = { resources ->
+    assert resources.children().size() == 2
+    checkResource(resources.children()[0])
+    def extra = resources.children()[1]
+    assert extra.name() == 'org.apache.maven.model.Resource'
+    assert extra.directory.text() == new File(basedir, 'src/extra/resources').absolutePath
+    assert extra.includes.children().isEmpty()
+    assert extra.excludes.children().isEmpty()
+}
 
-assert result.name() == 'resources'
-assert result.children().size() == 1
+def resources = parse('resources.xml')
+assert resources.name() == 'resources'
+checkResources(resources)
+checkResource(parse('resource.xml'))
+def build = parse('build.xml')
+assert build.name() == 'org.apache.maven.model.Build'
+checkResources(build.resources)
+assert parse('empty.xml').children().isEmpty()
 
-// Maven 4 wraps the resource fields in an immutable model delegate.
-def resource = result.children()[0].delegate
-assert resource.directory*.text() == [new File(basedir, 'src/main/resources').absolutePath]
-assert resource.targetPath.text() == 'config'
-assert resource.filtering.text() == 'true'
-assert resource.includes.children()*.text() == ['**/*.properties', '**/*.xml']
-assert resource.excludes.children()*.text() == ['**/private.properties']
+def plugins = parse('plugins.xml').entry.'org.apache.maven.model.Plugin'
+assert plugins.size() == build.plugins.children().size()
+assert plugins.artifactId*.text().contains('maven-compiler-plugin')
+assert plugins.artifactId*.text().sort() == build.plugins.children().artifactId*.text().sort()
 
-// The map converter must retain the source locations, not just avoid the reflection failure.
-assert resource.locations.entry.string*.text().containsAll(
-        ['directory', 'targetPath', 'filtering', 'includes', 'excludes'])
+['resources.xml', 'resource.xml', 'build.xml', 'plugins.xml'].each { name ->
+    assert parse(name).depthFirst().findAll {
+        it.name() in ['delegate', 'locations', 'importedFrom']
+    }.isEmpty()
+}
+
+return true
