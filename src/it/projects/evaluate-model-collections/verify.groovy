@@ -20,4 +20,5 @@
 def result = new File(basedir, 'build.log').text
 
 assert result.contains('<resources>')
+assert result.contains('<resource>')
 assert result.contains('<directory>' + new File(basedir, 'src/main/resources').absolutePath + '</directory>')

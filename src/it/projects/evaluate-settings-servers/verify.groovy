@@ -19,7 +19,7 @@
 
 def result = new groovy.xml.XmlSlurper().parse(new File(basedir, 'result.txt'))
 
-assert result.name() == 'org.apache.maven.settings.Server'
+assert result.name() == 'server'
 assert result.id.text() == 'deep-clone'
 assert result.password.text() == 'server-password'
 assert result.passphrase.text() == 'server-passphrase'

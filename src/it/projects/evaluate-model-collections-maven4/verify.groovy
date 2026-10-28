@@ -17,9 +17,11 @@
  * under the License.
  */
 
+assert !new File(basedir, 'build.log').readLines().any { it.startsWith('[ERROR]') }
+
 def parse = { name -> new groovy.xml.XmlSlurper().parse(new File(basedir, name)) }
 def checkResource = { resource ->
-    assert resource.name() == 'org.apache.maven.model.Resource'
+    assert resource.name() == 'resource'
     assert resource.directory.text() == new File(basedir, 'src/main/resources').absolutePath
     assert resource.targetPath.text() == 'config'
     assert resource.filtering.text() == 'true'
@@ -30,7 +32,7 @@ def checkResources = { resources ->
     assert resources.children().size() == 2
     checkResource(resources.children()[0])
     def extra = resources.children()[1]
-    assert extra.name() == 'org.apache.maven.model.Resource'
+    assert extra.name() == 'resource'
     assert extra.directory.text() == new File(basedir, 'src/extra/resources').absolutePath
     assert extra.includes.children().isEmpty()
     assert extra.excludes.children().isEmpty()
@@ -41,11 +43,11 @@ assert resources.name() == 'resources'
 checkResources(resources)
 checkResource(parse('resource.xml'))
 def build = parse('build.xml')
-assert build.name() == 'org.apache.maven.model.Build'
+assert build.name() == 'build'
 checkResources(build.resources)
 assert parse('empty.xml').children().isEmpty()
 
-def plugins = parse('plugins.xml').entry.'org.apache.maven.model.Plugin'
+def plugins = parse('plugins.xml').entry.plugin
 assert plugins.size() == build.plugins.children().size()
 assert plugins.artifactId*.text().contains('maven-compiler-plugin')
 assert plugins.artifactId*.text().sort() == build.plugins.children().artifactId*.text().sort()

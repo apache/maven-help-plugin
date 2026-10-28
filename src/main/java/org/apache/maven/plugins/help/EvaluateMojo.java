@@ -444,9 +444,9 @@ public class EvaluateMojo extends AbstractHelpMojo {
                 if (jarEntry.getName().toLowerCase(Locale.ENGLISH).endsWith(".class")) {
                     String name =
                             jarEntry.getName().substring(0, jarEntry.getName().indexOf("."));
-                    name = name.replace("/", "\\.");
+                    name = name.replace('/', '.');
 
-                    if (name.contains(packageFilter) && !name.contains("$")) {
+                    if (name.contains(packageFilter) && !name.contains("$") && !name.endsWith(".package-info")) {
                         try {
                             Class<?> clazz = Class.forName(name);
                             String alias = StringUtils.lowercaseFirstLetter(clazz.getSimpleName());
