@@ -403,7 +403,8 @@ public class DescribeMojo extends AbstractHelpMojo {
             pbr.setProject(null);
             pbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             try {
-                Artifact artifactCopy = resolveArtifact(aetherArtifact).getArtifact();
+                Artifact artifactCopy = resolveArtifact(aetherArtifact, project.getRemotePluginRepositories())
+                        .getArtifact();
                 name = projectBuilder
                         .build(RepositoryUtils.toArtifact(artifactCopy), pbr)
                         .getProject()
@@ -909,10 +910,12 @@ public class DescribeMojo extends AbstractHelpMojo {
         pbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
         try {
             Artifact jar = resolveArtifact(
-                            new DefaultArtifact(pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion()))
+                            new DefaultArtifact(pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion()),
+                            project.getRemotePluginRepositories())
                     .getArtifact();
             Artifact pom = resolveArtifact(
-                            new DefaultArtifact(pd.getGroupId(), pd.getArtifactId(), "pom", pd.getVersion()))
+                            new DefaultArtifact(pd.getGroupId(), pd.getArtifactId(), "pom", pd.getVersion()),
+                            project.getRemotePluginRepositories())
                     .getArtifact();
             MavenProject mavenProject = projectBuilder.build(pom.getFile(), pbr).getProject();
             urls.add(jar.getFile().toURI().toURL());

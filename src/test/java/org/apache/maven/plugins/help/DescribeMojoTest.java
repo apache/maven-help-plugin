@@ -44,8 +44,11 @@ import org.apache.maven.plugin.version.PluginVersionRequest;
 import org.apache.maven.plugin.version.PluginVersionResolver;
 import org.apache.maven.plugin.version.PluginVersionResult;
 import org.apache.maven.plugins.help.DescribeMojo.PluginInfo;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -406,6 +409,43 @@ class DescribeMojoTest {
         } catch (Exception e) {
             fail(e.getMessage());
         }
+    }
+
+    @Test
+    void testDescribePluginResolvesMissingNameAgainstPluginRepositories() throws Exception {
+        RepositorySystem repositorySystem = mock(RepositorySystem.class);
+        when(repositorySystem.readArtifactDescriptor(any(), any())).thenThrow(new RuntimeException("not resolvable"));
+        DescribeMojo mojo = new DescribeMojo(null, repositorySystem, null, null, null, null, null);
+
+        MavenSession session = mock(MavenSession.class);
+        when(session.getRepositorySession()).thenReturn(mock(RepositorySystemSession.class));
+        when(session.getProjectBuildingRequest()).thenReturn(new DefaultProjectBuildingRequest());
+        setParentFieldWithReflection(mojo, "session", session);
+
+        RemoteRepository projectRepo =
+                new RemoteRepository.Builder("project-repo", "default", "https://project.example/").build();
+        RemoteRepository pluginRepo =
+                new RemoteRepository.Builder("plugin-repo", "default", "https://plugin.example/").build();
+        MavenProject mavenProject = mock(MavenProject.class);
+        when(mavenProject.getRemoteProjectRepositories()).thenReturn(Collections.singletonList(projectRepo));
+        when(mavenProject.getRemotePluginRepositories()).thenReturn(Collections.singletonList(pluginRepo));
+        setParentFieldWithReflection(mojo, "project", mavenProject);
+
+        PluginDescriptor pd = new PluginDescriptor();
+        pd.setGroupId("org.test");
+        pd.setArtifactId("test-plugin");
+        pd.setVersion("1.0");
+        // pd.getName() stays null, which is what triggers the fallback artifact resolution
+
+        Method describePlugin =
+                DescribeMojo.class.getDeclaredMethod("describePlugin", PluginDescriptor.class, StringBuilder.class);
+        describePlugin.setAccessible(true);
+        describePlugin.invoke(mojo, pd, new StringBuilder());
+
+        ArgumentCaptor<org.eclipse.aether.resolution.ArtifactDescriptorRequest> captor =
+                ArgumentCaptor.forClass(org.eclipse.aether.resolution.ArtifactDescriptorRequest.class);
+        verify(repositorySystem).readArtifactDescriptor(any(), captor.capture());
+        assertEquals(Collections.singletonList(pluginRepo), captor.getValue().getRepositories());
     }
 
     /**

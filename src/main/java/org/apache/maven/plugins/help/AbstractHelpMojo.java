@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.util.List;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.building.ModelBuildingRequest;
@@ -36,6 +37,7 @@ import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.eclipse.aether.resolution.ArtifactRequest;
@@ -191,15 +193,31 @@ public abstract class AbstractHelpMojo extends AbstractMojo {
 
     protected org.eclipse.aether.resolution.ArtifactResult resolveArtifact(
             org.eclipse.aether.artifact.Artifact artifact) throws RepositoryException {
+        return resolveArtifact(artifact, project.getRemoteProjectRepositories());
+    }
+
+    /**
+     * Resolves the given artifact against an explicit list of remote repositories, rather than the project's
+     * own {@code <repositories>}. Used to resolve a plugin's own artifact against
+     * {@link MavenProject#getRemotePluginRepositories()}, since a plugin may be published only to a
+     * {@code <pluginRepository>} and not also declared as a project {@code <repository>}.
+     *
+     * @param artifact the artifact to resolve
+     * @param repositories the remote repositories to resolve the artifact against
+     * @return the resolved artifact
+     * @throws RepositoryException if the artifact could not be resolved
+     * @since 3.5.3
+     */
+    protected org.eclipse.aether.resolution.ArtifactResult resolveArtifact(
+            org.eclipse.aether.artifact.Artifact artifact, List<RemoteRepository> repositories)
+            throws RepositoryException {
         RepositorySystemSession repositorySession = session.getRepositorySession();
 
         // use descriptor to respect relocation
         ArtifactDescriptorResult artifactDescriptor = repositorySystem.readArtifactDescriptor(
-                repositorySession,
-                new ArtifactDescriptorRequest(artifact, project.getRemoteProjectRepositories(), null));
+                repositorySession, new ArtifactDescriptorRequest(artifact, repositories, null));
 
         return repositorySystem.resolveArtifact(
-                repositorySession,
-                new ArtifactRequest(artifactDescriptor.getArtifact(), project.getRemoteProjectRepositories(), null));
+                repositorySession, new ArtifactRequest(artifactDescriptor.getArtifact(), repositories, null));
     }
 }
