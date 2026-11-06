@@ -20,16 +20,29 @@ package org.apache.maven.plugins.help;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.collections.MapConverter;
 import com.thoughtworks.xstream.converters.reflection.ReflectionConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 
 /** Serializes Maven 4 compatibility models without their wrapper or source locations. */
 final class MavenModelConverter extends ReflectionConverter {
+    /** API model fields that hold source locations or lazily computed caches rather than POM content. */
+    private static final Set<String> HIDDEN_FIELDS =
+            new HashSet<>(Arrays.asList("locations", "importedFrom", "pluginMap", "reportSetMap", "managementKey"));
+
     private final Class<?> wrapperType;
     private final Method getDelegate;
 
@@ -44,6 +57,7 @@ final class MavenModelConverter extends ReflectionConverter {
             Class<?> wrapperType =
                     Class.forName(modelType.getPackage().getName() + ".BaseObject", false, modelType.getClassLoader());
             xstream.registerConverter(new MavenModelConverter(xstream, wrapperType));
+            xstream.registerConverter(new StringMapConverter(xstream.getMapper()));
         } catch (ClassNotFoundException e) {
             // Maven 3 models do not wrap API model delegates.
         } catch (NoSuchMethodException e) {
@@ -55,6 +69,11 @@ final class MavenModelConverter extends ReflectionConverter {
         return new MapperWrapper(next) {
             @Override
             public String serializedClass(Class type) {
+                if (isApiCollection(type)) {
+                    // Name the immutable implementations like the default ones, so that
+                    // no class attribute is written for collection and map fields.
+                    return super.serializedClass(defaultImplementationOf(collectionInterface(type)));
+                }
                 if (isApiModel(type)) {
                     try {
                         Class<?> wrapper = Class.forName(
@@ -74,12 +93,34 @@ final class MavenModelConverter extends ReflectionConverter {
 
             @Override
             public boolean shouldSerializeMember(Class definedIn, String fieldName) {
-                if (("locations".equals(fieldName) || "importedFrom".equals(fieldName)) && isApiModel(definedIn)) {
+                if (HIDDEN_FIELDS.contains(fieldName) && isApiModel(definedIn)) {
                     return false;
                 }
                 return super.shouldSerializeMember(definedIn, fieldName);
             }
+
+            @Override
+            public boolean isImmutableValueType(Class type) {
+                // The API model shares one instance for every empty collection; write each
+                // occurrence in place instead of a reference to the first one.
+                return isApiCollection(type) || super.isImmutableValueType(type);
+            }
         };
+    }
+
+    private static boolean isApiCollection(Class<?> type) {
+        return isApiModel(type) && (Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type));
+    }
+
+    private static Class<?> collectionInterface(Class<?> type) {
+        if (List.class.isAssignableFrom(type)) {
+            return List.class;
+        } else if (Set.class.isAssignableFrom(type)) {
+            return Set.class;
+        } else if (Map.class.isAssignableFrom(type)) {
+            return Map.class;
+        }
+        return Collection.class;
     }
 
     private static boolean isApiModel(Class<?> type) {
@@ -109,5 +150,36 @@ final class MavenModelConverter extends ReflectionConverter {
         }
         // Write the delegate's fields into the existing wrapper element, also for nested models.
         super.marshal(delegate, writer, context);
+    }
+
+    /**
+     * Writes the API model's string maps the way Maven 3 {@code Properties} fields are written:
+     * one element per key, sorted by key.
+     */
+    private static final class StringMapConverter extends MapConverter {
+        StringMapConverter(Mapper mapper) {
+            super(mapper);
+        }
+
+        @Override
+        public boolean canConvert(Class type) {
+            return isApiModel(type) && Map.class.isAssignableFrom(type);
+        }
+
+        @Override
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            Map<?, ?> map = (Map<?, ?>) source;
+            boolean strings = map.entrySet().stream()
+                    .allMatch(e -> e.getKey() instanceof String && e.getValue() instanceof String);
+            if (!strings) {
+                super.marshal(source, writer, context);
+                return;
+            }
+            for (Map.Entry<?, ?> entry : new TreeMap<>(map).entrySet()) {
+                writer.startNode(entry.getKey().toString());
+                writer.setValue(entry.getValue().toString());
+                writer.endNode();
+            }
+        }
     }
 }

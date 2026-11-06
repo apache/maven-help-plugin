@@ -52,10 +52,22 @@ assert plugins.size() == build.plugins.children().size()
 assert plugins.artifactId*.text().contains('maven-compiler-plugin')
 assert plugins.artifactId*.text().sort() == build.plugins.children().artifactId*.text().sort()
 
-['resources.xml', 'resource.xml', 'build.xml', 'plugins.xml'].each { name ->
-    assert parse(name).depthFirst().findAll {
-        it.name() in ['delegate', 'locations', 'importedFrom']
+def profiles = parse('profiles.xml')
+assert profiles.name() == 'profiles'
+assert profiles.profile.size() == 1
+assert profiles.profile.id.text() == 'it-profile'
+// String maps are written like Maven 3 Properties: one element per key, sorted
+assert profiles.profile.properties.children()*.name() == ['another.key', 'profile.key']
+assert profiles.profile.properties.'profile.key'.text() == 'profile value'
+
+['resources.xml', 'resource.xml', 'build.xml', 'plugins.xml', 'profiles.xml'].each { name ->
+    def nodes = parse(name).depthFirst().toList()
+    // no wrapper, source location or cache fields of the Maven 4 model
+    assert nodes.findAll {
+        it.name() in ['delegate', 'locations', 'importedFrom', 'pluginMap', 'reportSetMap', 'managementKey']
     }.isEmpty()
+    // no implementation classes of the immutable collections and no XStream back references
+    assert nodes.findAll { it.@class.size() > 0 || it.@reference.size() > 0 }.isEmpty()
 }
 
 return true

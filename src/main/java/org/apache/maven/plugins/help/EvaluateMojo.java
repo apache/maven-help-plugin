@@ -373,8 +373,6 @@ public class EvaluateMojo extends AbstractHelpMojo {
                     return MavenModelConverter.createMapper(next);
                 }
             };
-            MavenModelConverter.register(xstream, Model.class);
-            MavenModelConverter.register(xstream, Settings.class);
             xstream.registerConverter(new CollectionConverter(xstream.getMapper()) {
                 @Override
                 public boolean canConvert(Class type) {
@@ -387,6 +385,9 @@ public class EvaluateMojo extends AbstractHelpMojo {
                     return Map.class.isAssignableFrom(type);
                 }
             });
+            // Registered last so that the Maven 4 converters take precedence over the generic ones.
+            MavenModelConverter.register(xstream, Model.class);
+            MavenModelConverter.register(xstream, Settings.class);
             addAlias(xstream);
 
             // handle Properties a la Maven

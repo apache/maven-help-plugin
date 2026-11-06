@@ -45,4 +45,14 @@ under the License.
       </resource>
     </resources>
   </build>
+
+  <profiles>
+    <profile>
+      <id>it-profile</id>
+      <properties>
+        <profile.key>profile value</profile.key>
+        <another.key>another value</another.key>
+      </properties>
+    </profile>
+  </profiles>
 </project>
