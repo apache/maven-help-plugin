@@ -20,10 +20,9 @@
 def buildLog = new File( basedir, 'build.log' ); 
 assert buildLog.exists()
 
-// The parent profile is active for the parent project, but inactive for the child.
+// 2 = parent + child
 assert 2 == buildLog.text.count( '  Profile Id: it-repo (Active: true, Source: settings.xml)' )
-assert 1 == buildLog.text.count( '  Profile Id: profile-active-from-parent-pom (Active: true, Source: pom)' )
-assert 1 == buildLog.text.count( '  Profile Id: profile-active-from-parent-pom (Active: false, Source: pom)' )
+assert 2 == buildLog.text.count( '  Profile Id: profile-active-from-parent-pom (Active: true, Source: pom)' )
 assert 2 == buildLog.text.count( '  Profile Id: profile-inactive-from-parent-pom (Active: false, Source: pom)' )
 assert 1 == buildLog.text.count( '  Profile Id: profile-active-from-child-pom (Active: true, Source: pom)' ) 
 assert 1 == buildLog.text.count( '  Profile Id: profile-inactive-from-child-pom (Active: false, Source: pom)' )

@@ -22,11 +22,10 @@ import javax.inject.Inject;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -148,23 +147,40 @@ public class AllProfilesMojo extends AbstractHelpMojo {
 
         getLog().debug("Attempting to read profiles from pom.xml...");
 
-        boolean currentProject = true;
-        while (project != null) {
-            List<Profile> projectProfiles = project.getModel().getProfiles();
-            Set<String> projectProfileIds = new HashSet<>();
-            for (Profile profile : projectProfiles) {
-                allProfiles.put(profile.getId(), profile);
-                projectProfileIds.add(profile.getId());
+        // Keep the current project's activation context while walking its parent models.
+        Map<String, List<String>> injectedProfileIds = project.getInjectedProfileIds();
+        if (project.getActiveProfiles() != null) {
+            for (Profile profile : project.getActiveProfiles()) {
+                activeProfiles.put(profile.getId(), profile);
             }
-            if (currentProject && project.getActiveProfiles() != null) {
-                for (Profile profile : project.getActiveProfiles()) {
-                    if (projectProfileIds.contains(profile.getId()) || "settings.xml".equals(profile.getSource())) {
-                        activeProfiles.put(profile.getId(), profile);
+        }
+
+        while (project != null) {
+            String modelId = project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion();
+            List<String> activeProfileIds = injectedProfileIds.get(modelId);
+            Model originalModel = project.getOriginalModel();
+            if (activeProfileIds == null && originalModel != null) {
+                // Model building can retain uninterpolated coordinates for more distant ancestors.
+                String groupId = originalModel.getGroupId();
+                String version = originalModel.getVersion();
+                if (originalModel.getParent() != null) {
+                    if (groupId == null) {
+                        groupId = originalModel.getParent().getGroupId();
                     }
+                    if (version == null) {
+                        version = originalModel.getParent().getVersion();
+                    }
+                }
+                modelId = groupId + ":" + originalModel.getArtifactId() + ":" + version;
+                activeProfileIds = injectedProfileIds.get(modelId);
+            }
+            for (Profile profile : project.getModel().getProfiles()) {
+                allProfiles.put(profile.getId(), profile);
+                if (activeProfileIds != null && activeProfileIds.contains(profile.getId())) {
+                    activeProfiles.put(profile.getId(), profile);
                 }
             }
             project = project.getParent();
-            currentProject = false;
         }
     }
 
