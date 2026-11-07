@@ -17,10 +17,13 @@
  * under the License.
  */
 
-def result = new File(basedir, 'result.txt').text;
+def result = new groovy.xml.XmlSlurper().parse(new File(basedir, 'result.txt'))
 
-assert result.contains( '<id>deep-clone</id>' )
-assert result.contains( '<password>server-password</password>' )
-assert result.contains( '<passphrase>server-passphrase</passphrase>' )
+assert result.name() == 'server'
+assert result.id.text() == 'deep-clone'
+assert result.password.text() == 'server-password'
+assert result.passphrase.text() == 'server-passphrase'
+assert result.depthFirst().findAll { it.name() == 'delegate' }.isEmpty()
 
-return true;
+assert result.depthFirst().findAll { it.name() in ['locations', 'importedFrom'] }.isEmpty()
+assert result.depthFirst().findAll { it.@class.size() > 0 || it.@reference.size() > 0 }.isEmpty()
