@@ -36,19 +36,19 @@ The `plugin` parameter is meant to provide two things: convenience and prefix-ba
 
 The convenience comes when specifying a plugin by `groupId:artifactId`, or by `groupId:artifactId:version`. Where the more traditional specification of separate fields would mean specifying this:
 
-```unknown
+```bash
 # mvn help:describe -DgroupId=org.somewhere -DartifactId=some-plugin -Dversion=0.0.0
 ```
 
 the use of the plugin parameter allows this:
 
-```unknown
+```bash
 # mvn help:describe -Dplugin=org.somewhere:some-plugin:0.0.0
 ```
 
 Here is an example to describe the Help plugin:
 
-```unknown
+```bash
 # mvn help:describe -Dplugin=org.apache.maven.plugins:maven-help-plugin
 ```
 
@@ -56,7 +56,7 @@ Here is an example to describe the Help plugin:
 
 On the other hand, the plugin parameter also offers the option to specify a plugin by its prefix, like this:
 
-```unknown
+```bash
 # mvn help:describe -Dplugin=help
 ```
 
@@ -96,7 +96,7 @@ The following are some examples:
 ...
 ```
 
-```unknown
+```shell
 # mvn help:describe -Dcmd=compile
 ...
 [INFO] [help:describe]
@@ -129,7 +129,7 @@ It is a part of the lifecycle for the POM packaging 'jar'. This lifecycle includ
 ...
 ```
 
-```unknown
+```shell
 # mvn help:describe -Dcmd=compiler:compile
 ...
 [INFO] 'compiler:compile' is a plugin goal (aka mojo).
@@ -148,7 +148,7 @@ If you want to display less or more detailed information, you can use the `minim
 
 The `minimal` parameter adds a minimal list of information:
 
-```unknown
+```shell
 # mvn help:describe -Dplugin=help -Dminimal=true
 ...
 [INFO] [help:describe]

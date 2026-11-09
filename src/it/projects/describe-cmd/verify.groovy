@@ -19,7 +19,7 @@
 
 def result = new File(basedir, 'result-deploy.txt').text;
 
-def ls = System.getProperty( "line.separator" );
+def ls = System.lineSeparator();
 
 assert result.contains("'deploy' is a phase corresponding to this plugin:" + ls +
         "org.apache.maven.plugins:maven-deploy-plugin")

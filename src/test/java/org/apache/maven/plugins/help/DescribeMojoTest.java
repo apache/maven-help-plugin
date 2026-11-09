@@ -36,6 +36,7 @@ import org.apache.maven.lifecycle.mapping.LifecyclePhase;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MavenPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.Parameter;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
@@ -43,14 +44,18 @@ import org.apache.maven.plugin.version.PluginVersionRequest;
 import org.apache.maven.plugin.version.PluginVersionResolver;
 import org.apache.maven.plugin.version.PluginVersionResult;
 import org.apache.maven.plugins.help.DescribeMojo.PluginInfo;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -77,6 +82,17 @@ class DescribeMojoTest {
     }
 
     @Test
+    void testToLinesRejectsOverflowingIndentation() throws Exception {
+        Method toLines = DescribeMojo.class.getDeclaredMethod("toLines", String.class, int.class, int.class, int.class);
+        toLines.setAccessible(true);
+
+        InvocationTargetException exception = assertThrows(
+                InvocationTargetException.class, () -> toLines.invoke(null, "text", Integer.MAX_VALUE, 2, 80));
+
+        assertTrue(exception.getCause() instanceof MojoFailureException);
+    }
+
+    @Test
     void testValidExpression() throws Exception {
         StringBuilder sb = new StringBuilder();
         MojoDescriptor md = new MojoDescriptor();
@@ -85,7 +101,7 @@ class DescribeMojoTest {
         parameter.setExpression("${valid.expression}");
         md.addParameter(parameter);
 
-        String ls = System.getProperty("line.separator");
+        String ls = System.lineSeparator();
 
         Method describeMojoParameters = DescribeMojo.class.getDeclaredMethod(
                 "describeMojoParameters", MojoDescriptor.class, StringBuilder.class);
@@ -243,6 +259,43 @@ class DescribeMojoTest {
     }
 
     @Test
+    void testLookupPluginDescriptorErrorUsesResolvedPluginCoordinates() throws Exception {
+        DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
+
+        PluginInfo pi = new PluginInfo();
+        pi.setPrefix("help");
+        pi.setVersion("1.0");
+
+        Plugin plugin = new Plugin();
+        plugin.setGroupId("org.test");
+        plugin.setArtifactId("test");
+
+        MojoDescriptorCreator mojoDescriptorCreator = mock(MojoDescriptorCreator.class);
+        MavenPluginManager pluginManager = mock(MavenPluginManager.class);
+        MavenSession session = mock(MavenSession.class);
+        when(session.getRepositorySession()).thenReturn(mock(RepositorySystemSession.class));
+        setFieldsOnMojo(mojo, mojoDescriptorCreator, mock(PluginVersionResolver.class), pluginManager, session);
+        MavenProject mavenProject = new MavenProject();
+        mavenProject.setPluginArtifactRepositories(Collections.emptyList());
+        setParentFieldWithReflection(mojo, "project", mavenProject);
+        when(mojoDescriptorCreator.findPluginForPrefix("help", session)).thenReturn(plugin);
+        when(pluginManager.getPluginDescriptor(any(Plugin.class), anyList(), any()))
+                .thenThrow(new RuntimeException("descriptor failure"));
+
+        Method lookupPluginDescriptor = setLookupPluginDescriptorAccessibility();
+        try {
+            lookupPluginDescriptor.invoke(mojo, pi);
+            fail("Expected plugin descriptor lookup to fail");
+        } catch (InvocationTargetException e) {
+            String message = e.getTargetException().getMessage();
+            assertTrue(message.contains("groupId: 'org.test'"));
+            assertTrue(message.contains("artifactId: 'test'"));
+            assertTrue(message.contains("version: '1.0'"));
+            assertFalse(message.contains("groupId: 'null'"));
+        }
+    }
+
+    @Test
     void testLookupPluginDescriptorPrefixWithoutVersion() throws Throwable {
         DescribeMojo mojo = new DescribeMojo(null, null, null, null, null, null, null);
 
@@ -356,6 +409,43 @@ class DescribeMojoTest {
         } catch (Exception e) {
             fail(e.getMessage());
         }
+    }
+
+    @Test
+    void testDescribePluginResolvesMissingNameAgainstPluginRepositories() throws Exception {
+        RepositorySystem repositorySystem = mock(RepositorySystem.class);
+        when(repositorySystem.readArtifactDescriptor(any(), any())).thenThrow(new RuntimeException("not resolvable"));
+        DescribeMojo mojo = new DescribeMojo(null, repositorySystem, null, null, null, null, null);
+
+        MavenSession session = mock(MavenSession.class);
+        when(session.getRepositorySession()).thenReturn(mock(RepositorySystemSession.class));
+        when(session.getProjectBuildingRequest()).thenReturn(new DefaultProjectBuildingRequest());
+        setParentFieldWithReflection(mojo, "session", session);
+
+        RemoteRepository projectRepo =
+                new RemoteRepository.Builder("project-repo", "default", "https://project.example/").build();
+        RemoteRepository pluginRepo =
+                new RemoteRepository.Builder("plugin-repo", "default", "https://plugin.example/").build();
+        MavenProject mavenProject = mock(MavenProject.class);
+        when(mavenProject.getRemoteProjectRepositories()).thenReturn(Collections.singletonList(projectRepo));
+        when(mavenProject.getRemotePluginRepositories()).thenReturn(Collections.singletonList(pluginRepo));
+        setParentFieldWithReflection(mojo, "project", mavenProject);
+
+        PluginDescriptor pd = new PluginDescriptor();
+        pd.setGroupId("org.test");
+        pd.setArtifactId("test-plugin");
+        pd.setVersion("1.0");
+        // pd.getName() stays null, which is what triggers the fallback artifact resolution
+
+        Method describePlugin =
+                DescribeMojo.class.getDeclaredMethod("describePlugin", PluginDescriptor.class, StringBuilder.class);
+        describePlugin.setAccessible(true);
+        describePlugin.invoke(mojo, pd, new StringBuilder());
+
+        ArgumentCaptor<org.eclipse.aether.resolution.ArtifactDescriptorRequest> captor =
+                ArgumentCaptor.forClass(org.eclipse.aether.resolution.ArtifactDescriptorRequest.class);
+        verify(repositorySystem).readArtifactDescriptor(any(), captor.capture());
+        assertEquals(Collections.singletonList(pluginRepo), captor.getValue().getRepositories());
     }
 
     /**

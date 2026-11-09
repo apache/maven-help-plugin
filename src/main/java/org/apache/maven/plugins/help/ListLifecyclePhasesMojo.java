@@ -73,8 +73,11 @@ public class ListLifecyclePhasesMojo extends AbstractHelpMojo {
                         .forEach(p -> descriptionBuffer.append(" * ").append(p).append(LS));
                 descriptionBuffer.append(LS);
             }
-            getLog().info(LS + "Maven lifecycles defined:" + LS + LS + descriptionBuffer);
-            writeFile(output, descriptionBuffer);
+            if (output != null) {
+                writeFile(output, descriptionBuffer);
+            } else {
+                getLog().info(LS + "Maven lifecycles defined:" + LS + LS + descriptionBuffer);
+            }
         } catch (IOException e) {
             throw new MojoFailureException(e);
         }

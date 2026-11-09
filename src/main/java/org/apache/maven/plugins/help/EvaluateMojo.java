@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -35,6 +36,7 @@ import java.util.jar.JarInputStream;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.converters.collections.PropertiesConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import org.apache.maven.execution.MavenSession;
@@ -85,7 +87,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
     private File output;
 
     /**
-     * This options gives the option to output information in cases where the output has been suppressed by using
+     * This option outputs information in cases where the output has been suppressed by using
      * <code>-q</code> (quiet option) in Maven. This is useful if you like to use
      * <code>maven-help-plugin:evaluate</code> in a script call (for example in bash) like this:
      *
@@ -94,7 +96,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
      * echo $RESULT
      * </pre>
      *
-     * This will only printout the information which has been requested by <code>expression</code> to
+     * This will only print the information which has been requested by <code>expression</code> to
      * <code>stdout</code>.
      *
      * @since 3.1.0
@@ -345,12 +347,12 @@ public class EvaluateMojo extends AbstractHelpMojo {
                 Object elt = list.iterator().next();
 
                 String name = StringUtils.lowercaseFirstLetter(elt.getClass().getSimpleName());
-                currentXStream.alias(pluralize(name), List.class);
+                currentXStream.alias(pluralize(name), list.getClass());
             } else {
                 // try to detect the alias from question
                 if (expr.indexOf('.') != -1) {
                     String name = expr.substring(expr.indexOf('.') + 1, expr.indexOf('}'));
-                    currentXStream.alias(name, List.class);
+                    currentXStream.alias(name, list.getClass());
                 }
             }
         }
@@ -364,6 +366,12 @@ public class EvaluateMojo extends AbstractHelpMojo {
     private XStream getXStream() {
         if (xstream == null) {
             xstream = new XStream();
+            xstream.registerConverter(new CollectionConverter(xstream.getMapper()) {
+                @Override
+                public boolean canConvert(Class type) {
+                    return Collection.class.isAssignableFrom(type);
+                }
+            });
             addAlias(xstream);
 
             // handle Properties a la Maven
@@ -371,7 +379,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
                 /** {@inheritDoc} */
                 @Override
                 public boolean canConvert(Class type) {
-                    return Properties.class == type;
+                    return Properties.class.isAssignableFrom(type);
                 }
 
                 /** {@inheritDoc} */

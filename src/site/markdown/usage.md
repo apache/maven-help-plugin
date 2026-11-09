@@ -36,7 +36,7 @@ The [`active-profiles`](./active-profiles-mojo.html) goal is used to discover wh
 
 You can execute this goal using the following command:
 
-```unknown
+```bash
 # mvn help:active-profiles
 ```
 
@@ -48,7 +48,7 @@ The [`all-profiles`](./all-profiles-mojo.html) goal is used to discover all avai
 
 You can execute this goal using the following command:
 
-```unknown
+```bash
 # mvn help:all-profiles
 ```
 
@@ -60,7 +60,7 @@ The [`describe`](./describe-mojo.html) goal is used to discover information abou
 
 You can execute this goal using the following command:
 
-```unknown
+```bash
 # mvn help:describe -DgroupId=org.somewhere -DartifactId=some-plugin -Dversion=0.0.0
 ```
 
@@ -74,7 +74,7 @@ The [`effective-pom`](./effective-pom-mojo.html) goal is used to make visible th
 
 You can execute this goal using the following command:
 
-```unknown
+```bash
 # mvn help:effective-pom
 ```
 
@@ -86,7 +86,7 @@ The [`effective-settings`](./effective-settings-mojo.html) goal is used to view 
 
 You can execute this goal using the following command:
 
-```unknown
+```bash
 # mvn help:effective-settings
 ```
 
@@ -98,7 +98,7 @@ The [`system`](./system-mojo.html) goal is used to view the system information l
 
 You can execute this goal using the following command:
 
-```unknown
+```bash
 # mvn help:system
 ```
 
@@ -108,7 +108,7 @@ You can execute this goal using the following command:
 
 You could use this interactive goal to evaluate some Maven expressions. To do it, just call the [help:evaluate](./evaluate-mojo.html) goal:
 
-```unknown
+```shell
 # mvn help:evaluate -Dartifact=org.apache.maven.plugins:maven-help-plugin
 ...
 [INFO] [help:evaluate]

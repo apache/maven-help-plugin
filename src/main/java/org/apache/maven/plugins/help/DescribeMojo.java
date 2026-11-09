@@ -22,8 +22,6 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -333,7 +331,8 @@ public class DescribeMojo extends AbstractHelpMojo {
         } catch (Exception e) {
             throw new MojoExecutionException(
                     "Error retrieving plugin descriptor for:" + LS + LS + "groupId: '"
-                            + groupId + "'" + LS + "artifactId: '" + artifactId + "'" + LS + "version: '" + version
+                            + forLookup.getGroupId() + "'" + LS + "artifactId: '" + forLookup.getArtifactId()
+                            + "'" + LS + "version: '" + forLookup.getVersion()
                             + "'" + LS
                             + LS,
                     e);
@@ -404,7 +403,8 @@ public class DescribeMojo extends AbstractHelpMojo {
             pbr.setProject(null);
             pbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             try {
-                Artifact artifactCopy = resolveArtifact(aetherArtifact).getArtifact();
+                Artifact artifactCopy = resolveArtifact(aetherArtifact, project.getRemotePluginRepositories())
+                        .getArtifact();
                 name = projectBuilder
                         .build(RepositoryUtils.toArtifact(artifactCopy), pbr)
                         .getProject()
@@ -733,48 +733,78 @@ public class DescribeMojo extends AbstractHelpMojo {
     }
 
     /**
-     * Invoke the following private method
-     * <code>HelpMojo#toLines(String, int, int, int)</code>
+     * Splits and wraps display text without depending on the generated help mojo implementation.
      *
-     * @param text       The text to split into lines, must not be <code>null</code>.
-     * @param indent     The base indentation level of each line, must not be negative.
-     * @param indentSize The size of each indentation, must not be negative.
-     * @param lineLength The length of the line, must not be negative.
-     * @return The sequence of display lines, never <code>null</code>.
-     * @throws MojoFailureException   if any can not invoke the method
-     * @throws MojoExecutionException if no line was found for <code>text</code>
+     * @param text       the text to split
+     * @param indent     the base indentation level of each line
+     * @param indentSize the size of each indentation
+     * @param lineLength the maximum line length
+     * @return the display lines
+     * @throws MojoFailureException if the requested indentation cannot be represented safely
      */
     private static List<String> toLines(String text, int indent, int indentSize, int lineLength)
-            throws MojoFailureException, MojoExecutionException {
-        try {
-            Method m =
-                    HelpMojo.class.getDeclaredMethod("toLines", String.class, Integer.TYPE, Integer.TYPE, Integer.TYPE);
-            m.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            List<String> output = (List<String>) m.invoke(HelpMojo.class, text, indent, indentSize, lineLength);
+            throws MojoFailureException {
+        List<String> lines = new ArrayList<>();
+        String ind = repeat("\t", indent);
 
-            if (output == null) {
-                throw new MojoExecutionException("No output was specified.");
-            }
-
-            return output;
-        } catch (SecurityException e) {
-            throw new MojoFailureException("SecurityException: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            throw new MojoFailureException("IllegalArgumentException: " + e.getMessage());
-        } catch (NoSuchMethodException e) {
-            throw new MojoFailureException("NoSuchMethodException: " + e.getMessage());
-        } catch (IllegalAccessException e) {
-            throw new MojoFailureException("IllegalAccessException: " + e.getMessage());
-        } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause();
-
-            if (cause instanceof NegativeArraySizeException) {
-                throw new MojoFailureException("NegativeArraySizeException: " + cause.getMessage());
-            }
-
-            throw new MojoFailureException("InvocationTargetException: " + e.getMessage());
+        for (String plainLine : text.split("(\r\n)|(\r)|(\n)")) {
+            addLines(lines, ind + plainLine, indentSize, lineLength);
         }
+        return lines;
+    }
+
+    private static void addLines(List<String> lines, String line, int indentSize, int lineLength)
+            throws MojoFailureException {
+        int lineIndent = getIndentLevel(line);
+        StringBuilder buf = new StringBuilder(256);
+
+        for (String token : line.split(" +")) {
+            if (buf.length() > 0) {
+                if (buf.length() + token.length() >= lineLength) {
+                    lines.add(buf.toString());
+                    buf.setLength(0);
+                    buf.append(repeat(" ", Math.multiplyExact(lineIndent, indentSize)));
+                } else {
+                    buf.append(' ');
+                }
+            }
+            for (int j = 0; j < token.length(); j++) {
+                char c = token.charAt(j);
+                if (c == '\t') {
+                    buf.append(repeat(" ", indentSize - buf.length() % indentSize));
+                } else if (c == '\u00A0') {
+                    buf.append(' ');
+                } else {
+                    buf.append(c);
+                }
+            }
+        }
+        lines.add(buf.toString());
+    }
+
+    private static int getIndentLevel(String line) {
+        int level = 0;
+        for (int i = 0; i < line.length() && line.charAt(i) == '\t'; i++) {
+            level++;
+        }
+        for (int i = level + 1; i <= level + 4 && i < line.length(); i++) {
+            if (line.charAt(i) == '\t') {
+                level++;
+                break;
+            }
+        }
+        return level;
+    }
+
+    private static String repeat(String str, int repeat) throws MojoFailureException {
+        if (repeat < 0 || ((long) repeat * str.length()) >= Integer.MAX_VALUE) {
+            throw new MojoFailureException("Requested indentation is too large");
+        }
+        StringBuilder result = new StringBuilder((int) ((long) repeat * str.length()));
+        for (int i = 0; i < repeat; i++) {
+            result.append(str);
+        }
+        return result.toString();
     }
 
     /**
@@ -880,10 +910,12 @@ public class DescribeMojo extends AbstractHelpMojo {
         pbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
         try {
             Artifact jar = resolveArtifact(
-                            new DefaultArtifact(pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion()))
+                            new DefaultArtifact(pd.getGroupId(), pd.getArtifactId(), "jar", pd.getVersion()),
+                            project.getRemotePluginRepositories())
                     .getArtifact();
             Artifact pom = resolveArtifact(
-                            new DefaultArtifact(pd.getGroupId(), pd.getArtifactId(), "pom", pd.getVersion()))
+                            new DefaultArtifact(pd.getGroupId(), pd.getArtifactId(), "pom", pd.getVersion()),
+                            project.getRemotePluginRepositories())
                     .getArtifact();
             MavenProject mavenProject = projectBuilder.build(pom.getFile(), pbr).getProject();
             urls.add(jar.getFile().toURI().toURL());

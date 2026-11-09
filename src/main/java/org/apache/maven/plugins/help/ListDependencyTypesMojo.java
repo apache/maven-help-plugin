@@ -92,8 +92,11 @@ public class ListDependencyTypesMojo extends AbstractHelpMojo {
                 }
                 descriptionBuffer.append(LS);
             }
-            getLog().info(LS + "Maven Dependency Types defined:" + LS + LS + descriptionBuffer);
-            writeFile(output, descriptionBuffer);
+            if (output != null) {
+                writeFile(output, descriptionBuffer);
+            } else {
+                getLog().info(LS + "Maven Dependency Types defined:" + LS + LS + descriptionBuffer);
+            }
         } catch (IOException e) {
             throw new MojoFailureException(e);
         }

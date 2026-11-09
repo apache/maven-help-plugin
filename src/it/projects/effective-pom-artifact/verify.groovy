@@ -19,7 +19,7 @@
 def result = new File(basedir, 'result.txt'); 
 assert result.exists()
 
-def LS = System.getProperty("line.separator") 
+def LS = System.lineSeparator() 
 assert result.text.find('(?s)' +
 '  <groupId>org.apache.maven.plugins</groupId>' + LS +
 '  <artifactId>maven-help-plugin</artifactId>'

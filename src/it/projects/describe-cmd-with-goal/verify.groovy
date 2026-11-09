@@ -19,7 +19,7 @@
 
 def result = new File(basedir, 'result.txt').text;
 
-def ls = System.getProperty( "line.separator" );
+def ls = System.lineSeparator();
 
 assert result.contains("'deploy:deploy' is a plugin goal (aka mojo)." + ls +
                        "Mojo: 'deploy:deploy'" + ls + 
