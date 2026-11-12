@@ -30,6 +30,10 @@ under the License.
     <module>child</module>
   </modules>
   <profiles>
+    <!-- An inactive POM profile must not change the active settings profile source. -->
+    <profile>
+      <id>it-repo</id>
+    </profile>
     <profile>
       <id>profile-active-from-parent-pom</id>
       <activation>

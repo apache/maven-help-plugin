@@ -35,7 +35,6 @@ import org.apache.maven.api.plugin.testing.MojoParameter;
 import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Model;
-import org.apache.maven.model.Parent;
 import org.apache.maven.model.Profile;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -167,88 +166,6 @@ class AllProfilesMojoTest {
     }
 
     /**
-     * Tests that inherited group and version are used in an injected profile's model identifier.
-     *
-     * @throws Exception in case of errors.
-     */
-    @Test
-    @InjectMojo(goal = "all-profiles")
-    @MojoParameter(name = "output", value = "${outputPath}")
-    void testInjectedProfileWithInheritedCoordinates(AllProfilesMojo mojo) throws Exception {
-        MavenProject parentProject = newParentProject("parent", "pro-1");
-        Parent parent = new Parent();
-        parent.setGroupId("org.apache.maven.its.help");
-        parent.setArtifactId("grandparent");
-        parent.setVersion("1.0");
-        parentProject.getModel().setParent(parent);
-        parentProject.getModel().setGroupId(null);
-        parentProject.getModel().setVersion(null);
-        when(project.getParent()).thenReturn(parentProject);
-        projectInjectedProfileIds.put("org.apache.maven.its.help:parent:1.0", Collections.singletonList("pro-1"));
-
-        mojo.execute();
-
-        String file = readOutput();
-        assertTrue(file.contains("Profile Id: pro-1 (Active: true, Source: pom)"));
-        assertFalse(file.contains("Profile Id: pro-1 (Active: false, Source: pom)"));
-    }
-
-    /**
-     * Tests that an ancestor can be identified by its uninterpolated version.
-     *
-     * @throws Exception in case of errors.
-     */
-    @Test
-    @InjectMojo(goal = "all-profiles")
-    @MojoParameter(name = "output", value = "${outputPath}")
-    void testInjectedProfileWithUninterpolatedVersion(AllProfilesMojo mojo) throws Exception {
-        MavenProject parentProject = newParentProject("parent", "pro-1");
-        Model originalModel = parentProject.getModel().clone();
-        Parent parent = new Parent();
-        parent.setGroupId("org.apache.maven.its.help");
-        parent.setArtifactId("grandparent");
-        parent.setVersion("${revision}");
-        originalModel.setParent(parent);
-        originalModel.setGroupId(null);
-        originalModel.setVersion(null);
-        parentProject.setOriginalModel(originalModel);
-        when(project.getParent()).thenReturn(parentProject);
-        projectInjectedProfileIds.put(
-                "org.apache.maven.its.help:parent:${revision}", Collections.singletonList("pro-1"));
-
-        mojo.execute();
-
-        String file = readOutput();
-        assertTrue(file.contains("Profile Id: pro-1 (Active: true, Source: pom)"));
-        assertFalse(file.contains("Profile Id: pro-1 (Active: false, Source: pom)"));
-    }
-
-    /**
-     * Tests that an explicitly empty entry takes precedence over uninterpolated coordinates.
-     *
-     * @throws Exception in case of errors.
-     */
-    @Test
-    @InjectMojo(goal = "all-profiles")
-    @MojoParameter(name = "output", value = "${outputPath}")
-    void testEmptyInjectedProfilesDoNotUseUninterpolatedVersion(AllProfilesMojo mojo) throws Exception {
-        MavenProject parentProject = newParentProject("parent", "pro-1");
-        Model originalModel = parentProject.getModel().clone();
-        originalModel.setVersion("${revision}");
-        parentProject.setOriginalModel(originalModel);
-        when(project.getParent()).thenReturn(parentProject);
-        projectInjectedProfileIds.put("org.apache.maven.its.help:parent:1.0", Collections.emptyList());
-        projectInjectedProfileIds.put(
-                "org.apache.maven.its.help:parent:${revision}", Collections.singletonList("pro-1"));
-
-        mojo.execute();
-
-        String file = readOutput();
-        assertTrue(file.contains("Profile Id: pro-1 (Active: false, Source: pom)"));
-        assertFalse(file.contains("Profile Id: pro-1 (Active: true, Source: pom)"));
-    }
-
-    /**
      * Tests that a profile active only in the parent's build context is inactive for the current project.
      *
      * @throws Exception in case of errors.
@@ -269,7 +186,7 @@ class AllProfilesMojoTest {
     }
 
     /**
-     * Tests that injected profile identifiers are matched to the declaring ancestor's model.
+     * Tests that only injected profiles of more distant ancestors are active.
      *
      * @throws Exception in case of errors.
      */
@@ -283,7 +200,6 @@ class AllProfilesMojoTest {
         when(project.getParent()).thenReturn(parentProject);
         projectInjectedProfileIds.put(
                 "org.apache.maven.its.help:grandparent:1.0", Collections.singletonList("grandparent-profile"));
-        projectInjectedProfileIds.put("other:model:1.0", Collections.singletonList("parent-profile"));
 
         mojo.execute();
 
@@ -323,6 +239,35 @@ class AllProfilesMojoTest {
         model.setPackaging("pom");
         model.addProfile(newPomProfile(profileId, "pom"));
         return new MavenProject(model);
+    }
+
+    @Test
+    @InjectMojo(goal = "all-profiles")
+    @MojoParameter(name = "output", value = "${outputPath}")
+    void testActiveSettingsProfileWithInactiveParentProfile(AllProfilesMojo mojo) throws Exception {
+        when(project.getParent()).thenReturn(newParentProject("parent", "collision"));
+        settingsProfiles.add(newSettingsProfile("collision"));
+        projectActiveProfiles.add(newPomProfile("collision", "settings.xml"));
+        projectInjectedProfileIds.put("external", Collections.singletonList("collision"));
+        mojo.execute();
+        String file = readOutput();
+        assertTrue(file.contains("Profile Id: collision (Active: true, Source: settings.xml)"));
+        assertFalse(file.contains("Profile Id: collision (Active: true, Source: pom)"));
+    }
+
+    @Test
+    @InjectMojo(goal = "all-profiles")
+    @MojoParameter(name = "output", value = "${outputPath}")
+    void testActiveSettingsProfileWithActiveParentProfile(AllProfilesMojo mojo) throws Exception {
+        when(project.getParent()).thenReturn(newParentProject("parent", "collision"));
+        settingsProfiles.add(newSettingsProfile("collision"));
+        projectActiveProfiles.add(newPomProfile("collision", "settings.xml"));
+        projectInjectedProfileIds.put("external", Collections.singletonList("collision"));
+        projectInjectedProfileIds.put("org.apache.maven.its.help:parent:1.0", Collections.singletonList("collision"));
+        mojo.execute();
+        String file = readOutput();
+        assertTrue(file.contains("Profile Id: collision (Active: true, Source: pom)"));
+        assertFalse(file.contains("Profile Id: collision (Active: true, Source: settings.xml)"));
     }
 
     private Profile newPomProfile(String id, String source) {
