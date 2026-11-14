@@ -22,8 +22,10 @@ import javax.inject.Inject;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.maven.model.Profile;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -152,12 +154,25 @@ public class AllProfilesMojo extends AbstractHelpMojo {
 
         getLog().debug("Attempting to read profiles from pom.xml...");
 
+        // Keep the current project's activation context while walking its parent models.
+        Set<String> injectedProfileIds = new HashSet<>();
+        for (Map.Entry<String, List<String>> entry :
+                project.getInjectedProfileIds().entrySet()) {
+            // External profiles come from settings.xml, not an ancestor POM.
+            if (!"external".equals(entry.getKey())) {
+                injectedProfileIds.addAll(entry.getValue());
+            }
+        }
+        if (project.getActiveProfiles() != null) {
+            for (Profile profile : project.getActiveProfiles()) {
+                activeProfiles.put(profile.getId(), profile);
+            }
+        }
+
         while (project != null) {
             for (Profile profile : project.getModel().getProfiles()) {
                 allProfiles.put(profile.getId(), profile);
-            }
-            if (project.getActiveProfiles() != null) {
-                for (Profile profile : project.getActiveProfiles()) {
+                if (injectedProfileIds.contains(profile.getId())) {
                     activeProfiles.put(profile.getId(), profile);
                 }
             }
