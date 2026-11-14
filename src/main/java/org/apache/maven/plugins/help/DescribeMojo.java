@@ -57,7 +57,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.reporting.MavenReport;
-import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.apache.maven.tools.plugin.generator.HtmlToPlainTextConverter;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.artifact.Artifact;
@@ -418,16 +417,12 @@ public class DescribeMojo extends AbstractHelpMojo {
                 name = pd.getId();
             }
         }
-        append(buffer, "Name", MessageUtils.buffer().strong(name).build(), 0);
+        append(buffer, "Name", buffer().strong(name).build(), 0);
         appendAsParagraph(buffer, "Description", toDescription(pd.getDescription()), 0);
         append(buffer, "Group Id", pd.getGroupId(), 0);
         append(buffer, "Artifact Id", pd.getArtifactId(), 0);
         append(buffer, "Version", pd.getVersion(), 0);
-        append(
-                buffer,
-                "Goal Prefix",
-                MessageUtils.buffer().strong(pd.getGoalPrefix()).build(),
-                0);
+        append(buffer, "Goal Prefix", buffer().strong(pd.getGoalPrefix()).build(), 0);
         buffer.append(LS);
 
         List<MojoDescriptor> mojos = pd.getMojos();
@@ -490,7 +485,7 @@ public class DescribeMojo extends AbstractHelpMojo {
      */
     private void describeMojoGuts(MojoDescriptor md, StringBuilder buffer, boolean fullDescription)
             throws MojoFailureException, MojoExecutionException {
-        append(buffer, MessageUtils.buffer().strong(md.getFullGoalName()).build(), 0);
+        append(buffer, buffer().strong(md.getFullGoalName()).build(), 0);
 
         // indent 1
         appendAsParagraph(buffer, "Description", toDescription(md.getDescription()), 1);
@@ -501,10 +496,7 @@ public class DescribeMojo extends AbstractHelpMojo {
         }
 
         if (deprecation != null) {
-            append(
-                    buffer,
-                    MessageUtils.buffer().warning("Deprecated. " + deprecation).build(),
-                    1);
+            append(buffer, buffer().warning("Deprecated. " + deprecation).build(), 1);
         }
 
         if (isReportGoal(md)) {
@@ -590,11 +582,11 @@ public class DescribeMojo extends AbstractHelpMojo {
             }
 
             if (defaultVal != null && !defaultVal.isEmpty()) {
-                defaultVal = " (Default: " + MessageUtils.buffer().strong(defaultVal) + ")";
+                defaultVal = " (Default: " + buffer().strong(defaultVal).build() + ")";
             } else {
                 defaultVal = "";
             }
-            append(buffer, MessageUtils.buffer().strong(parameter.getName()) + defaultVal, 2);
+            append(buffer, buffer().strong(parameter.getName()).build() + defaultVal, 2);
 
             String alias = parameter.getAlias();
             if (!(alias == null || alias.isEmpty())) {
@@ -629,12 +621,7 @@ public class DescribeMojo extends AbstractHelpMojo {
             }
 
             if (deprecation != null) {
-                append(
-                        buffer,
-                        MessageUtils.buffer()
-                                .warning("Deprecated. " + deprecation)
-                                .build(),
-                        3);
+                append(buffer, buffer().warning("Deprecated. " + deprecation).build(), 3);
             }
         }
     }
@@ -947,6 +934,16 @@ public class DescribeMojo extends AbstractHelpMojo {
         }
 
         return "(no description available)";
+    }
+
+    /**
+     * Creates a new message buffer. Encapsulates the deprecated {@code MessageUtils} and {@code MessageBuilder} usage.
+     *
+     * @return a new message buffer
+     */
+    @SuppressWarnings("deprecation")
+    private static org.apache.maven.shared.utils.logging.MessageBuilder buffer() {
+        return org.apache.maven.shared.utils.logging.MessageUtils.buffer();
     }
 
     /**
