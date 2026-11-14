@@ -25,6 +25,7 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -39,7 +40,6 @@ import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.SettingsUtils;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
@@ -94,7 +94,7 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
                 ? copySettings.getModelEncoding()
                 : System.getProperty("file.encoding");
         XMLWriter writer = new PrettyPrintXMLWriter(
-                w, StringUtils.repeat(" ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE), encoding, null);
+                w, String.join("", Collections.nCopies(XmlWriterUtil.DEFAULT_INDENTATION_SIZE, " ")), encoding, null);
 
         writeHeader(writer);
 
@@ -127,7 +127,7 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
     private static void hidePasswords(Settings aSettings) {
         List<Proxy> proxies = aSettings.getProxies();
         for (Proxy proxy : proxies) {
-            if (StringUtils.isNotEmpty(proxy.getPassword())) {
+            if (isNotEmpty(proxy.getPassword())) {
                 proxy.setPassword("***");
             }
         }
@@ -135,11 +135,11 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
         List<Server> servers = aSettings.getServers();
         for (Server server : servers) {
             // Password
-            if (StringUtils.isNotEmpty(server.getPassword())) {
+            if (isNotEmpty(server.getPassword())) {
                 server.setPassword("***");
             }
             // Passphrase
-            if (StringUtils.isNotEmpty(server.getPassphrase())) {
+            if (isNotEmpty(server.getPassphrase())) {
                 server.setPassphrase("***");
             }
         }
@@ -251,5 +251,9 @@ public class EffectiveSettingsMojo extends AbstractEffectiveMojo {
         }
 
         return userName;
+    }
+
+    private static boolean isNotEmpty(String str) {
+        return str != null && !str.isEmpty();
     }
 }
