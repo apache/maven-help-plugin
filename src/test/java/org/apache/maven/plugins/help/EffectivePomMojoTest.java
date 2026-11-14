@@ -75,8 +75,6 @@ class EffectivePomMojoTest {
 
         model.setProperties(originalProperties);
 
-        when(project.getModel()).thenReturn(model);
-
         Path outputPath = Files.createTempFile(tempDir, "maven-help-plugin-test-", ".xml");
         mavenSession.getUserProperties().setProperty("outputPath", outputPath.toString());
     }
@@ -89,6 +87,7 @@ class EffectivePomMojoTest {
         Properties expectedProperties = new Properties();
         expectedProperties.putAll(originalProperties);
 
+        when(project.getModel()).thenReturn(model);
         setVariableValueToObject(mojo, "projects", Collections.singletonList(project));
         setVariableValueToObject(mojo, "mojoExecution", mojoExecution);
 
@@ -103,5 +102,17 @@ class EffectivePomMojoTest {
                 expectedProperties,
                 model.getProperties(),
                 "effective-pom must not modify the properties of the project model");
+    }
+
+    @Test
+    void encodingOrDefaultFallsBackToUtf8() {
+        assertEquals("UTF-8", EffectivePomMojo.encodingOrDefault(null));
+        assertEquals("UTF-8", EffectivePomMojo.encodingOrDefault(""));
+    }
+
+    @Test
+    void encodingOrDefaultKeepsExplicitValue() {
+        assertEquals("UTF-8", EffectivePomMojo.encodingOrDefault("UTF-8"));
+        assertEquals("ISO-8859-1", EffectivePomMojo.encodingOrDefault("ISO-8859-1"));
     }
 }
