@@ -38,7 +38,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
-import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
@@ -139,18 +138,31 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
 
             getLog().info("Effective-POM written to: " + output);
         } else {
-            if (MessageUtils.isColorEnabled()) {
-                // add color to comments
-                String comment = MessageUtils.buffer().project("<!--.-->").build();
-                int dotIndex = comment.indexOf(".");
-                String commentStart = comment.substring(0, dotIndex);
-                String commentEnd = comment.substring(dotIndex + 1);
-                effectivePom = effectivePom.replace("<!--", commentStart).replace("-->", commentEnd);
-            }
+            effectivePom = colorizeComments(effectivePom);
 
             getLog().info(LS + "Effective POMs, after inheritance, interpolation, and profiles are applied:" + LS + LS
                     + effectivePom + LS);
         }
+    }
+
+    /**
+     * Adds color to XML comments if color output is enabled. Encapsulates the deprecated {@code MessageUtils} usage.
+     *
+     * @param effectivePom the effective POM content
+     * @return the effective POM content with colored comments
+     */
+    @SuppressWarnings("deprecation")
+    private static String colorizeComments(String effectivePom) {
+        if (!org.apache.maven.shared.utils.logging.MessageUtils.isColorEnabled()) {
+            return effectivePom;
+        }
+        String comment = org.apache.maven.shared.utils.logging.MessageUtils.buffer()
+                .project("<!--.-->")
+                .build();
+        int dotIndex = comment.indexOf(".");
+        String commentStart = comment.substring(0, dotIndex);
+        String commentEnd = comment.substring(dotIndex + 1);
+        return effectivePom.replace("<!--", commentStart).replace("-->", commentEnd);
     }
 
     /**
