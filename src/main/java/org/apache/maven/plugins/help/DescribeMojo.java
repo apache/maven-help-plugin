@@ -59,7 +59,6 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.apache.maven.tools.plugin.generator.HtmlToPlainTextConverter;
-import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -283,15 +282,19 @@ public class DescribeMojo extends AbstractHelpMojo {
      * @throws MojoExecutionException if the plugin could not be verify
      * @throws MojoFailureException   if groupId or artifactId is empty
      */
+    private static boolean isNotEmpty(String str) {
+        return str != null && !str.isEmpty();
+    }
+
     private PluginDescriptor lookupPluginDescriptor(PluginInfo pi) throws MojoExecutionException, MojoFailureException {
         Plugin forLookup = null;
-        if (StringUtils.isNotEmpty(pi.getPrefix())) {
+        if (isNotEmpty(pi.getPrefix())) {
             try {
                 forLookup = mojoDescriptorCreator.findPluginForPrefix(pi.getPrefix(), session);
             } catch (NoPluginFoundForPrefixException e) {
                 throw new MojoExecutionException("Unable to find the plugin with prefix: " + pi.getPrefix(), e);
             }
-        } else if (StringUtils.isNotEmpty(pi.getGroupId()) && StringUtils.isNotEmpty(pi.getArtifactId())) {
+        } else if (isNotEmpty(pi.getGroupId()) && isNotEmpty(pi.getArtifactId())) {
             forLookup = new Plugin();
             forLookup.setGroupId(pi.getGroupId());
             forLookup.setArtifactId(pi.getArtifactId());
@@ -311,7 +314,7 @@ public class DescribeMojo extends AbstractHelpMojo {
             throw new MojoFailureException(msg);
         }
 
-        if (StringUtils.isNotEmpty(pi.getVersion())) {
+        if (isNotEmpty(pi.getVersion())) {
             forLookup.setVersion(pi.getVersion());
         } else {
             try {

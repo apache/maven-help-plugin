@@ -39,7 +39,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.shared.utils.logging.MessageUtils;
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.PrettyPrintXMLWriter;
 import org.codehaus.plexus.util.xml.XMLWriter;
 import org.codehaus.plexus.util.xml.XmlWriterUtil;
@@ -109,7 +108,7 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
         StringWriter w = new StringWriter();
         String encoding = output != null ? project.getModel().getModelEncoding() : System.getProperty("file.encoding");
         XMLWriter writer = new PrettyPrintXMLWriter(
-                w, StringUtils.repeat(" ", XmlWriterUtil.DEFAULT_INDENTATION_SIZE), encoding, null);
+                w, String.join("", Collections.nCopies(XmlWriterUtil.DEFAULT_INDENTATION_SIZE, " ")), encoding, null);
 
         writeHeader(writer);
 
@@ -220,7 +219,7 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
 
             String s = source.getModelId(); // by default, display modelId
 
-            if (StringUtils.isBlank(s) || s.contains("[unknown-version]")) {
+            if (s == null || s.chars().allMatch(Character::isWhitespace) || s.contains("[unknown-version]")) {
                 // unless it is blank or does not provide version information
                 s = source.toString();
             }

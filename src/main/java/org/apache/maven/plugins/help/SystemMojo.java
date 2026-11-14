@@ -21,12 +21,12 @@ package org.apache.maven.plugins.help;
 import javax.inject.Inject;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.project.ProjectBuilder;
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.eclipse.aether.RepositorySystem;
 
@@ -57,16 +57,16 @@ public class SystemMojo extends AbstractHelpMojo {
         StringBuilder message = new StringBuilder();
 
         message.append(LS);
-        message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
-        message.append(StringUtils.repeat("=", REPEAT));
+        message.append(repeat("=", LINE_LENGTH)).append(LS);
+        message.append(repeat("=", REPEAT));
         message.append(" Platform Properties Details ");
-        message.append(StringUtils.repeat("=", REPEAT)).append(LS);
-        message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
+        message.append(repeat("=", REPEAT)).append(LS);
+        message.append(repeat("=", LINE_LENGTH)).append(LS);
         message.append(LS);
 
-        message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
+        message.append(repeat("=", LINE_LENGTH)).append(LS);
         message.append("System Properties").append(LS);
-        message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
+        message.append(repeat("=", LINE_LENGTH)).append(LS);
 
         Properties systemProperties = System.getProperties();
         for (String key : systemProperties.stringPropertyNames()) {
@@ -75,9 +75,9 @@ public class SystemMojo extends AbstractHelpMojo {
         }
 
         message.append(LS).append(LS);
-        message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
+        message.append(repeat("=", LINE_LENGTH)).append(LS);
         message.append("Environment Variables").append(LS);
-        message.append(StringUtils.repeat("=", LINE_LENGTH)).append(LS);
+        message.append(repeat("=", LINE_LENGTH)).append(LS);
         Properties envVars = CommandLineUtils.getSystemEnvVars();
         for (String key : envVars.stringPropertyNames()) {
             message.append(LS);
@@ -104,5 +104,9 @@ public class SystemMojo extends AbstractHelpMojo {
         } else {
             getLog().info(message);
         }
+    }
+
+    private static String repeat(String str, int count) {
+        return String.join("", Collections.nCopies(count, str));
     }
 }

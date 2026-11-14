@@ -57,7 +57,6 @@ import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Writer;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.components.interactivity.InputHandler;
-import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.artifact.Artifact;
@@ -348,7 +347,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
             if (!list.isEmpty()) {
                 Object elt = list.iterator().next();
 
-                String name = StringUtils.lowercaseFirstLetter(elt.getClass().getSimpleName());
+                String name = lowercaseFirstLetter(elt.getClass().getSimpleName());
                 currentXStream.alias(pluralize(name), list.getClass());
             } else {
                 // try to detect the alias from question
@@ -450,7 +449,7 @@ public class EvaluateMojo extends AbstractHelpMojo {
                     if (name.contains(packageFilter) && !name.contains("$") && !name.endsWith(".package-info")) {
                         try {
                             Class<?> clazz = Class.forName(name);
-                            String alias = StringUtils.lowercaseFirstLetter(clazz.getSimpleName());
+                            String alias = lowercaseFirstLetter(clazz.getSimpleName());
                             xstreamObject.alias(alias, clazz);
                             if (!clazz.equals(Model.class)) {
                                 xstreamObject.omitField(clazz, "modelEncoding"); // unnecessary field
@@ -515,6 +514,10 @@ public class EvaluateMojo extends AbstractHelpMojo {
                 + properties.getProperty("version", "unknown");
 
         return getMavenProject(artifactString);
+    }
+
+    private static String lowercaseFirstLetter(String data) {
+        return Character.toLowerCase(data.charAt(0)) + data.substring(1);
     }
 
     /**
