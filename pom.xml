@@ -258,6 +258,7 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-plugin-plugin</artifactId>
           <configuration>
             <helpPackageName>org.apache.maven.plugins.help</helpPackageName>
