@@ -54,6 +54,7 @@ import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,9 +72,7 @@ import static org.mockito.Mockito.when;
 class DescribeMojoTest {
 
     @Test
-    void testGetExpressionsRoot()
-            throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
-                    InvocationTargetException {
+    void testGetExpressionsRoot() throws Exception {
         DescribeMojo describeMojo = new DescribeMojo(null, null, null, null, null, null, null);
         Method toLines =
                 describeMojo.getClass().getDeclaredMethod("toLines", String.class, int.class, int.class, int.class);
@@ -89,7 +88,7 @@ class DescribeMojoTest {
         InvocationTargetException exception = assertThrows(
                 InvocationTargetException.class, () -> toLines.invoke(null, "text", Integer.MAX_VALUE, 2, 80));
 
-        assertTrue(exception.getCause() instanceof MojoFailureException);
+        assertInstanceOf(MojoFailureException.class, exception.getCause());
     }
 
     @Test
@@ -559,8 +558,9 @@ class DescribeMojoTest {
             describeCommand.invoke(mojo, new StringBuilder());
             fail("Expected MojoExecutionException");
         } catch (InvocationTargetException e) {
-            assertTrue(
-                    e.getTargetException() instanceof MojoExecutionException,
+            assertInstanceOf(
+                    MojoExecutionException.class,
+                    e.getTargetException(),
                     "Expected MojoExecutionException, got: " + e.getTargetException());
             assertTrue(e.getTargetException().getMessage().contains("nonexistent-phase"));
         }
