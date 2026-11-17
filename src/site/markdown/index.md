@@ -3,7 +3,7 @@ title: Introduction
 author: 
   - Maria Odea Ching
   - Vincent Siveton
-date: 2013-07-22
+date: 2026-11-17
 ---
 
 <!--
@@ -26,34 +26,73 @@ under the License.
 -->
 
 # Apache Maven Help Plugin
-The Maven Help Plugin is used to get relative information about a project or the system. It can be used to get a description of a particular plugin, including the plugin's goals with their parameters and component requirements, the effective POM and effective settings of the current build, and the profiles applied to the current project being built.
 
-## Goals Overview
+When a build does something unexpected, the Help Plugin shows you what Maven actually sees:
+the final POM after inheritance and profiles, the merged settings, the active profiles, the
+value of any property, and what a plugin goal does and which parameters it takes.
 
-The Help Plugin has 8 goals:
+You don't need to add the plugin to your POM. Run a goal from your project directory:
 
-- [help:active-profiles](./active-profiles-mojo.html) lists the profiles which are currently active for the build.
-- [help:all-profiles](./all-profiles-mojo.html) lists the available profiles under the current project.
-- [help:describe](./describe-mojo.html) describes the attributes of a Plugin and/or a Mojo (Maven plain Old Java Object).
-- [help:effective-pom](./effective-pom-mojo.html) displays the effective POM as an XML for the current build, with the active profiles factored in. If `verbose`, a comment is added to each XML element describing the origin of the line.
-- [help:effective-settings](./effective-settings-mojo.html) displays the calculated settings as an XML for the project, given any profile enhancement and the inheritance of the global settings into the user-level settings.
-- [help:evaluate](./evaluate-mojo.html) evaluates Maven expressions given by the user in an interactive mode.
-- [help:help](./help-mojo.html) Display help information for the maven-help-plugin itself.
-- [help:system](./system-mojo.html) displays a list of the platform details like system properties and environment variables.
-## Major Version Upgrade to version 3.0.0
+```bash
+mvn help:effective-pom
+```
 
-Please note that the goal `expressions` has been completely removed from the plugin. All the Maven expressions that are supported as plugin parameters are available in the Javadoc of the [`PluginParameterExpressionEvaluator`](/ref/current/maven-core/apidocs/org/apache/maven/plugin/PluginParameterExpressionEvaluator.html) class.
+## What do you want to know?
 
-## Usage
+| Question | Command |
+|---|---|
+| What does my POM look like after inheritance, profiles and interpolation? | `mvn help:effective-pom` |
+| Where does that value in the effective POM come from? | `mvn help:effective-pom -Dverbose` |
+| Which profiles are active, and which ones exist? | `mvn help:active-profiles`, `mvn help:all-profiles` |
+| What is the value of a property or expression? | `mvn help:evaluate -Dexpression=project.version -q -DforceStdout` |
+| Which settings, mirrors and servers is Maven using? | `mvn help:effective-settings` |
+| What goals and parameters does a plugin have? | `mvn help:describe -Dplugin=compiler -Ddetail` |
+| Which plugin runs in a given phase? | `mvn help:describe -Dcmd=package` |
+| Which lifecycle phases, packagings and dependency types exist? | `mvn help:list-lifecycle-phases`, `mvn help:list-packaging`, `mvn help:list-dependency-types` |
+| Which JVM, system properties and environment variables does Maven see? | `mvn help:system` |
 
-General instructions on how to use the Help Plugin can be found on the [usage page](./usage.html). Some more specific use cases are described in the examples given below.
+The [usage page](./usage.html) walks through each of these with sample output.
 
-In case you still have questions regarding the plugin's usage, please feel free to contact the [user mailing list](./mailing-lists.html). The posts to the mailing list are archived and could already contain the answer to your question as part of an older thread. Hence, it is also worth browsing/searching the [mail archive](./mailing-lists.html).
+## Goals
 
-If you feel like the plugin is missing a feature or has a defect, you can fill a feature request or bug report in our [issue tracker](./issue-management.html). When creating a new issue, please provide a comprehensive description of your concern. Especially for fixing bugs it is crucial that the developers can reproduce your problem. For this reason, entire debug logs, POMs or most preferably little demo projects attached to the issue are very much appreciated. Of course, patches are welcome, too. Contributors can check out the project from our [source repository](./scm.html) and will find supplementary information in the [guide to helping with Maven](https://maven.apache.org/guides/development/guide-helping.html).
+The plugin has 11 goals.
 
-## Examples
+Inspect the build:
 
-To better understand some usages of the Help Plugin, see the following example(s):
+- [`help:effective-pom`](./effective-pom-mojo.html) displays the effective POM of each project in the build, or of any
+  artifact with `-Dartifact=groupId:artifactId[:version]`.
+- [`help:effective-settings`](./effective-settings-mojo.html) displays the settings after the global and user
+  `settings.xml` files are merged. Passwords are hidden unless you add `-DshowPasswords`.
+- [`help:active-profiles`](./active-profiles-mojo.html) lists the profiles that are active for each project, and where
+  each one is defined.
+- [`help:all-profiles`](./all-profiles-mojo.html) lists every profile available to the project, active or not.
+- [`help:evaluate`](./evaluate-mojo.html) prints the value of a Maven expression, either one given on the command line or
+  interactively.
+- [`help:system`](./system-mojo.html) lists the system properties and environment variables.
 
-- [Configuring Describe Goal](./examples/describe-configuration.html)
+Explore plugins and lifecycles:
+
+- [`help:describe`](./describe-mojo.html) describes a plugin, one of its goals, or a lifecycle phase.
+- [`help:list-lifecycle-phases`](./list-lifecycle-phases-mojo.html) lists the phases of the `clean`, `default` and `site`
+  lifecycles.
+- [`help:list-packaging`](./list-packaging-mojo.html) lists the known packaging types and the plugin goals bound to each
+  phase.
+- [`help:list-dependency-types`](./list-dependency-types-mojo.html) lists the known dependency types with their file
+  extension and classifier.
+- [`help:help`](./help-mojo.html) displays help for this plugin itself.
+
+Every goal except `help:help` accepts `-Doutput=<file>` to write its result to a file instead of the console.
+
+## Requirements
+
+The plugin needs Maven 3.9.0 or later and Java 8 or later. You don't need to declare it in your POM: Maven resolves
+the `help` prefix to the latest release, unless your POM pins a version. To choose the version yourself,
+call the goal by its full coordinates, for example `mvn org.apache.maven.plugins:maven-help-plugin:3.6.0:effective-pom`.
+
+## Getting help
+
+- Ask questions on the [user mailing list](./mailing-lists.html); its archive may already hold the answer.
+- Report bugs and request features in the [issue tracker](./issue-management.html). A small project that reproduces
+  the problem gets it fixed fastest.
+- Contributions are welcome: see the [source repository](./scm.html) and the
+  [guide to helping with Maven](https://maven.apache.org/guides/development/guide-helping.html).

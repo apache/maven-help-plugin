@@ -31,6 +31,9 @@ under the License.
         <item name="help:effective-pom" href="effective-pom-mojo.html"/>
         <item name="help:effective-settings" href="effective-settings-mojo.html"/>
         <item name="help:evaluate" href="evaluate-mojo.html"/>
+        <item name="help:list-dependency-types" href="list-dependency-types-mojo.html"/>
+        <item name="help:list-lifecycle-phases" href="list-lifecycle-phases-mojo.html"/>
+        <item name="help:list-packaging" href="list-packaging-mojo.html"/>
         <item name="help:system" href="system-mojo.html"/>
         <item name="help:help" href="help-mojo.html"/>
       </item>
@@ -40,7 +43,7 @@ under the License.
       <item name="Download" href="download.html"/>
     </menu>
     <menu name="Examples">
-      <item name="Configuring Describe Goal" href="examples/describe-configuration.html"/>
+      <item name="Configure the describe goal" href="examples/describe-configuration.html"/>
     </menu>
   </body>
 </site>
