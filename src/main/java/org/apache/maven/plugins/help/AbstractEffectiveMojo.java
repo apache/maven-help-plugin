@@ -27,7 +27,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
@@ -163,7 +162,7 @@ public abstract class AbstractEffectiveMojo extends AbstractHelpMojo {
         public Set<Object> keySet() {
             Set<Object> keynames = super.keySet();
             List list = new ArrayList(keynames);
-            Collections.sort(list);
+            list.sort(null);
 
             return new LinkedHashSet<>(list);
         }

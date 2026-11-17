@@ -236,7 +236,7 @@ public class EffectivePomMojo extends AbstractEffectiveMojo {
                 s = source.toString();
             }
 
-            return '}' + s + ((location.getLineNumber() >= 0) ? ", line " + location.getLineNumber() : "") + ' ';
+            return '}' + s + (location.getLineNumber() >= 0 ? ", line " + location.getLineNumber() : "") + ' ';
         }
     }
 }
