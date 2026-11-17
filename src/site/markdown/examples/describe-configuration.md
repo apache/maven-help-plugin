@@ -1,10 +1,10 @@
 ---
-title: Configuring Describe Goal
+title: Configure the describe goal
 author: 
   - John Casey
   - Maria Odea Ching
   - Vincent Siveton
-date: 2010-01-21
+date: 2026-11-17
 ---
 
 <!--
@@ -26,225 +26,170 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-# Configuring Describe Goal
 
-Below are other configuration examples for the [`help:describe`](../describe-mojo.html) goal.
+# Configure the describe goal
 
-## The `plugin` Parameter
+The [`help:describe`](../describe-mojo.html) goal answers two kinds of questions: what a plugin or goal does and which
+parameters it takes, and what Maven runs for a lifecycle phase. This page shows its options.
 
-The `plugin` parameter is meant to provide two things: convenience and prefix-based access.
+## Choose a plugin with `plugin`
 
-The convenience comes when specifying a plugin by `groupId:artifactId`, or by `groupId:artifactId:version`. Where the more traditional specification of separate fields would mean specifying this:
-
-```bash
-# mvn help:describe -DgroupId=org.somewhere -DartifactId=some-plugin -Dversion=0.0.0
-```
-
-the use of the plugin parameter allows this:
+The `plugin` parameter accepts a plugin prefix, or coordinates in the form `groupId:artifactId[:version]`:
 
 ```bash
-# mvn help:describe -Dplugin=org.somewhere:some-plugin:0.0.0
+mvn help:describe -Dplugin=help
+mvn help:describe -Dplugin=org.apache.maven.plugins:maven-help-plugin
+mvn help:describe -Dplugin=org.apache.maven.plugins:maven-help-plugin:3.6.0
 ```
 
-Here is an example to describe the Help plugin:
+Without a version, the goal describes the latest release. The separate `groupId`, `artifactId` and `version`
+parameters do the same as the coordinates form:
 
 ```bash
-# mvn help:describe -Dplugin=org.apache.maven.plugins:maven-help-plugin
+mvn help:describe -DgroupId=org.apache.maven.plugins -DartifactId=maven-help-plugin
 ```
 
-**Note**: `version` is always optional here.
+The output starts with the plugin's coordinates and prefix, then lists its goals:
 
-On the other hand, the plugin parameter also offers the option to specify a plugin by its prefix, like this:
+```text
+[INFO] org.apache.maven.plugins:maven-help-plugin:3.6.0
 
-```bash
-# mvn help:describe -Dplugin=help
-```
-
-## The `goal` Parameter
-
-You can use the `goal` parameter of the `describe` goal to show or display relative information about a particular goal of the plugin you specified.
-
-For example, when you execute the following command:
-
-```sh
-# mvn help:describe -Dgoal=describe -DgroupId=org.apache.maven.plugins -DartifactId=maven-help-plugin
-```
-
-This would display brief information about the `describe` goal only.
-
-## The `cmd` Parameter
-
-You can also ask for a single Maven goal, phase, or lifecycle:
-
-```sh
-# mvn -help
-
-usage: mvn [options] [<goal(s)>] [<phase(s)>]
-...
-```
-
-The following are some examples:
-
-```sh
-# mvn help:describe -Dcmd=clean
-...
-[INFO] [help:describe]
-[INFO] 'clean' is a lifecycle with the following phases:
-* pre-clean: NOT DEFINED
-* clean: org.apache.maven.plugins:maven-clean-plugin:clean
-* post-clean: NOT DEFINED
-...
-```
-
-```shell
-# mvn help:describe -Dcmd=compile
-...
-[INFO] [help:describe]
-[INFO] 'compile' is a phase corresponding to this plugin:
-org.apache.maven.plugins:maven-compiler-plugin:compile
-
-It is a part of the lifecycle for the POM packaging 'jar'. This lifecycle includes the following phases:
-* validate: NOT DEFINED
-* initialize: NOT DEFINED
-* generate-sources: NOT DEFINED
-* process-sources: NOT DEFINED
-* generate-resources: NOT DEFINED
-* process-resources: org.apache.maven.plugins:maven-resources-plugin:resources
-* compile: org.apache.maven.plugins:maven-compiler-plugin:compile
-* process-classes: NOT DEFINED
-* generate-test-sources: NOT DEFINED
-* process-test-sources: NOT DEFINED
-* generate-test-resources: NOT DEFINED
-* process-test-resources: org.apache.maven.plugins:maven-resources-plugin:testResources
-* test-compile: org.apache.maven.plugins:maven-compiler-plugin:testCompile
-* process-test-classes: NOT DEFINED
-* test: org.apache.maven.plugins:maven-surefire-plugin:test
-* package: org.apache.maven.plugins:maven-jar-plugin:jar
-* pre-integration-test: NOT DEFINED
-* integration-test: NOT DEFINED
-* post-integration-test: NOT DEFINED
-* verify: NOT DEFINED
-* install: org.apache.maven.plugins:maven-install-plugin:install
-* deploy: org.apache.maven.plugins:maven-deploy-plugin:deploy
-...
-```
-
-```shell
-# mvn help:describe -Dcmd=compiler:compile
-...
-[INFO] 'compiler:compile' is a plugin goal (aka mojo).
-Mojo: 'compiler:compile'
-compiler:compile
-  Description: Compiles application sources
-  Deprecated. No reason given
-
-For more information, run 'mvn help:describe [...] -Ddetail'
-...
-```
-
-## The `minimal`, and `detail` Parameters
-
-If you want to display less or more detailed information, you can use the `minimal`, or `detail` parameters.
-
-The `minimal` parameter adds a minimal list of information:
-
-```shell
-# mvn help:describe -Dplugin=help -Dminimal=true
-...
-[INFO] [help:describe]
-[INFO] org.apache.maven.plugins:maven-help-plugin:2.1-SNAPSHOT
+Name: Apache Maven Help Plugin
+Description: The Maven Help plugin provides goals aimed at helping to make
+  sense out of the build environment. ...
 Group Id: org.apache.maven.plugins
 Artifact Id: maven-help-plugin
-Version: 2.1-SNAPSHOT
+Version: 3.6.0
 Goal Prefix: help
-Description: The Maven Help plugin provides goals aimed at helping to make
-  sense out of the build environment. It includes the ability to view the
-  effective POM and settings files, after inheritance and active profiles have
-  been applied, as well as a describe a particular plugin goal to give usage
-  information.
 
-For more information, run 'mvn help:describe [...] -Ddetail'
-...
-```
-If you don't provide a parameter, a list is added with the mojos of the plugin and their
-descriptions:
-
-```sh
-# mvn help:describe -Dplugin=help
-...
-[INFO] org.apache.maven.plugins:maven-help-plugin:2.1-SNAPSHOT
-Group Id: org.apache.maven.plugins
-Artifact Id: maven-help-plugin
-Version: 2.1-SNAPSHOT
-Goal Prefix: help
-Description: The Maven Help plugin provides goals aimed at helping to make
-  sense out of the build environment. It includes the ability to view the
-  effective POM and settings files, after inheritance and active profiles have
-  been applied, as well as a describe a particular plugin goal to give usage
-  information.
-
-This plugin has 9 goals:
+This plugin has 11 goals:
 
 help:active-profiles
   Description: Displays a list of the profiles which are currently active for
     this build.
-  Deprecated. No reason given
 
 help:all-profiles
   Description: Displays a list of available profiles under the current
-    project.
-    Note: it will list all profiles for a project. If a profile comes up with a
-    status inactive then there might be a need to set profile activation
-    switches/property.
-  Deprecated. No reason given
-
-help:describe
-  Description: Displays a list of the attributes for a Maven Plugin and/or
-    Mojo (Maven plain Old Java Object).
-  Deprecated. No reason given
-
-help:effective-pom
-  Description: Displays the effective POM as an XML for this build, with the
-    active profiles factored in.
-  Deprecated. No reason given
-
-help:effective-settings
-  Description: Displays the calculated settings as XML for this project,
-    given any profile enhancement and the inheritance of the global settings
-    into the user-level settings.
-  Deprecated. No reason given
-
-help:evaluate
-  Description: Evaluates Maven expressions given by the user in an
-    interactive mode.
-  Deprecated. No reason given
-
-help:help
-  Description: Display help information on maven-help-plugin.
-    Call
-     mvn help:help -Ddetail=true -Dgoal=<goal-name>
-    to display parameter details.
-  Deprecated. No reason given
-
-help:system
-  Description: Displays a list of the platform details like system properties
-    and environment variables.
-  Deprecated. No reason given
-
-For more information, run 'mvn help:describe [...] -Ddetail'
+    project. ...
 ...
 ```
 
-The `detail` parameter also displays information about the goal's implementation, their parameters and component requirements, among others.
+## Describe one goal with `goal`
 
-```sh
-# mvn help:describe -Dplugin=help -Ddetail=true
+Add the `goal` parameter to describe a single goal of the plugin:
+
+```bash
+mvn help:describe -Dplugin=help -Dgoal=effective-pom
 ```
 
-## The `output` Parameter
+## Show more or less with `detail` and `minimal`
 
-This `describe` goal can use the optional `output` parameter to redirect the output to a file. Here is an example of that:
+Add `-Ddetail` to list each goal's parameters, with their descriptions, default values and the user property
+you can set them with on the command line. This is usually what you want when you configure a goal:
 
-```sh
-# mvn help:describe -Dplugin=help -Ddetail=true -Doutput=/path/to/file
+```bash
+mvn help:describe -Dplugin=compiler -Dgoal=compile -Ddetail
+```
+
+Add `-Dminimal` to print only the plugin's coordinates and description, without its goals:
+
+```bash
+mvn help:describe -Dplugin=help -Dminimal
+```
+
+```text
+[INFO] org.apache.maven.plugins:maven-help-plugin:3.6.0
+
+Name: Apache Maven Help Plugin
+Description: The Maven Help plugin provides goals aimed at helping to make
+  sense out of the build environment. ...
+Group Id: org.apache.maven.plugins
+Artifact Id: maven-help-plugin
+Version: 3.6.0
+Goal Prefix: help
+
+For more information, run 'mvn help:describe [...] -Ddetail'
+```
+
+## Describe a phase or goal with `cmd`
+
+The `cmd` parameter takes a lifecycle phase or a plugin goal in the form `prefix:goal`, as you would pass them to `mvn`. The answer reflects your project, so for a phase it shows the plugin goals bound by the project's
+packaging, with their versions.
+
+For a phase, the goal shows the plugin goal it runs and the whole lifecycle it belongs to:
+
+```bash
+mvn help:describe -Dcmd=compile
+```
+
+```text
+[INFO] 'compile' is a phase corresponding to this plugin:
+org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile
+
+It is a part of the lifecycle for the POM packaging 'jar'. This lifecycle includes the following phases:
+* validate: Not defined
+* initialize: Not defined
+* generate-sources: Not defined
+* process-sources: Not defined
+* generate-resources: Not defined
+* process-resources: org.apache.maven.plugins:maven-resources-plugin:3.4.0:resources
+* compile: org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile
+* process-classes: Not defined
+* generate-test-sources: Not defined
+* process-test-sources: Not defined
+* generate-test-resources: Not defined
+* process-test-resources: org.apache.maven.plugins:maven-resources-plugin:3.4.0:testResources
+* test-compile: org.apache.maven.plugins:maven-compiler-plugin:3.15.0:testCompile
+* process-test-classes: Not defined
+* test: org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test
+* prepare-package: Not defined
+* package: org.apache.maven.plugins:maven-jar-plugin:3.5.0:jar
+* pre-integration-test: Not defined
+* integration-test: Not defined
+* post-integration-test: Not defined
+* verify: Not defined
+* install: org.apache.maven.plugins:maven-install-plugin:3.1.4:install
+* deploy: org.apache.maven.plugins:maven-deploy-plugin:3.1.4:deploy
+```
+
+`Not defined` means no plugin goal is bound to that phase by default; your POM can still bind one there.
+
+The `clean` phase belongs to its own lifecycle:
+
+```bash
+mvn help:describe -Dcmd=clean
+```
+
+```text
+[INFO] 'clean' is a phase within the 'clean' lifecycle, which has the following phases:
+* pre-clean: Not defined
+* clean: org.apache.maven.plugins:maven-clean-plugin:3.2.0:clean
+* post-clean: Not defined
+```
+
+For a plugin goal, the output matches `-Dplugin=... -Dgoal=...`:
+
+```bash
+mvn help:describe -Dcmd=compiler:compile
+```
+
+```text
+[INFO] 'compiler:compile' is a plugin goal (aka mojo).
+Mojo: 'compiler:compile'
+compiler:compile
+  Description: Compiles application sources. By default uses the javac
+    compiler of the JDK used to execute Maven. This can be overwritten through
+    Toolchains or parameter compilerId. See also: javac Command
+
+For more information, run 'mvn help:describe [...] -Ddetail'
+```
+
+The versions in these samples depend on your Maven version and your POM.
+
+## Write to a file with `output`
+
+The `output` parameter writes the description to a file instead of the console:
+
+```bash
+mvn help:describe -Dplugin=compiler -Ddetail -Doutput=compiler-plugin.txt
 ```
