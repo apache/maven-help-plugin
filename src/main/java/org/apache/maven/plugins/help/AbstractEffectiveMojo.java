@@ -53,8 +53,12 @@ import org.jdom2.output.XMLOutputter;
 public abstract class AbstractEffectiveMojo extends AbstractHelpMojo {
     private static final String COLON_PLACEHOLDER = "__MAVEN_HELP_PLUGIN_COLON__";
 
-    private static final Pattern NAMESPACE_UNSAFE_ELEMENT =
-            Pattern.compile("(<\\/?)([A-Za-z_][A-Za-z0-9_.-]*(?::[A-Za-z0-9_.-]+)+)(\\s*/?>)");
+    /**
+     * Matches start, end and empty-element tags whose name contains a colon. The third group holds the
+     * attributes, if any, and the end of the tag, so a start tag with attributes is escaped like its end tag.
+     */
+    private static final Pattern NAMESPACE_UNSAFE_ELEMENT = Pattern.compile(
+            "(</?)([A-Za-z_][A-Za-z0-9_.-]*(?::[A-Za-z0-9_.-]+)+)((?:\\s+[^\\s=/>]+\\s*=\\s*(?:\"[^\"]*\"|'[^']*'))*\\s*/?>)");
 
     protected AbstractEffectiveMojo(ProjectBuilder projectBuilder, RepositorySystem repositorySystem) {
         super(projectBuilder, repositorySystem);
