@@ -25,5 +25,9 @@ assert result.password.text() == 'server-password'
 assert result.passphrase.text() == 'server-passphrase'
 assert result.depthFirst().findAll { it.name() == 'delegate' }.isEmpty()
 
-assert result.depthFirst().findAll { it.name() in ['locations', 'importedFrom'] }.isEmpty()
-assert result.depthFirst().findAll { it.@class.size() > 0 || it.@reference.size() > 0 }.isEmpty()
+assert result.depthFirst().findAll {
+    it.name() in ['locations', 'importedFrom']
+}.isEmpty()
+assert result.depthFirst().findAll {
+    it.@class.size() > 0 || it.@reference.size() > 0
+}.isEmpty()

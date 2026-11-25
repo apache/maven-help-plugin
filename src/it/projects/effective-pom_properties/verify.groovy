@@ -16,25 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-def buildLog = new File(basedir, 'build.log');
+def buildLog = new File(basedir, 'build.log')
 assert buildLog.exists()
 
 def LS = System.lineSeparator()
 if (mavenVersion.startsWith('4.')) {
     // with Maven 4, order of properties is reversed from original pom.xml
     assert buildLog.text.find(
-            '(?s)' +
-                    '  <properties>' + LS +
-                    '    <maven\\.compiler\\.target>1\\.8</maven\\.compiler\\.target>' + LS +
-                    '    <maven\\.compiler\\.source>1\\.8</maven\\.compiler\\.source>' + LS +
-                    '.*' +
-                    '  </properties>') != null
+    '(?s)' +
+    '  <properties>' + LS +
+    '    <maven\\.compiler\\.target>1\\.8</maven\\.compiler\\.target>' + LS +
+    '    <maven\\.compiler\\.source>1\\.8</maven\\.compiler\\.source>' + LS +
+    '.*' +
+    '  </properties>') != null
 } else {
     assert buildLog.text.find(
-            '(?s)' +
-                    '  <properties>' + LS +
-                    '    <maven\\.compiler\\.source>1\\.8</maven\\.compiler\\.source>' + LS +
-                    '    <maven\\.compiler\\.target>1\\.8</maven\\.compiler\\.target>' + LS +
-                    '.*' +
-                    '  </properties>') != null
+    '(?s)' +
+    '  <properties>' + LS +
+    '    <maven\\.compiler\\.source>1\\.8</maven\\.compiler\\.source>' + LS +
+    '    <maven\\.compiler\\.target>1\\.8</maven\\.compiler\\.target>' + LS +
+    '.*' +
+    '  </properties>') != null
 }

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-def buildLog = new File( basedir, 'build.log' ); 
+def buildLog = new File(basedir, 'build.log')
 assert buildLog.exists()
 
-assert 1 == buildLog.text.count( '  Profile Id: it-repo (Active: true, Source: settings.xml)' )
-assert 1 == buildLog.text.count( '  Profile Id: profile-active-from-pom (Active: true, Source: pom)' ) 
-assert 1 == buildLog.text.count( '  Profile Id: profile-inactive-from-pom (Active: false, Source: pom)' )
+assert 1 == buildLog.text.count('  Profile Id: it-repo (Active: true, Source: settings.xml)')
+assert 1 == buildLog.text.count('  Profile Id: profile-active-from-pom (Active: true, Source: pom)')
+assert 1 == buildLog.text.count('  Profile Id: profile-inactive-from-pom (Active: false, Source: pom)')

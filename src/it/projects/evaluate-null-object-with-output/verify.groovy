@@ -17,7 +17,7 @@
  * under the License.
  */
 
-def result = new File(basedir, 'result.txt').text;
+def result = new File(basedir, 'result.txt').text
 assert result == 'null object or invalid expression'
 
-return true;
+return true

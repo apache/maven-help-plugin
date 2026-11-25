@@ -20,8 +20,8 @@ def buildLog = new File(basedir, 'build.log')
 assert buildLog.exists()
 
 assert buildLog.text.find(
-    '(?s)' +
-    '\\s*<repositoryOrigins>.' +
-    '\\s*<repositoryOrigin>https://clone1.maven.apache.org/repository/</repositoryOrigin>.' +
-    '\\s*<repositoryOrigin>https://clone2.maven.apache.org/repository/</repositoryOrigin>.' +
-    '\\s*</repositoryOrigins>') != null
+'(?s)' +
+'\\s*<repositoryOrigins>.' +
+'\\s*<repositoryOrigin>https://clone1.maven.apache.org/repository/</repositoryOrigin>.' +
+'\\s*<repositoryOrigin>https://clone2.maven.apache.org/repository/</repositoryOrigin>.' +
+'\\s*</repositoryOrigins>') != null

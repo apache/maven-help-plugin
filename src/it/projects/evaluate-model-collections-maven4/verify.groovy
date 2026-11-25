@@ -17,9 +17,13 @@
  * under the License.
  */
 
-assert !new File(basedir, 'build.log').readLines().any { it.startsWith('[ERROR]') }
+assert !new File(basedir, 'build.log').readLines().any {
+    it.startsWith('[ERROR]')
+}
 
-def parse = { name -> new groovy.xml.XmlSlurper().parse(new File(basedir, name)) }
+def parse = { name ->
+    new groovy.xml.XmlSlurper().parse(new File(basedir, name))
+}
 def checkResource = { resource ->
     assert resource.name() == 'resource'
     assert resource.directory.text() == new File(basedir, 'src/main/resources').absolutePath
@@ -67,7 +71,9 @@ assert profiles.profile.properties.'profile.key'.text() == 'profile value'
         it.name() in ['delegate', 'locations', 'importedFrom', 'pluginMap', 'reportSetMap', 'managementKey']
     }.isEmpty()
     // no implementation classes of the immutable collections and no XStream back references
-    assert nodes.findAll { it.@class.size() > 0 || it.@reference.size() > 0 }.isEmpty()
+    assert nodes.findAll {
+        it.@class.size() > 0 || it.@reference.size() > 0
+    }.isEmpty()
 }
 
 return true

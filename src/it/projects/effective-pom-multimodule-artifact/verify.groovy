@@ -17,14 +17,14 @@
  * under the License.
  */
 
-String content = new File( basedir, "build.log" ).text
-assert content.indexOf( "<projects>" ) == -1
+String content = new File(basedir, "build.log").text
+assert content.indexOf("<projects>") == -1
 
-def result = new File(basedir, 'result.txt');
+def result = new File(basedir, 'result.txt')
 assert result.exists()
 
 def LS = System.lineSeparator()
 assert result.text.find('(?s)' +
-        '  <groupId>org.apache.maven.plugins</groupId>' + LS +
-        '  <artifactId>maven-help-plugin</artifactId>'
+'  <groupId>org.apache.maven.plugins</groupId>' + LS +
+'  <artifactId>maven-help-plugin</artifactId>'
 ) != null

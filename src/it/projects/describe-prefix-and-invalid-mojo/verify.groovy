@@ -18,4 +18,4 @@
  */
 
 content = new File(basedir, 'build.log').text
-assert content.indexOf( "NullPointerException" ) < 0
+assert content.indexOf("NullPointerException") < 0

@@ -17,5 +17,5 @@
  * under the License.
  */
 
-String content = new File( basedir, "build.log" ).text
-assert content.indexOf( "<projects>" ) != -1
+String content = new File(basedir, "build.log").text
+assert content.indexOf("<projects>") != -1

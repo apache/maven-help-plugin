@@ -17,8 +17,8 @@
  * under the License.
  */
 
-String content = new File( basedir, "build.log" ).text
+String content = new File(basedir, "build.log").text
 
 // comments in the same line
-assert content.contains( "<groupId>org.apache.maven.its.help</groupId>  <!-- org.apache.maven.its.help:test:1.0-SNAPSHOT," )
-assert content.contains( "<url>https://maven.apache.org/plugins/test/</url>  <!-- org.apache.maven.plugins:maven-plugins:33, line 37 -->" )
+assert content.contains("<groupId>org.apache.maven.its.help</groupId>  <!-- org.apache.maven.its.help:test:1.0-SNAPSHOT,")
+assert content.contains("<url>https://maven.apache.org/plugins/test/</url>  <!-- org.apache.maven.plugins:maven-plugins:33, line 37 -->")

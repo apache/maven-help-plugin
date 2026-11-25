@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-def buildLog = new File(basedir, 'changes.log'); 
+def buildLog = new File(basedir, 'changes.log')
 assert buildLog.exists()
-assert buildLog.text.contains('Note: This goal should be used as a Maven report.');
+assert buildLog.text.contains('Note: This goal should be used as a Maven report.')
 
-buildLog = new File(basedir, 'javadoc.log'); 
+buildLog = new File(basedir, 'javadoc.log')
 assert buildLog.exists()
-assert buildLog.text.contains('Note: This goal should be used as a Maven report.');
+assert buildLog.text.contains('Note: This goal should be used as a Maven report.')
 
-buildLog = new File(basedir, 'assembly.log'); 
+buildLog = new File(basedir, 'assembly.log')
 assert buildLog.exists()
-assert !buildLog.text.contains('Note: This goal should be used as a Maven report.');
+assert !buildLog.text.contains('Note: This goal should be used as a Maven report.')
