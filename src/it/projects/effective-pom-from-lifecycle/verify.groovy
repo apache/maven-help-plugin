@@ -17,14 +17,14 @@
  * under the License.
  */
 
-String content = new File( basedir, "result.txt" ).text
+String content = new File(basedir, "result.txt").text
 
-assert content.contains( "<projects>" )
-assert content.contains( "org.apache.maven.its.help:test:pom:1.0" )
-assert content.contains( "org.apache.maven.its.help:module:pom:1.0" )
+assert content.contains("<projects>")
+assert content.contains("org.apache.maven.its.help:test:pom:1.0")
+assert content.contains("org.apache.maven.its.help:module:pom:1.0")
 
-content = new File( basedir, "module/result.txt" ).text
+content = new File(basedir, "module/result.txt").text
 
-assert !content.contains( "<projects>" )
-assert !content.contains( "org.apache.maven.its.help:test:pom:1.0" )
-assert content.contains( "org.apache.maven.its.help:module:pom:1.0" )
+assert !content.contains("<projects>")
+assert !content.contains("org.apache.maven.its.help:test:pom:1.0")
+assert content.contains("org.apache.maven.its.help:module:pom:1.0")

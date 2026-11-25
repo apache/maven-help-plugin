@@ -17,13 +17,13 @@
  * under the License.
  */
 
-def result = new File(basedir, 'result.txt').text;
+def result = new File(basedir, 'result.txt').text
 
-def ls = System.lineSeparator();
+def ls = System.lineSeparator()
 
 assert result.contains("'deploy:deploy' is a plugin goal (aka mojo)." + ls +
-                       "Mojo: 'deploy:deploy'" + ls + 
-                       "deploy:deploy" + ls +
-                       "  Description:")
+"Mojo: 'deploy:deploy'" + ls +
+"deploy:deploy" + ls +
+"  Description:")
 
-return true;
+return true

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-def result = new File(basedir, 'build.log').text; 
-assert result.contains( 'null object or invalid expression' )
+def result = new File(basedir, 'build.log').text
+assert result.contains('null object or invalid expression')
 
-return true;
+return true

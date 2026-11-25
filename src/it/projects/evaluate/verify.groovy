@@ -17,7 +17,7 @@
  * under the License.
  */
 
-def result = new File(basedir, 'build.log').text; 
-assert result.contains( 'The description.' )
+def result = new File(basedir, 'build.log').text
+assert result.contains('The description.')
 
-return true;
+return true

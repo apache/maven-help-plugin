@@ -17,15 +17,15 @@
  * under the License.
  */
 
-def result = new File(basedir, 'result-deploy.txt').text;
+def result = new File(basedir, 'result-deploy.txt').text
 
-def ls = System.lineSeparator();
+def ls = System.lineSeparator()
 
 assert result.contains("'deploy' is a phase corresponding to this plugin:" + ls +
-        "org.apache.maven.plugins:maven-deploy-plugin")
+"org.apache.maven.plugins:maven-deploy-plugin")
 
-result = new File(basedir, 'result-site.txt').text;
+result = new File(basedir, 'result-site.txt').text
 
 assert result.contains("'site' is a phase within the 'site' lifecycle, which has the following phases:")
 
-return true;
+return true

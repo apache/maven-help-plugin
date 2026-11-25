@@ -17,10 +17,10 @@
  * under the License.
  */
 
-def result = new File(basedir, 'result.txt').text; 
+def result = new File(basedir, 'result.txt').text
 assert result == 'Maven Foo Bar'
 
-def log = new File(basedir, 'build.log').text;
+def log = new File(basedir, 'build.log').text
 assert log.contains('[INFO] Result of evaluation written to')
 
-return true;
+return true

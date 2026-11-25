@@ -17,7 +17,7 @@
  * under the License.
  */
 
-def result = new File(basedir, 'result.txt').text; 
+def result = new File(basedir, 'result.txt').text
 assert result == 'Apache Maven Help Plugin'
 
-return true;
+return true

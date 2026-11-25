@@ -17,14 +17,14 @@
  * under the License.
  */
 
-def result = new File(basedir, 'result.txt').text;
-def ls = System.lineSeparator();
+def result = new File(basedir, 'result.txt').text
+def ls = System.lineSeparator()
 
 assert result.contains(
-  "Group Id: org.apache.maven.plugins" + ls + 
-  "Artifact Id: maven-surefire-plugin" + ls + 
-  "Version: " + surefireversion + ls +
-  "Goal Prefix: surefire"
+"Group Id: org.apache.maven.plugins" + ls +
+"Artifact Id: maven-surefire-plugin" + ls +
+"Version: " + surefireversion + ls +
+"Goal Prefix: surefire"
 )
 
-return true;
+return true

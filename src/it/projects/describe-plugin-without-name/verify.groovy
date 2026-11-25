@@ -17,14 +17,14 @@
  * under the License.
  */
 
-def result = new File(basedir, 'result.txt').text;
+def result = new File(basedir, 'result.txt').text
 
-def ls = System.lineSeparator();
+def ls = System.lineSeparator()
 
-assert result.contains( "Name: Maven Help Plugin" )
+assert result.contains("Name: Maven Help Plugin")
 
-assert result.contains( "Group Id: org.apache.maven.plugins" + ls +
-                        "Artifact Id: maven-help-plugin" + ls + 
-                        "Version: 2.0" )
+assert result.contains("Group Id: org.apache.maven.plugins" + ls +
+"Artifact Id: maven-help-plugin" + ls +
+"Version: 2.0")
 
-return true;
+return true

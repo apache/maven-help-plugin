@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- 
-def buildLog = new File(basedir, 'build.log');
+
+def buildLog = new File(basedir, 'build.log')
 
 assert buildLog.exists()
 
-assert 1 == buildLog.text.count( ' - it-repo (source: external)' )
+assert 1 == buildLog.text.count(' - it-repo (source: external)')
